@@ -39,18 +39,16 @@ CREATE TABLE IF NOT EXISTS usuarios (
 # Cadastro livre pelo usuário (CRUD completo)
 # ──────────────────────────────────────────────────────
 SQL_CRIAR_TIPOS_EXAME = """
-CREATE TABLE IF NOT EXISTS tipos_exame (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome            TEXT    NOT NULL UNIQUE,
-    descricao       TEXT,
-    exame_de_local  INTEGER NOT NULL DEFAULT 0,
-    ativo           INTEGER NOT NULL DEFAULT 1,
-    criado_em       TEXT    NOT NULL
-                        DEFAULT (datetime('now','localtime')),
-    atualizado_em   TEXT    NOT NULL
-                        DEFAULT (datetime('now','localtime'))
-);
+    CREATE TABLE IF NOT EXISTS tipos_exame (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        codigo         TEXT    NOT NULL UNIQUE,
+        nome           TEXT    NOT NULL,
+        descricao      TEXT    DEFAULT '',
+        exame_de_local INTEGER DEFAULT 0,
+        ativo          INTEGER DEFAULT 1
+    )
 """
+
 # exame_de_local = 1 → habilita campos de horário e
 #                      coordenadas na REP
 # exame_de_local = 0 → exame por ofício, sem deslocamento

@@ -38,21 +38,19 @@ def listar_tipos_exame(apenas_ativos: bool = True) -> list:
     """
     if apenas_ativos:
         sql = """
-            SELECT id, nome, descricao, exame_de_local, ativo
+            SELECT id, codigo, nome, descricao, exame_de_local, ativo
             FROM tipos_exame
             WHERE ativo = 1
-            ORDER BY nome
+            ORDER BY codigo
         """
     else:
         sql = """
-            SELECT id, nome, descricao, exame_de_local, ativo
+            SELECT id, codigo, nome, descricao, exame_de_local, ativo
             FROM tipos_exame
-            ORDER BY nome
+            ORDER BY codigo
         """
 
     rows = executar_query(sql)
-
-    # Converte sqlite3.Row para dicionário
     return [dict(row) for row in rows]
 
 
@@ -67,7 +65,7 @@ def buscar_tipo_exame(tipo_id: int) -> dict | None:
         Dicionário com os dados ou None se não encontrado
     """
     sql = """
-        SELECT id, nome, descricao, exame_de_local, ativo
+        SELECT id, codigo, nome, descricao, exame_de_local, ativo
         FROM tipos_exame
         WHERE id = ?
     """
@@ -79,6 +77,7 @@ def buscar_tipo_exame(tipo_id: int) -> dict | None:
 
 
 def criar_tipo_exame(
+    codigo:         str,
     nome:           str,
     descricao:      str  = "",
     exame_de_local: bool = False,
@@ -87,6 +86,7 @@ def criar_tipo_exame(
     Cria um novo tipo de exame.
 
     Args:
+        codigo:         Código único do exame (ex: H-001)
         nome:           Nome do tipo de exame (obrigatório)
         descricao:      Descrição opcional
         exame_de_local: Se exige deslocamento ao local
@@ -95,30 +95,60 @@ def criar_tipo_exame(
         ID do novo tipo de exame criado
 
     Raises:
-        ValueError: Se o nome estiver vazio ou já existir
+        ValueError: Se o código ou nome estiverem vazios
+                    ou já existirem
     """
-    nome = nome.strip()
+    import re
+
+    codigo = codigo.strip().upper()
+    nome   = nome.strip()
+
+    if not codigo:
+        raise ValueError("O código do exame é obrigatório.")
 
     if not nome:
         raise ValueError("O nome do tipo de exame é obrigatório.")
 
-    # Verifica duplicidade
-    existe = executar_query(
+    # Valida formato X-000
+    if not re.match(r'^[A-Z]-\d{3}$', codigo):
+        raise ValueError(
+            "Código inválido. Use o formato X-000 "
+            "(1 letra, hífen, 3 números). Ex: H-001"
+        )
+
+    # Valida tamanho máximo
+    if len(codigo) > 10:
+        raise ValueError("O código deve ter no máximo 10 caracteres.")
+
+    # Verifica duplicidade do código
+    existe_codigo = executar_query(
+        "SELECT id FROM tipos_exame WHERE UPPER(codigo) = UPPER(?)",
+        (codigo,)
+    )
+    if existe_codigo:
+        raise ValueError(f"Já existe um tipo de exame com o código '{codigo}'.")
+
+    # Verifica duplicidade do nome
+    existe_nome = executar_query(
         "SELECT id FROM tipos_exame WHERE LOWER(nome) = LOWER(?)",
         (nome,)
     )
-    if existe:
+    if existe_nome:
         raise ValueError(f"Já existe um tipo de exame com o nome '{nome}'.")
 
     sql = """
-        INSERT INTO tipos_exame (nome, descricao, exame_de_local, ativo)
-        VALUES (?, ?, ?, 1)
+        INSERT INTO tipos_exame (codigo, nome, descricao, exame_de_local, ativo)
+        VALUES (?, ?, ?, ?, 1)
     """
-    return executar_comando(sql, (nome, descricao.strip(), int(exame_de_local)))
+    return executar_comando(
+        sql,
+        (codigo, nome, descricao.strip(), int(exame_de_local))
+    )
 
 
 def atualizar_tipo_exame(
     tipo_id:        int,
+    codigo:         str,
     nome:           str,
     descricao:      str  = "",
     exame_de_local: bool = False,
@@ -128,41 +158,71 @@ def atualizar_tipo_exame(
 
     Args:
         tipo_id:        ID do tipo a atualizar
+        codigo:         Novo código
         nome:           Novo nome
         descricao:      Nova descrição
         exame_de_local: Novo valor do campo exame_de_local
 
     Raises:
-        ValueError: Se o tipo não existir ou nome já usado
+        ValueError: Se o tipo não existir, código ou
+                    nome inválidos ou já em uso
     """
-    nome = nome.strip()
+    import re
+
+    codigo = codigo.strip().upper()
+    nome   = nome.strip()
+
+    if not codigo:
+        raise ValueError("O código do exame é obrigatório.")
 
     if not nome:
         raise ValueError("O nome do tipo de exame é obrigatório.")
+
+    # Valida formato X-000
+    if not re.match(r'^[A-Z]-\d{3}$', codigo):
+        raise ValueError(
+            "Código inválido. Use o formato X-000 "
+            "(1 letra, hífen, 3 números). Ex: H-001"
+        )
 
     # Verifica se o tipo existe
     tipo = buscar_tipo_exame(tipo_id)
     if not tipo:
         raise ValueError("Tipo de exame não encontrado.")
 
-    # Verifica duplicidade (ignora o próprio registro)
-    existe = executar_query(
+    # Verifica duplicidade do código (ignora o próprio)
+    existe_codigo = executar_query(
+        """
+        SELECT id FROM tipos_exame
+        WHERE UPPER(codigo) = UPPER(?) AND id != ?
+        """,
+        (codigo, tipo_id)
+    )
+    if existe_codigo:
+        raise ValueError(f"Já existe um tipo de exame com o código '{codigo}'.")
+
+    # Verifica duplicidade do nome (ignora o próprio)
+    existe_nome = executar_query(
         """
         SELECT id FROM tipos_exame
         WHERE LOWER(nome) = LOWER(?) AND id != ?
         """,
         (nome, tipo_id)
     )
-    if existe:
+    if existe_nome:
         raise ValueError(f"Já existe um tipo de exame com o nome '{nome}'.")
 
     sql = """
         UPDATE tipos_exame
-        SET nome = ?, descricao = ?, exame_de_local = ?
+        SET codigo = ?, nome = ?, descricao = ?, exame_de_local = ?
         WHERE id = ?
     """
-    executar_comando(sql, (nome, descricao.strip(), int(exame_de_local), tipo_id))
+    executar_comando(
+        sql,
+        (codigo, nome, descricao.strip(), int(exame_de_local), tipo_id)
+    )
 
+# services/cadastro_service.py (trecho que falta)
 
 def alternar_status_tipo_exame(tipo_id: int) -> bool:
     """
@@ -222,7 +282,6 @@ def excluir_tipo_exame(tipo_id: int) -> None:
         "DELETE FROM tipos_exame WHERE id = ?",
         (tipo_id,)
     )
-
 
 # ══════════════════════════════════════════════════════
 # SOLICITANTES

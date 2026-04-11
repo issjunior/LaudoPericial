@@ -90,10 +90,21 @@ def formulario_criar():
         col1, col2 = st.columns([2, 1])
 
         with col1:
-            nome = st.text_input(
-                "Nome do Tipo de Exame *",
-                placeholder="Ex: Homicídio, Roubo, Incêndio..."
-            )
+            col_cod, col_nome = st.columns([1, 2])
+
+            with col_cod:
+                codigo = st.text_input(
+                    "Código do exame no GDL *",
+                    placeholder="Ex: H-001",
+                    max_chars=10,
+                    help="Código único do exame no GDL. Formato: X-000"
+                )
+            with col_nome:
+                nome = st.text_input(
+                    "Nome do Tipo de Exame *",
+                    placeholder="Ex: Homicídio, Roubo, Incêndio..."
+                )
+
             descricao = st.text_area(
                 "Descrição",
                 placeholder="Descreva brevemente este tipo de exame (opcional)",
@@ -110,9 +121,9 @@ def formulario_criar():
             )
             st.markdown(" ")
             st.info(
-                "**Exame de Local**\n\n"
-                "Marque quando o perito precisa se "
-                "deslocar fisicamente ao local."
+                "**Código GDL**\n\n"
+                "Use o mesmo código cadastrado "
+                "no GDL para este tipo de exame.\n\n"
             )
 
         st.markdown("---")
@@ -135,24 +146,24 @@ def formulario_criar():
             st.rerun()
 
         if submitted:
-            if not nome.strip():
-                st.error("❌ O nome do tipo de exame é obrigatório.")
-            else:
-                try:
-                    criar_tipo_exame(
-                        nome           = nome,
-                        descricao      = descricao,
-                        exame_de_local = exame_de_local,
-                    )
-                    st.success(f"✅ Tipo de exame **{nome}** criado com sucesso!")
-                    fechar_formulario()
-                    st.rerun()
+            try:
+                criar_tipo_exame(
+                    codigo         = codigo,
+                    nome           = nome,
+                    descricao      = descricao,
+                    exame_de_local = exame_de_local,
+                )
+                st.success(
+                    f"✅ Tipo de exame **{nome}** "
+                    f"criado com sucesso!"
+                )
+                fechar_formulario()
+                st.rerun()
 
-                except ValueError as e:
-                    st.error(f"❌ {e}")
-                except Exception as e:
-                    st.error(f"❌ Erro inesperado: {e}")
-
+            except ValueError as e:
+                st.error(f"❌ {e}")
+            except Exception as e:
+                st.error(f"❌ Erro inesperado: {e}")
 
 # ──────────────────────────────────────────────────────
 # FORMULÁRIO — EDITAR
@@ -178,10 +189,21 @@ def formulario_editar(tipo_id: int):
         col1, col2 = st.columns([2, 1])
 
         with col1:
-            nome = st.text_input(
-                "Nome do Tipo de Exame *",
-                value=tipo["nome"]
-            )
+            col_cod, col_nome = st.columns([1, 2])
+
+            with col_cod:
+                codigo = st.text_input(
+                    "Código do exame no GDL *",
+                    value=tipo["codigo"],
+                    max_chars=10,
+                    help="Código único do exame no GDL. Formato: X-000"
+                )
+            with col_nome:
+                nome = st.text_input(
+                    "Nome do Tipo de Exame *",
+                    value=tipo["nome"]
+                )
+
             descricao = st.text_area(
                 "Descrição",
                 value=tipo["descricao"] or "",
@@ -199,9 +221,11 @@ def formulario_editar(tipo_id: int):
             )
             st.markdown(" ")
             st.info(
-                "**Exame de Local**\n\n"
-                "Marque quando o perito precisa se "
-                "deslocar fisicamente ao local."
+                "**Código GDL**\n\n"
+                "Use o mesmo código cadastrado "
+                "no GDL para este tipo de exame.\n\n"
+                "Formato: `X-000`\n\n"
+                "Ex: `H-001`, `R-002`"
             )
 
         st.markdown("---")
@@ -224,28 +248,25 @@ def formulario_editar(tipo_id: int):
             st.rerun()
 
         if submitted:
-            if not nome.strip():
-                st.error("❌ O nome do tipo de exame é obrigatório.")
-            else:
-                try:
-                    atualizar_tipo_exame(
-                        tipo_id        = tipo_id,
-                        nome           = nome,
-                        descricao      = descricao,
-                        exame_de_local = exame_de_local,
-                    )
-                    st.success(
-                        f"✅ Tipo de exame **{nome}** "
-                        f"atualizado com sucesso!"
-                    )
-                    fechar_formulario()
-                    st.rerun()
+            try:
+                atualizar_tipo_exame(
+                    tipo_id        = tipo_id,
+                    codigo         = codigo,
+                    nome           = nome,
+                    descricao      = descricao,
+                    exame_de_local = exame_de_local,
+                )
+                st.success(
+                    f"✅ Tipo de exame **{nome}** "
+                    f"atualizado com sucesso!"
+                )
+                fechar_formulario()
+                st.rerun()
 
-                except ValueError as e:
-                    st.error(f"❌ {e}")
-                except Exception as e:
-                    st.error(f"❌ Erro inesperado: {e}")
-
+            except ValueError as e:
+                st.error(f"❌ {e}")
+            except Exception as e:
+                st.error(f"❌ Erro inesperado: {e}")
 
 # ──────────────────────────────────────────────────────
 # TABELA — LISTAGEM
@@ -263,9 +284,10 @@ def tabela_tipos(tipos: list):
         return
 
     # Cabeçalho da tabela
-    col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
-        [3, 4, 1.5, 1.5, 2]
+    col_cod, col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
+        [1.5, 2.5, 3, 1.5, 1.5, 2]
     )
+    col_cod.markdown("**Código**")
     col_nome.markdown("**Nome**")
     col_desc.markdown("**Descrição**")
     col_local.markdown("**Local**")
@@ -275,18 +297,20 @@ def tabela_tipos(tipos: list):
     st.markdown("---")
 
     for tipo in tipos:
-        col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
-            [3, 4, 1.5, 1.5, 2]
+        col_cod, col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
+            [1.5, 2.5, 3, 1.5, 1.5, 2]
         )
+
+        with col_cod:
+            st.markdown(f"`{tipo['codigo']}`")
 
         with col_nome:
             st.markdown(f"**{tipo['nome']}**")
 
         with col_desc:
             descricao = tipo["descricao"] or "—"
-            # Trunca descrições longas
-            if len(descricao) > 60:
-                descricao = descricao[:60] + "..."
+            if len(descricao) > 50:
+                descricao = descricao[:50] + "..."
             st.markdown(descricao)
 
         with col_local:
@@ -304,7 +328,6 @@ def tabela_tipos(tipos: list):
         with col_acoes:
             col_btn1, col_btn2, col_btn3 = st.columns(3)
 
-            # Botão Editar
             with col_btn1:
                 if st.button(
                     "✏️",
@@ -314,7 +337,6 @@ def tabela_tipos(tipos: list):
                     abrir_editar(tipo["id"])
                     st.rerun()
 
-            # Botão Ativar/Desativar
             with col_btn2:
                 icone_status = "🔴" if tipo["ativo"] else "🟢"
                 help_status  = "Desativar" if tipo["ativo"] else "Ativar"
@@ -333,7 +355,6 @@ def tabela_tipos(tipos: list):
                     except ValueError as e:
                         st.error(f"❌ {e}")
 
-            # Botão Excluir
             with col_btn3:
                 if st.button(
                     "🗑️",
@@ -350,8 +371,7 @@ def tabela_tipos(tipos: list):
                         st.error(f"❌ {e}")
 
         st.markdown("---")
-
-
+        
 # ──────────────────────────────────────────────────────
 # PÁGINA PRINCIPAL
 # ──────────────────────────────────────────────────────
