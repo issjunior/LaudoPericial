@@ -251,44 +251,104 @@ def tela_dashboard():
     """
     usuario = obter_usuario_logado()
 
+    # ── Barra lateral ───────────────────────────────────
     with st.sidebar:
-        st.markdown(f"### 👤 {usuario['nome']}")
-        st.caption(f"{usuario['cargo']}")
-        st.caption(f"📍 {usuario['lotacao']}")
+
+        # Cabeçalho do usuário
+        st.markdown(f"""
+        <div style='
+            background-color: #1a3a5c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        '>
+            <p style='color: white; font-size: 0.8rem; margin: 0;'>
+                Bem-vindo,
+            </p>
+            <p style='color: white; font-weight: bold;
+                      font-size: 1rem; margin: 0;'>
+                {usuario['nome'].split()[0]}
+            </p>
+            <p style='color: #aac4e0; font-size: 0.75rem; margin: 0;'>
+                {usuario['cargo']}
+            </p>
+            <p style='color: #aac4e0; font-size: 0.75rem; margin: 0;'>
+                📍 {usuario['lotacao']}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── Início ──────────────────────────────────────
+        st.page_link(
+            "app.py",
+            label="Dashboard",
+            icon="🏠"
+        )
+
+        # ── REPs ────────────────────────────────────────
+        st.markdown("**📋 Requisições (REPs)**")
+        st.page_link(
+            "pages/nova_rep.py",
+            label="Nova REP",
+            icon="➕"
+        )
+        st.page_link(
+            "pages/listar_rep.py",
+            label="Listar REPs",
+            icon="📄"
+        )
+
+        # ── Laudos ──────────────────────────────────────
+        st.markdown("**📝 Laudos**")
+        st.page_link(
+            "pages/novo_laudo.py",
+            label="Novo Laudo",
+            icon="✏️"
+        )
+
+        # ── Cadastros ───────────────────────────────────
+        st.markdown("**🗂️ Cadastros**")
+        st.page_link(
+            "pages/tipos_exame.py",
+            label="Tipos de Exame",
+            icon="🏷️"
+        )
+        st.page_link(
+            "pages/solicitantes.py",
+            label="Solicitantes",
+            icon="🏛️"
+        )
+        st.page_link(
+            "pages/gerenciar_templates.py",
+            label="Templates de Laudo",
+            icon="📋"
+        )
+
+        # ── Sistema ─────────────────────────────────────
+        st.markdown("**⚙️ Sistema**")
+        st.page_link(
+            "pages/busca.py",
+            label="Busca",
+            icon="🔍"
+        )
+        st.page_link(
+            "pages/historico.py",
+            label="Histórico",
+            icon="📜"
+        )
+        st.page_link(
+            "pages/perfil.py",
+            label="Perfil e Configurações",
+            icon="👤"
+        )
+
+        # ── Sair ────────────────────────────────────────
         st.markdown("---")
-
-        st.markdown("### 📋 Menu")
-        st.page_link("app.py",
-                     label="🏠 Dashboard", icon="🏠")
-
-        st.markdown("**REPs**")
-        st.page_link("pages/nova_rep.py",
-                     label="➕ Nova REP", icon="➕")
-        st.page_link("pages/listar_rep.py",
-                     label="📋 Listar REPs", icon="📋")
-
-        st.markdown("**Laudos**")
-        st.page_link("pages/novo_laudo.py",
-                     label="📝 Novo Laudo", icon="📝")
-
-        st.markdown("**Cadastros**")
-        st.page_link("pages/tipos_exame.py",
-                     label="🏷️ Tipos de Exame", icon="🏷️")
-        st.page_link("pages/solicitantes.py",
-                     label="🏛️ Solicitantes", icon="🏛️")
-        st.page_link("pages/gerenciar_templates.py",
-                     label="📄 Templates", icon="📄")
-
-        st.markdown("**Sistema**")
-        st.page_link("pages/busca.py",
-                     label="🔍 Busca", icon="🔍")
-        st.page_link("pages/historico.py",
-                     label="📜 Histórico", icon="📜")
-        st.page_link("pages/perfil.py",
-                     label="⚙️ Perfil", icon="⚙️")
-
-        st.markdown("---")
-        if st.button("🚪 Sair", use_container_width=True):
+        if st.button(
+            "Sair",
+            icon="🚪",
+            use_container_width=True
+        ):
             fazer_logout()
             st.rerun()
 
@@ -297,6 +357,7 @@ def tela_dashboard():
     st.markdown(f"Bem-vindo, **{usuario['nome']}**!")
     st.markdown("---")
 
+    # Cartões de resumo
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -329,7 +390,6 @@ def tela_dashboard():
         "💡 **Sistema em construção.** "
         "Os módulos serão ativados conforme o desenvolvimento avança."
     )
-
 
 # ──────────────────────────────────────────────────────
 # ROTEAMENTO PRINCIPAL
