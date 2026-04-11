@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nome                TEXT    NOT NULL,
     cargo               TEXT    NOT NULL DEFAULT 'Perito Oficial Criminal',
     matricula           TEXT,
+    username            TEXT    NOT NULL UNIQUE,
     lotacao             TEXT    NOT NULL,
     email               TEXT    NOT NULL UNIQUE,
     senha_hash          TEXT    NOT NULL,
@@ -29,6 +30,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
                             DEFAULT (datetime('now','localtime'))
 );
 """
+# username → prefixo do e-mail (antes do @)
+# Ex: izaias.santos@policiacientifica.pr.gov.br → izaias.santos
 
 # ──────────────────────────────────────────────────────
 # TABELA: tipos_exame

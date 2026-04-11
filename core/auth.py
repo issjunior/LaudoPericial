@@ -2,12 +2,12 @@
 core/auth.py
 ──────────────────────────────────────────────────────
 Gerencia autenticação, senhas e sessão do usuário.
+Login simplificado por username (prefixo do e-mail).
 ──────────────────────────────────────────────────────
 """
 
 import bcrypt
 import streamlit as st
-from datetime import datetime
 from database.db import executar_query, executar_comando
 
 
@@ -18,7 +18,6 @@ from database.db import executar_query, executar_comando
 def gerar_hash_senha(senha: str) -> str:
     """
     Transforma a senha em um hash criptografado.
-    O hash é uma sequência ilegível que representa a senha.
     A senha original NUNCA é guardada no banco.
 
     Args:
@@ -50,6 +49,28 @@ def verificar_senha(senha: str, hash_salvo: str) -> bool:
 
 
 # ──────────────────────────────────────────────────────
+# FUNÇÕES DE USERNAME
+# ──────────────────────────────────────────────────────
+
+def extrair_username(email: str) -> str:
+    """
+    Extrai o nome de usuário a partir do e-mail.
+    Pega tudo que vem antes do '@'.
+
+    Args:
+        email: endereço de e-mail completo
+
+    Returns:
+        Nome de usuário em minúsculo
+
+    Exemplo:
+        izaias.santos@policiacientifica.pr.gov.br
+        → izaias.santos
+    """
+    return email.strip().lower().split("@")[0].strip()
+
+
+# ──────────────────────────────────────────────────────
 # FUNÇÕES DE USUÁRIO
 # ──────────────────────────────────────────────────────
 
@@ -77,14 +98,15 @@ def criar_usuario(
 ) -> int:
     """
     Cria o usuário do sistema (perito).
+    Extrai automaticamente o username do e-mail.
     Deve ser chamado apenas uma vez na configuração inicial.
 
     Args:
         nome:      nome completo do perito
-        cargo:     cargo (ex: 'Perito Criminal')
-        matricula: matrícula funcional
+        cargo:     cargo (ex: 'Perito Oficial Criminal')
+        matricula: matrícula funcional (opcional)
         lotacao:   unidade de trabalho
-        email:     email (opcional)
+        email:     e-mail institucional
         senha:     senha escolhida pelo usuário
 
     Returns:
@@ -92,20 +114,53 @@ def criar_usuario(
     """
     hash_senha = gerar_hash_senha(senha)
 
+    # Extrai username automaticamente do e-mail
+    username = extrair_username(email.strip())
+
     return executar_comando("""
         INSERT INTO usuarios
-            (nome, cargo, matricula, lotacao, email, senha_hash)
+            (nome, cargo, matricula, username,
+             lotacao, email, senha_hash)
         VALUES
-            (?, ?, ?, ?, ?, ?)
-    """, (nome, cargo, matricula, lotacao, email, hash_senha))
+            (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        nome,
+        cargo,
+        matricula if matricula else None,
+        username,
+        lotacao,
+        email.strip().lower(),
+        hash_senha
+    ))
+
+
+def buscar_usuario_por_username(username: str) -> dict | None:
+    """
+    Busca um usuário pelo nome de usuário (prefixo do e-mail).
+    Usado no login do sistema.
+
+    Args:
+        username: nome de usuário (ex: izaias.santos)
+
+    Returns:
+        Dicionário com os dados do usuário ou None
+    """
+    rows = executar_query(
+        "SELECT * FROM usuarios WHERE LOWER(username) = LOWER(?)",
+        (username,)
+    )
+    if rows:
+        return dict(rows[0])
+    return None
+
 
 def buscar_usuario_por_email(email: str) -> dict | None:
     """
-    Busca um usuário pelo e-mail.
-    Agora é o identificador principal de login.
+    Busca um usuário pelo e-mail completo.
+    Mantido para uso futuro (recuperação de senha, backup).
 
     Args:
-        email: e-mail do perito (sempre em minúsculo)
+        email: e-mail completo do perito
 
     Returns:
         Dicionário com os dados do usuário ou None
@@ -151,23 +206,28 @@ def atualizar_usuario(
 ) -> None:
     """
     Atualiza os dados do perfil do usuário.
+    Recalcula o username caso o e-mail seja alterado.
 
     Args:
         usuario_id:       ID do usuário
         nome:             novo nome
         cargo:            novo cargo
-        matricula:        nova matrícula
+        matricula:        nova matrícula (opcional)
         lotacao:          nova lotação
-        email:            novo email
+        email:            novo e-mail
         pasta_exportacao: pasta padrão para salvar laudos
         alerta_prazo:     ativar/desativar alertas de prazo
         dias_alerta:      quantos dias antes do vencimento alertar
     """
+    # Recalcula o username baseado no novo e-mail
+    username = extrair_username(email)
+
     executar_comando("""
         UPDATE usuarios SET
             nome             = ?,
             cargo            = ?,
             matricula        = ?,
+            username         = ?,
             lotacao          = ?,
             email            = ?,
             pasta_exportacao = ?,
@@ -176,8 +236,15 @@ def atualizar_usuario(
             atualizado_em    = datetime('now','localtime')
         WHERE id = ?
     """, (
-        nome, cargo, matricula, lotacao, email,
-        pasta_exportacao, int(alerta_prazo), dias_alerta,
+        nome,
+        cargo,
+        matricula if matricula else None,
+        username,
+        lotacao,
+        email.strip().lower(),
+        pasta_exportacao,
+        int(alerta_prazo),
+        dias_alerta,
         usuario_id
     ))
 
@@ -203,23 +270,22 @@ def alterar_senha(usuario_id: int, nova_senha: str) -> None:
 # FUNÇÕES DE SESSÃO (Streamlit)
 # ──────────────────────────────────────────────────────
 
-def fazer_login(email: str, senha: str) -> bool:
+def fazer_login(username: str, senha: str) -> bool:
     """
-    Realiza o login do usuário por e-mail e senha.
-    Se as credenciais estiverem corretas, salva os dados
-    do usuário na sessão do Streamlit.
+    Realiza o login do usuário por username e senha.
+    O username é o prefixo do e-mail institucional.
+    Se correto, salva os dados na sessão do Streamlit.
 
     Args:
-        email: e-mail digitado pelo usuário
-        senha: senha digitada
+        username: nome de usuário (ex: izaias.santos)
+        senha:    senha digitada
 
     Returns:
         True se login bem-sucedido
-        False se e-mail ou senha incorretos
+        False se usuário ou senha incorretos
     """
-    usuario = buscar_usuario_por_email(email)
+    usuario = buscar_usuario_por_username(username)
 
-    # Verifica se o usuário existe e a senha está correta
     if usuario and verificar_senha(senha, usuario["senha_hash"]):
 
         # Salva dados na sessão do Streamlit
@@ -233,6 +299,7 @@ def fazer_login(email: str, senha: str) -> bool:
         return True
 
     return False
+
 
 def fazer_logout() -> None:
     """
@@ -277,11 +344,12 @@ def exigir_autenticacao() -> None:
     """
     Bloqueia o acesso à página se não houver usuário logado.
     Deve ser chamado no início de cada página protegida.
-
-    Se não autenticado, para a execução e mostra aviso.
     """
     if not esta_autenticado():
-        st.warning("⚠️ Você precisa estar logado para acessar esta página.")
+        st.warning(
+            "⚠️ Você precisa estar logado para "
+            "acessar esta página."
+        )
         st.stop()
 
 
@@ -295,8 +363,7 @@ def confirmar_senha_critica(senha_digitada: str) -> bool:
     críticas como exclusão ou arquivamento.
 
     Args:
-        senha_digitada: senha digitada pelo usuário
-                        para confirmar a operação
+        senha_digitada: senha digitada para confirmar
 
     Returns:
         True se a senha está correta
@@ -304,7 +371,10 @@ def confirmar_senha_critica(senha_digitada: str) -> bool:
     """
     usuario = obter_usuario_logado()
     if usuario:
-        return verificar_senha(senha_digitada, usuario["senha_hash"])
+        return verificar_senha(
+            senha_digitada,
+            usuario["senha_hash"]
+        )
     return False
 
 
@@ -316,9 +386,11 @@ def _registrar_login(usuario_id: int) -> None:
     """Registra o evento de login no histórico."""
     executar_comando("""
         INSERT INTO historico
-            (usuario_id, tabela, registro_id, operacao, descricao)
+            (usuario_id, tabela, registro_id,
+             operacao, descricao)
         VALUES
-            (?, 'usuarios', ?, 'LOGIN', 'Login realizado com sucesso')
+            (?, 'usuarios', ?, 'LOGIN',
+             'Login realizado com sucesso')
     """, (usuario_id, usuario_id))
 
 
@@ -326,7 +398,9 @@ def _registrar_logout(usuario_id: int) -> None:
     """Registra o evento de logout no histórico."""
     executar_comando("""
         INSERT INTO historico
-            (usuario_id, tabela, registro_id, operacao, descricao)
+            (usuario_id, tabela, registro_id,
+             operacao, descricao)
         VALUES
-            (?, 'usuarios', ?, 'LOGOUT', 'Logout realizado')
-    """, (usuario_id, usuario_id))# Autenticação — será preenchido no próximo passo
+            (?, 'usuarios', ?, 'LOGOUT',
+             'Logout realizado')
+    """, (usuario_id, usuario_id))

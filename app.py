@@ -19,6 +19,7 @@ from core.auth import (
 
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
+# Deve ser o primeiro comando Streamlit do arquivo
 # ──────────────────────────────────────────────────────
 st.set_page_config(
     page_title="LaudoPericial PCPR",
@@ -64,6 +65,7 @@ st.markdown("""
 def tela_primeiro_acesso():
     """
     Exibida apenas na primeira vez que o sistema é executado.
+    O usuário cadastra seus dados de perito e define a senha.
     """
     st.markdown(
         "<h1 class='header-title'>🔍 LaudoPericial PCPR</h1>",
@@ -89,12 +91,11 @@ def tela_primeiro_acesso():
         with col1:
             nome = st.text_input(
                 "Nome Completo *",
-                placeholder="Ex: Fulano de tal"
+                placeholder="Ex: Izaias Santos de Souza Junior"
             )
-            # E-mail agora é OBRIGATÓRIO e usado no login
             email = st.text_input(
-                "E-mail *",
-                placeholder="Ex: perito@policiacientifica.pr.gov.br"
+                "E-mail Institucional *",
+                placeholder="Ex: izaias.santos@policiacientifica.pr.gov.br"
             )
             matricula = st.text_input(
                 "Matrícula",
@@ -105,11 +106,18 @@ def tela_primeiro_acesso():
             cargo = st.text_input(
                 "Cargo *",
                 value="Perito Oficial Criminal",
-                placeholder="Ex: Perito Oficial Criminal"
             )
             lotacao = st.text_input(
                 "Lotação / Unidade *",
                 placeholder="Ex: UETC - Telêmaco Borba"
+            )
+
+        # Prévia do username gerado automaticamente
+        if email and "@" in email:
+            username_preview = email.strip().lower().split("@")[0]
+            st.info(
+                f"👤 Seu nome de usuário para login será: "
+                f"**`{username_preview}`**"
             )
 
         st.markdown("---")
@@ -170,8 +178,8 @@ def tela_primeiro_acesso():
                         senha     = senha,
                     )
                     st.success(
-                        "✅ Cadastro realizado com sucesso! "
-                        "Redirecionando..."
+                        "✅ Cadastro realizado! "
+                        "Redirecionando para o login..."
                     )
                     st.rerun()
 
@@ -181,7 +189,7 @@ def tela_primeiro_acesso():
 
 def tela_login():
     """
-    Tela de login — identificação por e-mail.
+    Tela de login — identificação por nome de usuário.
     """
     st.markdown(
         "<h1 class='header-title'>🔍 LaudoPericial PCPR</h1>",
@@ -200,9 +208,9 @@ def tela_login():
         with st.form("form_login"):
             st.subheader("🔐 Acesso ao Sistema")
 
-            email = st.text_input(
-                "E-mail",
-                placeholder="Digite seu e-mail"
+            username = st.text_input(
+                "Usuário",
+                placeholder="Ex: izaias.santos"
             )
             senha = st.text_input(
                 "Senha",
@@ -218,15 +226,15 @@ def tela_login():
             )
 
             if submitted:
-                if not email or not senha:
-                    st.error("❌ Preencha e-mail e senha.")
+                if not username or not senha:
+                    st.error("❌ Preencha usuário e senha.")
                 else:
-                    if fazer_login(email.strip().lower(), senha):
+                    if fazer_login(username.strip().lower(), senha):
                         st.success("✅ Login realizado com sucesso!")
                         st.rerun()
                     else:
                         st.error(
-                            "❌ E-mail ou senha incorretos. "
+                            "❌ Usuário ou senha incorretos. "
                             "Tente novamente."
                         )
 
@@ -327,6 +335,12 @@ def tela_dashboard():
 # ROTEAMENTO PRINCIPAL
 # ──────────────────────────────────────────────────────
 def main():
+    """
+    Controla qual tela é exibida:
+    1. Primeiro acesso → cadastro inicial
+    2. Não autenticado → login
+    3. Autenticado     → dashboard
+    """
     if not usuario_existe():
         tela_primeiro_acesso()
     elif not esta_autenticado():
