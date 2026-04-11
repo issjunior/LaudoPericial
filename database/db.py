@@ -74,7 +74,7 @@ def init_database() -> None:
             cursor.execute(sql)
 
         conn.commit()
-        print("✅ Banco de dados inicializado com sucesso!")
+        #print("✅ Banco de dados inicializado com sucesso!")
 
     except Exception as e:
         print(f"❌ Erro ao inicializar banco: {e}")

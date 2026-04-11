@@ -244,12 +244,66 @@ def tela_login():
             "Polícia Científica do Paraná"
         )
 
-
 def tela_dashboard():
     """
     Tela principal após o login.
+    Menu lateral abre automaticamente a seção
+    correspondente à página atual.
     """
     usuario = obter_usuario_logado()
+
+    # ── Detecta a página atual pela URL ─────────────────
+    try:
+        pagina_atual = st.context.pages_manager.current_page_script_hash
+    except Exception:
+        pagina_atual = ""
+
+    # Caminho atual via session_state (mais confiável)
+    path = st.session_state.get("current_page", "")
+
+    # Fallback: tenta pegar pelo __file__ da página atual
+    import sys
+    script_atual = sys.argv[0] if sys.argv else ""
+
+    def pagina_ativa(paginas: list) -> bool:
+        """
+        Verifica se alguma das páginas da lista
+        é a página atualmente ativa.
+
+        Args:
+            paginas: lista de caminhos de arquivo
+
+        Returns:
+            True se a página atual está na lista
+        """
+        for p in paginas:
+            nome = p.replace("pages/", "").replace(".py", "")
+            if nome in script_atual or nome in path:
+                return True
+        return False
+
+    # Define quais páginas pertencem a cada seção
+    secao_rep = [
+        "pages/nova_rep.py",
+        "pages/listar_rep.py",
+        "pages/editar_rep.py",
+    ]
+    secao_laudos = [
+        "pages/novo_laudo.py",
+        "pages/editor_laudo.py",
+        "pages/visualizar_laudo.py",
+    ]
+    secao_cadastros = [
+        "pages/tipos_exame.py",
+        "pages/solicitantes.py",
+        "pages/gerenciar_templates.py",
+        "pages/editor_template.py",
+    ]
+    secao_sistema = [
+        "pages/busca.py",
+        "pages/historico.py",
+        "pages/perfil.py",
+    ]
 
     # ── Barra lateral ───────────────────────────────────
     with st.sidebar:
@@ -285,62 +339,76 @@ def tela_dashboard():
             icon="🏠"
         )
 
+        st.markdown("---")
+
         # ── REPs ────────────────────────────────────────
-        st.markdown("**📋 Requisições (REPs)**")
-        st.page_link(
-            "pages/nova_rep.py",
-            label="Nova REP",
-            icon="➕"
-        )
-        st.page_link(
-            "pages/listar_rep.py",
-            label="Listar REPs",
-            icon="📄"
-        )
+        with st.expander(
+            "📋 Requisições (REPs)",
+            expanded=pagina_ativa(secao_rep)
+        ):
+            st.page_link(
+                "pages/nova_rep.py",
+                label="Nova REP",
+                icon="➕"
+            )
+            st.page_link(
+                "pages/listar_rep.py",
+                label="Listar REPs",
+                icon="📄"
+            )
 
         # ── Laudos ──────────────────────────────────────
-        st.markdown("**📝 Laudos**")
-        st.page_link(
-            "pages/novo_laudo.py",
-            label="Novo Laudo",
-            icon="✏️"
-        )
+        with st.expander(
+            "📝 Laudos",
+            expanded=pagina_ativa(secao_laudos)
+        ):
+            st.page_link(
+                "pages/novo_laudo.py",
+                label="Novo Laudo",
+                icon="✏️"
+            )
 
         # ── Cadastros ───────────────────────────────────
-        st.markdown("**🗂️ Cadastros**")
-        st.page_link(
-            "pages/tipos_exame.py",
-            label="Tipos de Exame",
-            icon="🏷️"
-        )
-        st.page_link(
-            "pages/solicitantes.py",
-            label="Solicitantes",
-            icon="🏛️"
-        )
-        st.page_link(
-            "pages/gerenciar_templates.py",
-            label="Templates de Laudo",
-            icon="📋"
-        )
+        with st.expander(
+            "🗂️ Cadastros",
+            expanded=pagina_ativa(secao_cadastros)
+        ):
+            st.page_link(
+                "pages/tipos_exame.py",
+                label="Tipos de Exame",
+                icon="🏷️"
+            )
+            st.page_link(
+                "pages/solicitantes.py",
+                label="Solicitantes",
+                icon="🏛️"
+            )
+            st.page_link(
+                "pages/gerenciar_templates.py",
+                label="Templates de Laudo",
+                icon="📋"
+            )
 
         # ── Sistema ─────────────────────────────────────
-        st.markdown("**⚙️ Sistema**")
-        st.page_link(
-            "pages/busca.py",
-            label="Busca",
-            icon="🔍"
-        )
-        st.page_link(
-            "pages/historico.py",
-            label="Histórico",
-            icon="📜"
-        )
-        st.page_link(
-            "pages/perfil.py",
-            label="Perfil e Configurações",
-            icon="👤"
-        )
+        with st.expander(
+            "⚙️ Sistema",
+            expanded=pagina_ativa(secao_sistema)
+        ):
+            st.page_link(
+                "pages/busca.py",
+                label="Busca",
+                icon="🔍"
+            )
+            st.page_link(
+                "pages/historico.py",
+                label="Histórico",
+                icon="📜"
+            )
+            st.page_link(
+                "pages/perfil.py",
+                label="Perfil e Configurações",
+                icon="👤"
+            )
 
         # ── Sair ────────────────────────────────────────
         st.markdown("---")
@@ -357,7 +425,6 @@ def tela_dashboard():
     st.markdown(f"Bem-vindo, **{usuario['nome']}**!")
     st.markdown("---")
 
-    # Cartões de resumo
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -390,7 +457,6 @@ def tela_dashboard():
         "💡 **Sistema em construção.** "
         "Os módulos serão ativados conforme o desenvolvimento avança."
     )
-
 # ──────────────────────────────────────────────────────
 # ROTEAMENTO PRINCIPAL
 # ──────────────────────────────────────────────────────
