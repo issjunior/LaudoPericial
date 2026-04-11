@@ -11,6 +11,7 @@ Toda lógica de negócio dos cadastros passa por aqui.
 
 import sys
 import os
+import re # Importar 're' para validação de e-mail
 
 ROOT = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
@@ -98,8 +99,6 @@ def criar_tipo_exame(
         ValueError: Se o código ou nome estiverem vazios
                     ou já existirem
     """
-    import re
-
     codigo = codigo.strip().upper()
     nome   = nome.strip()
 
@@ -167,8 +166,6 @@ def atualizar_tipo_exame(
         ValueError: Se o tipo não existir, código ou
                     nome inválidos ou já em uso
     """
-    import re
-
     codigo = codigo.strip().upper()
     nome   = nome.strip()
 
@@ -222,7 +219,6 @@ def atualizar_tipo_exame(
         (codigo, nome, descricao.strip(), int(exame_de_local), tipo_id)
     )
 
-# services/cadastro_service.py (trecho que falta)
 
 def alternar_status_tipo_exame(tipo_id: int) -> bool:
     """
@@ -283,6 +279,7 @@ def excluir_tipo_exame(tipo_id: int) -> None:
         (tipo_id,)
     )
 
+
 # ══════════════════════════════════════════════════════
 # SOLICITANTES
 # ══════════════════════════════════════════════════════
@@ -302,13 +299,13 @@ def listar_solicitantes(apenas_ativos: bool = True) -> list:
             SELECT id, nome, orgao, contato, ativo
             FROM solicitantes
             WHERE ativo = 1
-            ORDER BY nome
+            ORDER BY orgao
         """
     else:
         sql = """
             SELECT id, nome, orgao, contato, ativo
             FROM solicitantes
-            ORDER BY nome
+            ORDER BY orgao
         """
 
     rows = executar_query(sql)
@@ -338,86 +335,102 @@ def buscar_solicitante(solicitante_id: int) -> dict | None:
 
 
 def criar_solicitante(
-    nome:    str,
-    orgao:   str = "",
-    contato: str = "",
+    nome:    str = "", # Não obrigatório
+    orgao:   str = "", # Agora obrigatório
+    email:   str = "", # Novo nome, não obrigatório
 ) -> int:
     """
     Cria um novo solicitante.
 
     Args:
-        nome:    Nome do solicitante (obrigatório)
-        orgao:   Órgão ao qual pertence
-        contato: Telefone ou e-mail de contato
+        nome:    Nome do solicitante (opcional)
+        orgao:   Órgão ao qual pertence (obrigatório)
+        email:   Email de contato (opcional)
 
     Returns:
         ID do novo solicitante criado
 
     Raises:
-        ValueError: Se o nome estiver vazio ou já existir
+        ValueError: Se o órgão estiver vazio ou já existir
     """
-    nome = nome.strip()
+    nome  = nome.strip()
+    orgao = orgao.strip()
+    email = email.strip()
 
-    if not nome:
-        raise ValueError("O nome do solicitante é obrigatório.")
+    if not orgao:
+        raise ValueError("O nome do Órgão é obrigatório.")
 
+    # Verifica duplicidade do órgão (case-insensitive)
     existe = executar_query(
-        "SELECT id FROM solicitantes WHERE LOWER(nome) = LOWER(?)",
-        (nome,)
+        "SELECT id FROM solicitantes WHERE LOWER(orgao) = LOWER(?)",
+        (orgao,)
     )
     if existe:
-        raise ValueError(f"Já existe um solicitante com o nome '{nome}'.")
+        raise ValueError(f"Já existe um solicitante com o Órgão '{orgao}'.")
+
+    # Validação de email (se fornecido)
+    if email and not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        raise ValueError("Formato de e-mail inválido.")
 
     sql = """
         INSERT INTO solicitantes (nome, orgao, contato, ativo)
         VALUES (?, ?, ?, 1)
     """
-    return executar_comando(sql, (nome, orgao.strip(), contato.strip()))
+    # 'contato' no banco será o 'email' aqui
+    return executar_comando(sql, (nome, orgao, email))
 
 
 def atualizar_solicitante(
     solicitante_id: int,
-    nome:           str,
-    orgao:          str = "",
-    contato:        str = "",
+    nome:           str = "", # Não obrigatório
+    orgao:          str = "", # Agora obrigatório
+    email:          str = "", # Novo nome, não obrigatório
 ) -> None:
     """
     Atualiza os dados de um solicitante existente.
 
     Args:
         solicitante_id: ID do solicitante
-        nome:           Novo nome
-        orgao:          Novo órgão
-        contato:        Novo contato
+        nome:           Novo nome (opcional)
+        orgao:          Novo órgão (obrigatório)
+        email:          Novo email (opcional)
 
     Raises:
-        ValueError: Se não existir ou nome já usado
+        ValueError: Se não existir, órgão inválido ou já usado
     """
-    nome = nome.strip()
+    nome  = nome.strip()
+    orgao = orgao.strip()
+    email = email.strip()
 
-    if not nome:
-        raise ValueError("O nome do solicitante é obrigatório.")
+    if not orgao:
+        raise ValueError("O nome do Órgão é obrigatório.")
 
     solicitante = buscar_solicitante(solicitante_id)
     if not solicitante:
         raise ValueError("Solicitante não encontrado.")
 
+    # Verifica duplicidade do órgão (ignora o próprio registro)
     existe = executar_query(
         """
         SELECT id FROM solicitantes
-        WHERE LOWER(nome) = LOWER(?) AND id != ?
+        WHERE LOWER(orgao) = LOWER(?) AND id != ?
         """,
-        (nome, solicitante_id)
+        (orgao, solicitante_id)
     )
     if existe:
-        raise ValueError(f"Já existe um solicitante com o nome '{nome}'.")
+        raise ValueError(f"Já existe um solicitante com o Órgão '{orgao}'.")
+
+    # Validação de email (se fornecido)
+    if email and not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        raise ValueError("Formato de e-mail inválido.")
 
     sql = """
         UPDATE solicitantes
         SET nome = ?, orgao = ?, contato = ?
         WHERE id = ?
     """
-    executar_comando(sql, (nome, orgao.strip(), contato.strip(), solicitante_id))
+    # 'contato' no banco será o 'email' aqui
+    executar_comando(sql, (nome, orgao, email, solicitante_id))
 
 
 def alternar_status_solicitante(solicitante_id: int) -> bool:

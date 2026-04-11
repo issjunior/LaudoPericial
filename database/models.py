@@ -60,14 +60,9 @@ SQL_CRIAR_TIPOS_EXAME = """
 SQL_CRIAR_SOLICITANTES = """
 CREATE TABLE IF NOT EXISTS solicitantes (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    tipo            TEXT    NOT NULL
-                        CHECK(tipo IN (
-                            'Delegacia',
-                            'Juízo',
-                            'Ministério Público'
-                        )),
     nome            TEXT    NOT NULL,
-    cidade          TEXT,
+    orgao           TEXT,  -- Adicionado novamente
+    contato         TEXT,  -- Adicionado novamente
     ativo           INTEGER NOT NULL DEFAULT 1,
     criado_em       TEXT    NOT NULL
                         DEFAULT (datetime('now','localtime')),
