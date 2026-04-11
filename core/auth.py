@@ -99,20 +99,20 @@ def criar_usuario(
             (?, ?, ?, ?, ?, ?)
     """, (nome, cargo, matricula, lotacao, email, hash_senha))
 
-
-def buscar_usuario_por_matricula(matricula: str) -> dict | None:
+def buscar_usuario_por_email(email: str) -> dict | None:
     """
-    Busca um usuário pela matrícula.
+    Busca um usuário pelo e-mail.
+    Agora é o identificador principal de login.
 
     Args:
-        matricula: matrícula funcional do perito
+        email: e-mail do perito (sempre em minúsculo)
 
     Returns:
         Dicionário com os dados do usuário ou None
     """
     rows = executar_query(
-        "SELECT * FROM usuarios WHERE matricula = ?",
-        (matricula,)
+        "SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)",
+        (email,)
     )
     if rows:
         return dict(rows[0])
@@ -203,37 +203,36 @@ def alterar_senha(usuario_id: int, nova_senha: str) -> None:
 # FUNÇÕES DE SESSÃO (Streamlit)
 # ──────────────────────────────────────────────────────
 
-def fazer_login(matricula: str, senha: str) -> bool:
+def fazer_login(email: str, senha: str) -> bool:
     """
-    Realiza o login do usuário.
+    Realiza o login do usuário por e-mail e senha.
     Se as credenciais estiverem corretas, salva os dados
     do usuário na sessão do Streamlit.
 
     Args:
-        matricula: matrícula funcional digitada
-        senha:     senha digitada
+        email: e-mail digitado pelo usuário
+        senha: senha digitada
 
     Returns:
         True se login bem-sucedido
-        False se matrícula ou senha incorretos
+        False se e-mail ou senha incorretos
     """
-    usuario = buscar_usuario_por_matricula(matricula)
+    usuario = buscar_usuario_por_email(email)
 
     # Verifica se o usuário existe e a senha está correta
     if usuario and verificar_senha(senha, usuario["senha_hash"]):
 
         # Salva dados na sessão do Streamlit
-        st.session_state["autenticado"]  = True
-        st.session_state["usuario_id"]   = usuario["id"]
-        st.session_state["usuario_nome"] = usuario["nome"]
-        st.session_state["usuario_cargo"]= usuario["cargo"]
+        st.session_state["autenticado"]   = True
+        st.session_state["usuario_id"]    = usuario["id"]
+        st.session_state["usuario_nome"]  = usuario["nome"]
+        st.session_state["usuario_cargo"] = usuario["cargo"]
 
         # Registra o login no histórico
         _registrar_login(usuario["id"])
         return True
 
     return False
-
 
 def fazer_logout() -> None:
     """

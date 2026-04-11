@@ -15,10 +15,10 @@ SQL_CRIAR_USUARIOS = """
 CREATE TABLE IF NOT EXISTS usuarios (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
     nome                TEXT    NOT NULL,
-    cargo               TEXT    NOT NULL DEFAULT 'Perito Criminal',
-    matricula           TEXT    NOT NULL UNIQUE,
+    cargo               TEXT    NOT NULL DEFAULT 'Perito Oficial Criminal',
+    matricula           TEXT,
     lotacao             TEXT    NOT NULL,
-    email               TEXT,
+    email               TEXT    NOT NULL UNIQUE,
     senha_hash          TEXT    NOT NULL,
     pasta_exportacao    TEXT,
     alerta_prazo        INTEGER NOT NULL DEFAULT 1,
