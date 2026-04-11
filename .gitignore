@@ -1,0 +1,33 @@
+# Ambiente virtual — nunca vai pro GitHub
+venv/
+
+# Banco de dados — NUNCA enviar (dados sigilosos!)
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# Configurações locais e senhas
+.env
+*.env
+
+# Arquivos do sistema Windows
+Thumbs.db
+desktop.ini
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# VS Code (opcional — configurações locais)
+.vscode/settings.json
+
+# Arquivos temporários
+*.tmp
+*.log
+
+# Documentos gerados (laudos exportados)
+/exports/
