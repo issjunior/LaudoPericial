@@ -5,6 +5,14 @@ Ponto de entrada do sistema LaudoPericial PCPR.
 Controla o fluxo inicial: primeiro acesso ou login.
 ──────────────────────────────────────────────────────
 """
+import sys
+import os
+
+# Garante que a raiz do projeto está no sys.path
+# Funciona localmente E no Streamlit Cloud
+ROOT = os.path.dirname(os.path.abspath(__file__))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 import streamlit as st
 from database.db import init_database
