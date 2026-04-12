@@ -55,12 +55,13 @@ def main():
     tipos_exame = listar_tipos_exame(apenas_ativos=True)
     solicitantes = listar_solicitantes(apenas_ativos=True)
 
-    # Mapeia para {nome: id} para os selectboxes
+    # Mapeia para {nome: id} para os selectboxes e ORDENA ALFABETICAMENTE
     opcoes_tipos_exame = {f"{te['codigo']} - {te['nome']}": te['id'] for te in tipos_exame}
-    nomes_tipos_exame = ["Selecione um Tipo de Exame"] + list(opcoes_tipos_exame.keys())
+    nomes_tipos_exame = ["Selecione um Tipo de Exame"] + sorted(list(opcoes_tipos_exame.keys()))
 
     opcoes_solicitantes = {f"{s['orgao']} ({s['nome'] or 'N/A'})": s['id'] for s in solicitantes}
-    nomes_solicitantes = ["Selecione um Solicitante"] + list(opcoes_solicitantes.keys())
+    nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
+
 
     # Estado para controlar a exibição dos campos de local
     if "exame_de_local_selecionado" not in st.session_state:
@@ -73,13 +74,14 @@ def main():
         with col1:
             numero_rep = st.text_input(
                 "Número da REP *",
-                placeholder="Ex: 2024/123456",
-                help="Número único de identificação da Requisição de Exame Pericial."
+                placeholder=f"Ex: 12.345-{date.today().year}", # NOVO PLACEHOLDER
+                help="Número único de identificação da Requisição de Exame Pericial no formato XX.XXX-ANO." # NOVA AJUDA
             )
         with col2:
             data_solicitacao = st.date_input(
                 "Data da Solicitação *",
                 value=date.today(),
+                format="DD/MM/YYYY", # NOVO FORMATO DE EXIBIÇÃO
                 help="Data em que a REP foi solicitada."
             )
         with col3:
@@ -100,6 +102,12 @@ def main():
             else:
                 st.session_state["exame_de_local_selecionado"] = False
 
+        # NOVO CAMPO: Nome do Envolvido/Vítima
+        nome_envolvido = st.text_input(
+            "Nome do Envolvido / Vítima (Opcional)",
+            placeholder="Ex: João da Silva, Vítima 01",
+            help="Nome da pessoa envolvida ou vítima principal da ocorrência."
+        )
 
         st.markdown("### Dados do Solicitante")
         col4, col5 = st.columns(2)
@@ -124,7 +132,7 @@ def main():
         with col6:
             tipo_documento = st.selectbox(
                 "Tipo de Documento *",
-                options=["Selecione", "BO", "Ofício", "CECOMP", "Outro"],
+                options=["Selecione", "BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"], # NOVAS OPÇÕES
                 index=0,
                 help="Tipo de documento que formaliza a solicitação (Boletim de Ocorrência, Ofício, etc.)."
             )
@@ -138,58 +146,66 @@ def main():
             data_documento = st.date_input(
                 "Data do Documento (Opcional)",
                 value=None,
+                format="DD/MM/YYYY", # NOVO FORMATO DE EXIBIÇÃO
                 help="Data de emissão do documento de solicitação."
             )
 
         # Campos de Exame de Local (condicionais)
         if st.session_state["exame_de_local_selecionado"]:
-            st.markdown("### Dados do Local de Exame")
-            col_horario1, col_horario2, col_horario3 = st.columns(3)
-            with col_horario1:
-                horario_acionamento = st.time_input(
-                    "Horário de Acionamento (Opcional)",
-                    value=None,
-                    help="Horário em que a equipe pericial foi acionada."
+            with st.expander("🌍 Dados do Local de Exame", expanded=True):
+                local_fato_descricao = st.text_area(
+                    "Descrição do Local do Fato (Opcional)",
+                    placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
+                    help="Descrição detalhada do local onde ocorreu o fato.",
+                    height=100
                 )
-            with col_horario2:
-                horario_chegada = st.time_input(
-                    "Horário de Chegada ao Local (Opcional)",
-                    value=None,
-                    help="Horário de chegada da equipe pericial ao local."
-                )
-            with col_horario3:
-                horario_saida = st.time_input(
-                    "Horário de Saída do Local (Opcional)",
-                    value=None,
-                    help="Horário de saída da equipe pericial do local."
-                )
+                col_horario1, col_horario2, col_horario3 = st.columns(3)
+                with col_horario1:
+                    horario_acionamento = st.time_input(
+                        "Horário de Acionamento (Opcional)",
+                        value=None,
+                        help="Horário em que a equipe pericial foi acionada."
+                    )
+                with col_horario2:
+                    horario_chegada = st.time_input(
+                        "Horário de Chegada ao Local (Opcional)",
+                        value=None,
+                        help="Horário de chegada da equipe pericial ao local."
+                    )
+                with col_horario3:
+                    horario_saida = st.time_input(
+                        "Horário de Saída do Local (Opcional)",
+                        value=None,
+                        help="Horário de saída da equipe pericial do local."
+                    )
 
-            col_coords1, col_coords2 = st.columns(2)
-            with col_coords1:
-                latitude = st.text_input(
-                    "Latitude (Opcional)",
-                    placeholder="Ex: -25.4284",
-                    help="Coordenada de latitude do local do exame."
-                )
-            with col_coords2:
-                longitude = st.text_input(
-                    "Longitude (Opcional)",
-                    placeholder="Ex: -49.2733",
-                    help="Coordenada de longitude do local do exame."
-                )
+                col_coords1, col_coords2 = st.columns(2)
+                with col_coords1:
+                    latitude = st.text_input(
+                        "Latitude (Opcional)",
+                        placeholder="Ex: -25.4284",
+                        help="Coordenada de latitude do local do exame."
+                    )
+                with col_coords2:
+                    longitude = st.text_input(
+                        "Longitude (Opcional)",
+                        placeholder="Ex: -49.2733",
+                        help="Coordenada de longitude do local do exame."
+                    )
         else:
+            local_fato_descricao = None
             horario_acionamento = None
             horario_chegada = None
             horario_saida = None
             latitude = None
             longitude = None
 
-        st.markdown("### Observações")
-        observacoes = st.text_area(
-            "Observações Adicionais (Opcional)",
-            height=100,
-            help="Qualquer informação extra relevante para a REP."
-        )
+        with st.expander("📝 Observações Adicionais", expanded=False):
+            observacoes = st.text_area(
+                "Observações Gerais (Opcional)",
+                height=100,
+                help="Qualquer informação extra relevante para a REP."
+            )
 
         st.markdown("---")
         col_submit, col_cancel = st.columns([1, 5])
@@ -223,7 +239,7 @@ def main():
             tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado]
             solicitante_id = opcoes_solicitantes[solicitante_selecionado]
 
-            # Formata datas e horários para o banco
+            # Formata datas e horários para o banco (YYYY-MM-DD para SQLite)
             data_solicitacao_str = data_solicitacao.strftime("%Y-%m-%d")
             data_documento_str = data_documento.strftime("%Y-%m-%d") if data_documento else None
             horario_acionamento_str = horario_acionamento.strftime("%H:%M") if horario_acionamento else None
@@ -242,6 +258,8 @@ def main():
                     data_documento      = data_documento_str,
                     solicitante_id      = solicitante_id,
                     nome_autoridade     = nome_autoridade,
+                    nome_envolvido      = nome_envolvido, # NOVO CAMPO
+                    local_fato_descricao= local_fato_descricao, # NOVO CAMPO
                     tipo_exame_id       = tipo_exame_id,
                     latitude            = latitude,
                     longitude           = longitude,

@@ -120,6 +120,10 @@ CREATE TABLE IF NOT EXISTS secoes_template (
 # TABELA: rep
 # Requisição de Exame Pericial — registro central
 # ──────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────
+# TABELA: rep
+# Requisição de Exame Pericial — registro central
+# ──────────────────────────────────────────────────────
 SQL_CRIAR_REP = """
 CREATE TABLE IF NOT EXISTS rep (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,12 +133,14 @@ CREATE TABLE IF NOT EXISTS rep (
     horario_chegada     TEXT,
     horario_saida       TEXT,
     tipo_solicitacao    TEXT    NOT NULL
-                            CHECK(tipo_solicitacao IN ('BO','Ofício')),
+                            CHECK(tipo_solicitacao IN ('BO','Ofício', 'BO PM', 'BO PC', 'CECOMP', 'Outro')), -- ATUALIZADO: Adicionado 'BO PM', 'BO PC', 'CECOMP', 'Outro'
     numero_documento    TEXT    NOT NULL,
     data_documento      TEXT,
     solicitante_id      INTEGER REFERENCES solicitantes(id),
     nome_autoridade     TEXT,
     tipo_exame_id       INTEGER REFERENCES tipos_exame(id),
+    nome_envolvido      TEXT,           -- NOVO CAMPO ADICIONADO
+    local_fato_descricao TEXT,     -- NOVO CAMPO ADICIONADO
     latitude            TEXT,
     longitude           TEXT,
     status              TEXT    NOT NULL DEFAULT 'Pendente'
