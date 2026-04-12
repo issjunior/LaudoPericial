@@ -309,39 +309,50 @@ def tabela_templates(templates: list):
         st.info("📭 Nenhum template de laudo cadastrado ainda.")
         return
 
-    # Cabeçalho da tabela (AJUSTADO)
-    col_tipo, col_codigo, col_nome, col_desc, col_status, col_acoes = st.columns(
-        [2, 1.5, 2.5, 3, 1.5, 2.5] # Ajuste nas larguras das colunas
-    )
+    # Definindo as colunas e suas larguras para melhor visualização
+    # Ordem: Código, Tipo de Exame, Template, Descrição, Status, Ações
+    col_widths = [1.2, 2, 2.5, 3, 1.2, 2.5] # Ajuste fino nas larguras
+
+    # Cabeçalho da tabela
+    col_codigo, col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(col_widths)
+    col_codigo.markdown("**Código**")
     col_tipo.markdown("**Tipo de Exame**")
-    col_codigo.markdown("**Código**") # NOVA COLUNA
     col_nome.markdown("**Template**")
     col_desc.markdown("**Descrição**")
     col_status.markdown("**Status**")
     col_acoes.markdown("**Ações**")
 
-    st.markdown("---")
+    st.markdown("---") # Separador após o cabeçalho
 
     for template in templates:
-        # Colunas para cada linha (AJUSTADO)
-        col_tipo, col_codigo, col_nome, col_desc, col_status, col_acoes = st.columns(
-            [2, 1.5, 2.5, 3, 1.5, 2.5]
-        )
+        col_codigo, col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(col_widths)
+
+        with col_codigo:
+            # Usando um estilo para centralizar e destacar um pouco
+            st.markdown(
+                f"<div style='text-align: center; font-weight: bold;'>"
+                f"{template['tipo_exame_codigo']}</div>",
+                unsafe_allow_html=True
+            )
 
         with col_tipo:
             st.markdown(f"**{template['tipo_exame_nome']}**")
-
-        with col_codigo: # NOVA COLUNA
-            st.markdown(f"**{template['tipo_exame_codigo']}**")
 
         with col_nome:
             st.markdown(f"**{template['nome']}**")
 
         with col_desc:
-            descricao = template["descricao_exame"] or "—"
-            if len(descricao) > 50:
-                descricao = descricao[:50] + "..."
-            st.markdown(descricao)
+            descricao = template["descricao_exame"]
+            if descricao:
+                # Exibe uma prévia da descrição e um tooltip completo
+                st.markdown(
+                    f"<span title='{descricao}'>"
+                    f"{descricao[:50]}{'...' if len(descricao) > 50 else ''}"
+                    f"</span>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown("—") # Se não houver descrição
 
         with col_status:
             if template["ativo"]:
@@ -357,7 +368,8 @@ def tabela_templates(templates: list):
                 if st.button(
                     "⚙️",
                     key=f"gerenciar_secoes_{template['id']}",
-                    help="Gerenciar Seções"
+                    help="Gerenciar Seções",
+                    use_container_width=True # Ocupa todo o espaço disponível
                 ):
                     abrir_gerenciar_secoes(template["id"])
                     st.rerun()
@@ -367,7 +379,8 @@ def tabela_templates(templates: list):
                 if st.button(
                     "✏️",
                     key=f"editar_{template['id']}",
-                    help="Editar Template"
+                    help="Editar Template",
+                    use_container_width=True
                 ):
                     abrir_editar_template(template["id"])
                     st.rerun()
@@ -379,7 +392,8 @@ def tabela_templates(templates: list):
                 if st.button(
                     icone_status,
                     key=f"status_{template['id']}",
-                    help=help_status
+                    help=help_status,
+                    use_container_width=True
                 ):
                     try:
                         novo = alternar_status_template(template["id"])
@@ -396,7 +410,8 @@ def tabela_templates(templates: list):
                 if st.button(
                     "🗑️",
                     key=f"excluir_{template['id']}",
-                    help="Excluir Template"
+                    help="Excluir Template",
+                    use_container_width=True
                 ):
                     try:
                         excluir_template(template["id"])
@@ -407,8 +422,8 @@ def tabela_templates(templates: list):
                     except ValueError as e:
                         st.error(f"❌ {e}")
 
-        st.markdown("---")
-
+        st.markdown("---") # Separador entre as linhas da tabela
+        
 # ──────────────────────────────────────────────────────
 # GERENCIAMENTO DE SEÇÕES
 # ──────────────────────────────────────────────────────
