@@ -23,13 +23,18 @@ from services.cadastro_service import buscar_tipo_exame # Para validar tipo_exam
 # TEMPLATES DE LAUDO
 # ══════════════════════════════════════════════════════
 
-def listar_templates(apenas_ativos: bool = True, tipo_exame_id: int = None) -> list:
+def listar_templates(
+    apenas_ativos: bool = True,
+    tipo_exame_id: int = None,
+    codigo_tipo_exame: str = None # NOVO PARÂMETRO
+) -> list:
     """
     Retorna todos os templates de laudo cadastrados.
 
     Args:
-        apenas_ativos: Se True, retorna só os ativos.
-        tipo_exame_id: Se fornecido, filtra por tipo de exame.
+        apenas_ativos:       Se True, retorna só os ativos.
+        tipo_exame_id:       Se fornecido, filtra por ID do tipo de exame.
+        codigo_tipo_exame:   Se fornecido, filtra por código do tipo de exame.
 
     Returns:
         Lista de dicionários com os templates de laudo.
@@ -39,6 +44,7 @@ def listar_templates(apenas_ativos: bool = True, tipo_exame_id: int = None) -> l
             t.id,
             t.tipo_exame_id,
             te.nome AS tipo_exame_nome,
+            te.codigo AS tipo_exame_codigo, -- Adicionado para facilitar a exibição/filtro
             t.nome,
             t.descricao_exame,
             t.ativo
@@ -55,6 +61,11 @@ def listar_templates(apenas_ativos: bool = True, tipo_exame_id: int = None) -> l
         conditions.append("t.tipo_exame_id = ?")
         params.append(tipo_exame_id)
 
+    # NOVO FILTRO: por código do tipo de exame
+    if codigo_tipo_exame:
+        conditions.append("LOWER(te.codigo) LIKE LOWER(?)")
+        params.append(f"%{codigo_tipo_exame}%")
+
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
 
@@ -62,7 +73,6 @@ def listar_templates(apenas_ativos: bool = True, tipo_exame_id: int = None) -> l
 
     rows = executar_query(sql, tuple(params))
     return [dict(row) for row in rows]
-
 
 def buscar_template(template_id: int) -> dict | None:
     """

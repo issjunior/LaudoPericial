@@ -309,11 +309,12 @@ def tabela_templates(templates: list):
         st.info("📭 Nenhum template de laudo cadastrado ainda.")
         return
 
-    # Cabeçalho da tabela
-    col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(
-        [2, 3, 3, 1.5, 2.5]
+    # Cabeçalho da tabela (AJUSTADO)
+    col_tipo, col_codigo, col_nome, col_desc, col_status, col_acoes = st.columns(
+        [2, 1.5, 2.5, 3, 1.5, 2.5] # Ajuste nas larguras das colunas
     )
     col_tipo.markdown("**Tipo de Exame**")
+    col_codigo.markdown("**Código**") # NOVA COLUNA
     col_nome.markdown("**Template**")
     col_desc.markdown("**Descrição**")
     col_status.markdown("**Status**")
@@ -322,12 +323,16 @@ def tabela_templates(templates: list):
     st.markdown("---")
 
     for template in templates:
-        col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(
-            [2, 3, 3, 1.5, 2.5]
+        # Colunas para cada linha (AJUSTADO)
+        col_tipo, col_codigo, col_nome, col_desc, col_status, col_acoes = st.columns(
+            [2, 1.5, 2.5, 3, 1.5, 2.5]
         )
 
         with col_tipo:
             st.markdown(f"**{template['tipo_exame_nome']}**")
+
+        with col_codigo: # NOVA COLUNA
+            st.markdown(f"**{template['tipo_exame_codigo']}**")
 
         with col_nome:
             st.markdown(f"**{template['nome']}**")
@@ -403,7 +408,6 @@ def tabela_templates(templates: list):
                         st.error(f"❌ {e}")
 
         st.markdown("---")
-
 
 # ──────────────────────────────────────────────────────
 # GERENCIAMENTO DE SEÇÕES
@@ -670,7 +674,7 @@ def main():
         st.markdown("---")
 
     # ── Barra de ações ──────────────────────────────────
-    col_btn, col_filtro, _ = st.columns([2, 2, 4])
+    col_btn, col_filtro_codigo, col_filtro_status, _ = st.columns([2, 2, 2, 4]) # Ajuste nas colunas
 
     with col_btn:
         if temp_modo is None: # Só mostra o botão se não houver formulário aberto
@@ -682,7 +686,14 @@ def main():
                 abrir_criar_template()
                 st.rerun()
 
-    with col_filtro:
+    with col_filtro_codigo: # NOVA COLUNA PARA O FILTRO DE CÓDIGO
+        filtro_codigo_exame = st.text_input(
+            "Filtrar por Código do Exame",
+            placeholder="Ex: H-001",
+            help="Digite parte do código do tipo de exame para filtrar."
+        )
+
+    with col_filtro_status: # COLUNA EXISTENTE, APENAS RENOMEADA
         mostrar_inativos = st.toggle(
             "Mostrar templates inativos",
             value=False
@@ -692,9 +703,9 @@ def main():
 
     # ── Listagem de Templates ───────────────────────────
     templates = listar_templates(
-        apenas_ativos=not mostrar_inativos
+        apenas_ativos=not mostrar_inativos,
+        codigo_tipo_exame=filtro_codigo_exame # NOVO PARÂMETRO PASSADO
     )
-
     # Contador
     total = len(templates)
     st.caption(
