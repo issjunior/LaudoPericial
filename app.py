@@ -1,3 +1,4 @@
+# app.py
 """
 app.py
 ──────────────────────────────────────────────────────
@@ -7,6 +8,7 @@ Controla o fluxo inicial: primeiro acesso ou login.
 """
 import sys
 import os
+import shutil # <--- NOVA IMPORTAÇÃO
 
 # Garante que a raiz do projeto está no sys.path
 # Funciona localmente E no Streamlit Cloud
@@ -15,7 +17,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import streamlit as st
-from database.db import init_database
+from database.db import init_database, importar_banco_de_dados # <--- NOVA IMPORTAÇÃO
 from core.auth import (
     usuario_existe,
     criar_usuario,
@@ -23,6 +25,7 @@ from core.auth import (
     fazer_logout,
     esta_autenticado,
     obter_usuario_logado,
+    extrair_username # <--- NOVA IMPORTAÇÃO PARA USAR NA TELA DE CADASTRO
 )
 
 # ──────────────────────────────────────────────────────
@@ -73,7 +76,8 @@ st.markdown("""
 def tela_primeiro_acesso():
     """
     Exibida apenas na primeira vez que o sistema é executado.
-    O usuário cadastra seus dados de perito e define a senha.
+    O usuário cadastra seus dados de perito e define a senha,
+    ou importa um banco de dados existente.
     """
     st.markdown(
         "<h1 class='header-title'>🔍 LaudoPericial PCPR</h1>",
@@ -86,10 +90,47 @@ def tela_primeiro_acesso():
 
     st.info(
         "👋 **Bem-vindo!** Esta é a primeira execução do sistema. "
-        "Cadastre seus dados para começar."
+        "Cadastre seus dados para começar ou importe um banco de dados existente."
     )
 
     st.markdown("---")
+
+    # ----------------------------------------------------
+    # Opção de Importar Banco de Dados
+    # ----------------------------------------------------
+    st.subheader("⬆️ Importar Banco de Dados Existente")
+    uploaded_file = st.file_uploader(
+        "Selecione um arquivo de banco de dados (.db)",
+        type=["db"],
+        help="Faça upload de um arquivo 'laudopericial.db' de um backup anterior para restaurar seus dados."
+    )
+
+    if uploaded_file is not None:
+        if st.button("Restaurar Banco de Dados", type="secondary"):
+            try:
+                # Salva o arquivo temporariamente
+                temp_db_path = os.path.join(ROOT, "temp_uploaded.db")
+                with open(temp_db_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+
+                # Importa o banco de dados
+                importar_banco_de_dados(temp_db_path)
+
+                st.success("✅ Banco de dados restaurado com sucesso! Redirecionando...")
+
+                # Após importar, o banco pode ter usuários. Tenta logar o primeiro usuário ou ir para o login.
+                st.rerun()
+
+            except Exception as e:
+                st.error(f"❌ Erro ao restaurar o banco de dados: {e}")
+            finally:
+                if os.path.exists(temp_db_path):
+                    os.remove(temp_db_path)
+        st.markdown("---")
+
+    # ----------------------------------------------------
+    # Opção de Cadastro de Novo Usuário
+    # ----------------------------------------------------
     st.subheader("⚙️ Configuração Inicial — Dados do Perito")
 
     with st.form("form_primeiro_acesso"):
@@ -122,7 +163,7 @@ def tela_primeiro_acesso():
 
         # Prévia do username gerado automaticamente
         if email and "@" in email:
-            username_preview = email.strip().lower().split("@")[0]
+            username_preview = extrair_username(email.strip())
             st.info(
                 f"👤 Seu nome de usuário para login será: "
                 f"**`{username_preview}`**"
