@@ -1,3 +1,4 @@
+# components/menu.py
 """
 components/menu.py
 ──────────────────────────────────────────────────────
@@ -7,15 +8,6 @@ Importado por todas as páginas do sistema.
 """
 import sys
 import os
-
-ROOT = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))
-)
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
-
-
-import sys
 import streamlit as st
 from core.auth import (
     obter_usuario_logado,
@@ -23,6 +15,12 @@ from core.auth import (
     exigir_autenticacao,
 )
 
+# Garante que a raiz do projeto está no sys.path
+ROOT = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 def renderizar_menu():
     """
@@ -34,14 +32,36 @@ def renderizar_menu():
     # Bloqueia acesso se não estiver logado
     exigir_autenticacao()
 
-    usuario     = obter_usuario_logado()
-    script_atual = sys.argv[0] if sys.argv else ""
+    usuario = obter_usuario_logado()
 
-    def pagina_ativa(paginas: list) -> bool:
-        """Verifica se a página atual pertence à seção."""
-        for p in paginas:
-            nome = p.replace("pages/", "").replace(".py", "")
-            if nome in script_atual:
+    # Obtém o nome do arquivo da página atual a partir do Streamlit session state
+    # st.session_state["_active_page"] contém o caminho completo da página ativa
+    active_page_path = st.session_state.get("_active_page", "")
+    # Extrai apenas o nome do arquivo (ex: "backup.py")
+    active_page_filename = os.path.basename(active_page_path)
+    
+    # Se ainda não tiver a página ativa, tenta detectar de outras formas
+    if not active_page_filename:
+        # Tenta pegar do sys.argv (usado pelo Streamlit)
+        if len(sys.argv) > 1:
+            script_path = sys.argv[1]
+            page_name = os.path.basename(script_path)
+            if page_name.endswith(".py"):
+                active_page_filename = page_name
+
+
+    def pagina_ativa(paginas_na_secao: list) -> bool:
+        """
+        Verifica se a página atual pertence à seção para expandir o menu.
+        Compara o nome do arquivo da página ativa com os nomes dos arquivos na seção.
+        """
+        if not active_page_filename:
+            return False
+            
+        for p in paginas_na_secao:
+            # Extrai o nome do arquivo da string do caminho (ex: "pages/backup.py" -> "backup.py")
+            secao_filename = os.path.basename(p)
+            if active_page_filename == secao_filename:
                 return True
         return False
 
@@ -64,6 +84,7 @@ def renderizar_menu():
     secao_sistema = [
         "pages/busca.py",
         "pages/historico.py",
+        "pages/backup.py",
         "pages/perfil.py",
     ]
 
@@ -115,7 +136,7 @@ def renderizar_menu():
                 label="Listar REPs",
                 icon="📄"
             )
-            
+
         with st.expander(
             "📝 Laudos",
             expanded=pagina_ativa(secao_laudos)
@@ -148,7 +169,7 @@ def renderizar_menu():
 
         with st.expander(
             "⚙️ Sistema",
-            expanded=pagina_ativa(secao_sistema)
+            expanded=pagina_ativa(secao_sistema) # AQUI VAI USAR A LÓGICA ATUALIZADA
         ):
             st.page_link(
                 "pages/busca.py",
@@ -160,6 +181,12 @@ def renderizar_menu():
                 label="Histórico",
                 icon="📜"
             )
+            st.page_link(
+                "pages/backup.py",
+                label="Importação BD",
+                icon="💾"
+            )
+            
             st.page_link(
                 "pages/perfil.py",
                 label="Perfil e Configurações",
