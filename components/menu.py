@@ -115,7 +115,7 @@ def renderizar_menu():
                 label="Listar REPs",
                 icon="📄"
             )
-
+            
         with st.expander(
             "📝 Laudos",
             expanded=pagina_ativa(secao_laudos)
