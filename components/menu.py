@@ -183,7 +183,7 @@ def renderizar_menu():
             )
             st.page_link(
                 "pages/backup.py",
-                label="Importação BD",
+                label="Importar e Exportar BD",
                 icon="💾"
             )
             

@@ -8,7 +8,7 @@ Controla o fluxo inicial: primeiro acesso ou login.
 """
 import sys
 import os
-import shutil # <--- NOVA IMPORTAÇÃO
+import shutil
 
 # Garante que a raiz do projeto está no sys.path
 # Funciona localmente E no Streamlit Cloud
@@ -17,7 +17,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 import streamlit as st
-from database.db import init_database, importar_banco_de_dados # <--- NOVA IMPORTAÇÃO
+from database.db import init_database, importar_banco_de_dados, executar_query
 from core.auth import (
     usuario_existe,
     criar_usuario,
@@ -25,8 +25,9 @@ from core.auth import (
     fazer_logout,
     esta_autenticado,
     obter_usuario_logado,
-    extrair_username # <--- NOVA IMPORTAÇÃO PARA USAR NA TELA DE CADASTRO
+    extrair_username
 )
+from datetime import date, timedelta
 
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -293,6 +294,85 @@ def tela_login():
             "Polícia Científica do Paraná"
         )
 
+# Define as constantes de prazo fora da função para fácil acesso
+PRAZO_PADRAO_DIAS = 10 # Prazo total para uma REP
+DIAS_PARA_ALERTA_VENCENDO = 3 # Quantos dias antes do PRAZO_PADRAO_DIAS para alertar "Vencendo"
+
+def obter_metricas_reps(usuario_id: int):
+    """
+    Busca as contagens de REPs por status e prazo para o usuário logado.
+    Calcula "Prazo Vencendo" e "Em Atraso" com base na data de solicitação.
+    """
+    # REPs Pendentes (aguardando início do laudo)
+    query_pendentes = """
+        SELECT COUNT(id) FROM rep
+        WHERE usuario_id = ? AND status = 'Pendente'
+    """
+    pendentes = executar_query(query_pendentes, (usuario_id,))[0][0]
+
+    # REPs Em Andamento (laudos em elaboração)
+    query_em_andamento = """
+        SELECT COUNT(id) FROM rep
+        WHERE usuario_id = ? AND status = 'Em Andamento'
+    """
+    em_andamento = executar_query(query_em_andamento, (usuario_id,))[0][0]
+
+    # REPs Concluídas (laudos finalizados)
+    query_concluidos = """
+        SELECT COUNT(id) FROM rep
+        WHERE usuario_id = ? AND status = 'Concluído'
+    """
+    concluidos = executar_query(query_concluidos, (usuario_id,))[0][0]
+
+    # REPs com Prazo Vencendo (nova lógica)
+    # São REPs com status 'Pendente' ou 'Em Andamento'
+    # cuja data de solicitação é mais antiga que (hoje - PRAZO_PADRAO_DIAS + DIAS_PARA_ALERTA_VENCENDO)
+    # e que ainda não estão em atraso (ou seja, data_solicitacao + PRAZO_PADRAO_DIAS ainda não passou de hoje)
+
+    hoje = date.today()
+
+    # Data a partir da qual uma REP entra no estado "Vencendo"
+    # Ex: se PRAZO_PADRAO_DIAS = 10 e DIAS_PARA_ALERTA_VENCENDO = 3,
+    # uma REP está vencendo se foi solicitada há mais de 7 dias (10 - 3)
+    data_limite_para_vencendo = hoje - timedelta(days=PRAZO_PADRAO_DIAS - DIAS_PARA_ALERTA_VENCENDO)
+
+    # Data a partir da qual uma REP entra no estado "Em Atraso"
+    data_limite_para_atraso = hoje - timedelta(days=PRAZO_PADRAO_DIAS)
+
+    query_prazo_vencendo = f"""
+        SELECT COUNT(id) FROM rep
+        WHERE usuario_id = ?
+          AND status IN ('Pendente', 'Em Andamento')
+          AND data_solicitacao <= ? -- Solicitada há mais tempo que a data limite para vencendo
+          AND data_solicitacao > ?  -- Mas ainda não está em atraso
+    """
+    prazo_vencendo = executar_query(
+        query_prazo_vencendo,
+        (usuario_id, data_limite_para_vencendo.isoformat(), data_limite_para_atraso.isoformat())
+    )[0][0]
+
+    # REPs Em Atraso (lógica mantida)
+    query_em_atraso = f"""
+        SELECT COUNT(id) FROM rep
+        WHERE usuario_id = ?
+          AND status IN ('Pendente', 'Em Andamento')
+          AND DATE(data_solicitacao, '+{PRAZO_PADRAO_DIAS} days') < ?
+    """
+    em_atraso = executar_query(
+        query_em_atraso,
+        (usuario_id, hoje.isoformat())
+    )[0][0]
+
+
+    return {
+        "pendentes": pendentes,
+        "em_andamento": em_andamento,
+        "concluidos": concluidos,
+        "prazo_vencendo": prazo_vencendo,
+        "em_atraso": em_atraso
+    }
+
+
 def tela_dashboard():
     """
     Tela principal após o login.
@@ -302,17 +382,8 @@ def tela_dashboard():
     usuario = obter_usuario_logado()
 
     # ── Detecta a página atual pela URL ─────────────────
-    try:
-        pagina_atual = st.context.pages_manager.current_page_script_hash
-    except Exception:
-        pagina_atual = ""
-
-    # Caminho atual via session_state (mais confiável)
     path = st.session_state.get("current_page", "")
-
-    # Fallback: tenta pegar pelo __file__ da página atual
-    import sys
-    script_atual = sys.argv[0] if sys.argv else ""
+    script_atual = os.path.basename(sys.argv[0]) if sys.argv else ""
 
     def pagina_ativa(paginas: list) -> bool:
         """
@@ -320,14 +391,14 @@ def tela_dashboard():
         é a página atualmente ativa.
 
         Args:
-            paginas: lista de caminhos de arquivo
+            paginas: lista de caminhos de arquivo (ex: "pages/nova_rep.py")
 
         Returns:
             True se a página atual está na lista
         """
         for p in paginas:
-            nome = p.replace("pages/", "").replace(".py", "")
-            if nome in script_atual or nome in path:
+            nome_pagina = os.path.basename(p).replace(".py", "")
+            if nome_pagina in path or nome_pagina in script_atual.replace(".py", ""):
                 return True
         return False
 
@@ -474,31 +545,41 @@ def tela_dashboard():
     st.markdown(f"Bem-vindo, **{usuario['nome']}**!")
     st.markdown("---")
 
-    col1, col2, col3, col4 = st.columns(4)
+    # Obtém as métricas atualizadas
+    metricas = obter_metricas_reps(usuario["id"])
+
+    # Adicionando uma nova coluna para "Em Atraso"
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.metric(
             label="📋 REPs Pendentes",
-            value="—",
+            value=metricas["pendentes"],
             help="REPs aguardando início do laudo"
         )
     with col2:
         st.metric(
             label="📝 Em Andamento",
-            value="—",
+            value=metricas["em_andamento"],
             help="Laudos em elaboração"
         )
     with col3:
         st.metric(
             label="✅ Concluídos",
-            value="—",
+            value=metricas["concluidos"],
             help="Laudos finalizados"
         )
     with col4:
         st.metric(
             label="⚠️ Prazo Vencendo",
-            value="—",
-            help="REPs com prazo nos próximos dias"
+            value=metricas["prazo_vencendo"],
+            help=f"REPs ativas com mais de {PRAZO_PADRAO_DIAS - DIAS_PARA_ALERTA_VENCENDO} dias da solicitação, mas ainda não em atraso." # <--- Ajuda atualizada
+        )
+    with col5:
+        st.metric(
+            label="🚨 Em Atraso",
+            value=metricas["em_atraso"],
+            help=f"REPs ativas com mais de {PRAZO_PADRAO_DIAS} dias da solicitação." # <--- Ajuda atualizada
         )
 
     st.markdown("---")
