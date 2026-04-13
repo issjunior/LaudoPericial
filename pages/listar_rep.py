@@ -45,9 +45,11 @@ def buscar_reps(
             r.tipo_solicitacao,
             r.numero_documento,
             s.orgao AS orgao_solicitante,
-            te.nome AS tipo_exame_nome,
+            -- Concatena o código e o nome do tipo de exame
+            te.codigo || ' - ' || te.nome AS tipo_exame_nome, -- <--- ALTERADO AQUI
             r.status,
-            u.nome AS usuario_responsavel
+            -- Extrai o primeiro nome do perito
+            SUBSTR(u.nome, 1, INSTR(u.nome || ' ', ' ') - 1) AS perito_primeiro_nome
         FROM
             rep r
         LEFT JOIN
@@ -94,7 +96,7 @@ def obter_tipos_exame():
     """
     Retorna uma lista de dicionários com id, nome e codigo dos tipos de exame.
     """
-    return executar_query("SELECT id, codigo, nome FROM tipos_exame ORDER BY nome") # <--- ADICIONADO 'codigo'
+    return executar_query("SELECT id, codigo, nome FROM tipos_exame ORDER BY nome")
 
 def obter_orgaos_solicitantes():
     """Retorna uma lista de nomes de órgãos solicitantes únicos do banco de dados."""
@@ -120,42 +122,43 @@ def main():
     # ----------------------------------------------------
     st.subheader("Filtros de Busca")
     with st.expander("Expandir/Recolher Filtros", expanded=False):
-        col1, col2, col3 = st.columns(3)
-        with col1:
+        # Primeira linha de filtros
+        col1_a, col1_b, col1_c = st.columns(3)
+        with col1_a:
             filtro_numero_rep = st.text_input("Número da REP", placeholder="Ex: REP-2024-001")
-
-            tipos_exame = obter_tipos_exame()
-            # Prepara as opções para o selectbox no formato "CÓDIGO - Nome do Exame"
-            tipo_exame_opcoes_display = ["Todos"] + [f"{te['codigo']} - {te['nome']}" for te in tipos_exame]
-            tipo_exame_selecionado_display = st.selectbox("Tipo de Exame", tipo_exame_opcoes_display)
-
-            filtro_tipo_exame_id = None
-            if tipo_exame_selecionado_display != "Todos":
-                # Encontra o ID do tipo de exame selecionado
-                for te in tipos_exame:
-                    if f"{te['codigo']} - {te['nome']}" == tipo_exame_selecionado_display:
-                        filtro_tipo_exame_id = te["id"]
-                        break
-
-        with col2:
+        with col1_b:
             orgaos_solicitantes = obter_orgaos_solicitantes()
             orgaos_solicitantes_opcoes = ["Todos"] + orgaos_solicitantes
             filtro_orgao_solicitante = st.selectbox("Órgão Solicitante", orgaos_solicitantes_opcoes)
             if filtro_orgao_solicitante == "Todos":
                 filtro_orgao_solicitante = None
+        with col1_c:
+            tipos_exame = obter_tipos_exame()
+            tipo_exame_opcoes_display = ["Todos"] + [f"{te['codigo']} - {te['nome']}" for te in tipos_exame]
+            tipo_exame_selecionado_display = st.selectbox("Tipo de Exame", tipo_exame_opcoes_display)
 
+            filtro_tipo_exame_id = None
+            if tipo_exame_selecionado_display != "Todos":
+                for te in tipos_exame:
+                    if f"{te['codigo']} - {te['nome']}" == tipo_exame_selecionado_display:
+                        filtro_tipo_exame_id = te["id"]
+                        break
+
+        # Segunda linha de filtros (Status e Data da Solicitação)
+        col2_a, col2_b = st.columns([1, 2]) # Proporção para a data ocupar mais espaço
+        with col2_a:
             status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
             filtro_status = st.selectbox("Status", status_opcoes)
             if filtro_status == "Todos":
                 filtro_status = None
-
-        with col3:
-            st.markdown("Data da Solicitação")
-            col_data_inicio, col_data_fim = st.columns(2)
-            with col_data_inicio:
-                filtro_data_inicio = st.date_input("De", value=None, format="DD/MM/YYYY")
-            with col_data_fim:
-                filtro_data_fim = st.date_input("Até", value=None, format="DD/MM/YYYY")
+        with col2_b:
+            with st.container(border=True):
+                st.markdown("Data da Solicitação")
+                col_data_inicio, col_data_fim = st.columns(2)
+                with col_data_inicio:
+                    filtro_data_inicio = st.date_input("De", value=None, format="DD/MM/YYYY", key="data_inicio_filtro", label_visibility="collapsed")
+                with col_data_fim:
+                    filtro_data_fim = st.date_input("Até", value=None, format="DD/MM/YYYY", key="data_fim_filtro", label_visibility="collapsed")
 
         st.markdown("---")
         if st.button("Limpar Filtros", key="limpar_filtros_btn", on_click=lambda: st.rerun()):
@@ -181,21 +184,21 @@ def main():
                 "numero_rep",
                 "data_solicitacao",
                 "tipo_solicitacao",
-                "orgao_solicitante",
-                "tipo_exame_nome",
                 "numero_documento",
-                "usuario_responsavel",
+                "orgao_solicitante",
+                "tipo_exame_nome", # <--- Nome da coluna no DataFrame
+                "perito_primeiro_nome",
                 "status"
             ],
             column_config={
                 "numero_rep": st.column_config.TextColumn("Número da REP"),
                 "data_solicitacao": st.column_config.DateColumn("Data da Solicitação", format="DD/MM/YYYY"),
-                "tipo_solicitacao": st.column_config.TextColumn("Tipo de Solicitação"),
-                "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),
-                "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"),
+                "tipo_solicitacao": st.column_config.TextColumn("Tipo de Documento"),
                 "numero_documento": st.column_config.TextColumn("Número do Documento"),
+                "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),
+                "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"), # <--- Configuração existente
+                "perito_primeiro_nome": st.column_config.TextColumn("Perito"),
                 "status": st.column_config.TextColumn("Status"),
-                "usuario_responsavel": st.column_config.TextColumn("Responsável"),
             }
         )
     else:
