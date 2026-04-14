@@ -382,7 +382,7 @@ def tela_dashboard():
     usuario = obter_usuario_logado()
 
     # ── Detecta a página atual pela URL ─────────────────
-    path = st.session_state.get("current_page", "")
+    path = st.session_state.get("_active_page", "")
     script_atual = os.path.basename(sys.argv[0]) if sys.argv else ""
 
     def pagina_ativa(paginas: list) -> bool:
@@ -422,6 +422,7 @@ def tela_dashboard():
     secao_sistema = [
         "pages/busca.py",
         "pages/historico.py",
+        "pages/backup.py",
         "pages/perfil.py",
     ]
 
@@ -525,6 +526,11 @@ def tela_dashboard():
                 icon="📜"
             )
             st.page_link(
+                "pages/backup.py",
+                label="Importar e Exportar BD",
+                icon="💾"
+            )
+            st.page_link(
                 "pages/perfil.py",
                 label="Perfil e Configurações",
                 icon="👤"
@@ -590,19 +596,20 @@ def tela_dashboard():
 # ──────────────────────────────────────────────────────
 # ROTEAMENTO PRINCIPAL
 # ──────────────────────────────────────────────────────
+
+ #   Controla qual tela é exibida:
+ #   1. Primeiro acesso → cadastro inicial
+ #   2. Não autenticado → login
+ #   3. Autenticado     → dashboard
+ 
 def main():
-    """
-    Controla qual tela é exibida:
-    1. Primeiro acesso → cadastro inicial
-    2. Não autenticado → login
-    3. Autenticado     → dashboard
-    """
+    # Defina a página atual na sessão para o menu funcionar corretamente
+    st.session_state["_active_page"] = __file__
     if not usuario_existe():
         tela_primeiro_acesso()
     elif not esta_autenticado():
         tela_login()
     else:
         tela_dashboard()
-
 
 main()
