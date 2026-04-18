@@ -400,6 +400,28 @@ def atualizar_rep(
         )
     )
 
+def verificar_laudo_vinculado(rep_id: int) -> dict | None:
+    """
+    Verifica se existe um laudo vinculado a esta REP.
+
+    Args:
+        rep_id: ID da REP.
+
+    Returns:
+        Dicionário com os dados do laudo se existir, ou None.
+    """
+    from database.db import executar_query
+    sql = """
+        SELECT id, status, versao_atual, criado_em
+        FROM laudos
+        WHERE rep_id = ?
+    """
+    rows = executar_query(sql, (rep_id,))
+    if rows:
+        return dict(rows[0])
+    return None
+
+
 def excluir_rep(rep_id: int) -> None:
     """
     Exclui uma REP pelo ID.
@@ -414,13 +436,45 @@ def excluir_rep(rep_id: int) -> None:
     if not rep_existente:
         raise ValueError("REP não encontrada.")
 
-    # TODO: Verificar se há laudos vinculados antes de excluir
-    # Por enquanto, a restrição ON DELETE CASCADE no models.py já cuida disso
-    # se o laudo for excluído, mas é bom ter uma verificação aqui.
-    # A tabela 'laudos' tem 'rep_id INTEGER NOT NULL UNIQUE REFERENCES rep(id)',
-    # então se houver um laudo, a exclusão da REP falhará por restrição de FK.
+    laudo_vinculado = verificar_laudo_vinculado(rep_id)
+    if laudo_vinculado:
+        raise ValueError(
+            f"Não é possível excluir REP com laudo vinculado (ID: {laudo_vinculado['id']}, Status: {laudo_vinculado['status']}). "
+            "Exclua primeiro o laudo ou altere seu status."
+        )
 
+    from database.db import executar_comando
+    from core.audit import registrar
+
+    try:
+        executar_comando(
+            "DELETE FROM rep WHERE id = ?",
+            (rep_id,)
+        )
+        registrar(
+            tabela="rep",
+            registro_id=rep_id,
+            operacao="EXCLUIR",
+            descricao=f"REP '{rep_existente['numero_rep']}' excluída"
+        )
+    except Exception as e:
+        raise ValueError(f"Erro ao excluir REP: {e}")
+
+
+def alterar_status_rep_simples(rep_id: int, novo_status: str) -> None:
+    """
+    Altera apenas o status da REP (função simples para evitar circular import).
+
+    Args:
+        rep_id: ID da REP.
+        novo_status: Novo status.
+    """
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
+    if novo_status not in STATUS_VALIDOS:
+        raise ValueError(f"Status inválido: {novo_status}")
+
+    from database.db import executar_comando
     executar_comando(
-        "DELETE FROM rep WHERE id = ?",
-        (rep_id,)
+        "UPDATE rep SET status = ?, atualizado_em = datetime('now','localtime') WHERE id = ?",
+        (novo_status, rep_id)
     )

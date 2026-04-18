@@ -54,12 +54,12 @@ def renderizar_menu():
         """
         Verifica se a página atual pertence à seção para expandir o menu.
         Compara o nome do arquivo da página ativa com os nomes dos arquivos na seção.
+        Se não conseguir detectar a página ativa, retorna True para sempre mostrar expandido.
         """
         if not active_page_filename:
-            return False
+            return True
             
         for p in paginas_na_secao:
-            # Extrai o nome do arquivo da string do caminho (ex: "pages/backup.py" -> "backup.py")
             secao_filename = os.path.basename(p)
             if active_page_filename == secao_filename:
                 return True
@@ -122,10 +122,7 @@ def renderizar_menu():
 
         st.markdown("---")
 
-        with st.expander(
-            "📋 Requisições (REPs)",
-            expanded=pagina_ativa(secao_rep)
-        ):
+        with st.expander("📋 Requisições (REPs)", expanded=True):
             st.page_link(
                 "pages/nova_rep.py",
                 label="Nova REP",
@@ -135,6 +132,11 @@ def renderizar_menu():
                 "pages/listar_rep.py",
                 label="Listar REPs",
                 icon="📄"
+            )
+            st.page_link(
+                "pages/editar_rep.py",
+                label="Editar REP",
+                icon="✏️"
             )
 
         with st.expander(
@@ -194,10 +196,8 @@ def renderizar_menu():
             )
 
         st.markdown("---")
-        if st.button(
-            "Sair",
-            icon="🚪",
-            use_container_width=True
-        ):
-            fazer_logout()
-            st.rerun()
+        st.page_link(
+            "pages/99_logout.py",
+            label="Sair",
+            icon="🚪"
+        )

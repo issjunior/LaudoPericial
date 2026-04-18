@@ -306,14 +306,23 @@ def fazer_logout() -> None:
     Encerra a sessão do usuário.
     Limpa todos os dados salvos na sessão do Streamlit.
     """
+    import streamlit as st
+
     usuario_id = st.session_state.get("usuario_id")
 
     if usuario_id:
         _registrar_logout(usuario_id)
 
-    # Limpa a sessão completamente
-    for chave in list(st.session_state.keys()):
-        del st.session_state[chave]
+    # Limpa toda a sessão EXCETO dados do Streamlit
+    session_keys = list(st.session_state.keys())
+    for chave in session_keys:
+        if chave not in ['_streamlit_version', 'theme', 'scriptrunner']:
+            try:
+                del st.session_state[chave]
+            except:
+                pass
+
+    st.cache_data.clear()
 
 
 def esta_autenticado() -> bool:

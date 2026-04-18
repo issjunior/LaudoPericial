@@ -2,7 +2,7 @@
 venv/
 
 # Especificação e planejamento de arquitetura, features e sprints
-spec
+#spec
 
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db

@@ -7,7 +7,7 @@ Permite visualizar, buscar e filtrar as REPs.
 ──────────────────────────────────────────────────────
 """
 import streamlit as st
-from database.db import executar_query
+from database.db import executar_query, executar_comando
 from core.auth import obter_usuario_logado
 from components.menu import renderizar_menu
 from datetime import date
@@ -45,10 +45,8 @@ def buscar_reps(
             r.tipo_solicitacao,
             r.numero_documento,
             s.orgao AS orgao_solicitante,
-            -- Concatena o código e o nome do tipo de exame
-            te.codigo || ' - ' || te.nome AS tipo_exame_nome, -- <--- ALTERADO AQUI
+            te.codigo || ' - ' || te.nome AS tipo_exame_nome,
             r.status,
-            -- Extrai o primeiro nome do perito
             SUBSTR(u.nome, 1, INSTR(u.nome || ' ', ' ') - 1) AS perito_primeiro_nome
         FROM
             rep r
@@ -91,6 +89,27 @@ def buscar_reps(
     reps_raw = executar_query(query, tuple(params))
     reps = [dict(row) for row in reps_raw]
     return reps
+
+
+def alterar_status_rep(rep_id: int, novo_status: str) -> None:
+    """
+    Altera o status de uma REP.
+
+    Args:
+        rep_id: ID da REP.
+        novo_status: Novo status (Pendente, Em Andamento, Concluído, Arquivado, Cancelado).
+
+    Raises:
+        ValueError: Se o status for inválido.
+    """
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
+    if novo_status not in STATUS_VALIDOS:
+        raise ValueError(f"Status inválido: {novo_status}")
+
+    executar_comando(
+        "UPDATE rep SET status = ?, atualizado_em = datetime('now','localtime') WHERE id = ?",
+        (novo_status, rep_id)
+    )
 
 def obter_tipos_exame():
     """
@@ -186,7 +205,7 @@ def main():
                 "tipo_solicitacao",
                 "numero_documento",
                 "orgao_solicitante",
-                "tipo_exame_nome", # <--- Nome da coluna no DataFrame
+                "tipo_exame_nome",
                 "perito_primeiro_nome",
                 "status"
             ],
@@ -196,7 +215,7 @@ def main():
                 "tipo_solicitacao": st.column_config.TextColumn("Tipo de Documento"),
                 "numero_documento": st.column_config.TextColumn("Número do Documento"),
                 "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),
-                "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"), # <--- Configuração existente
+                "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"),
                 "perito_primeiro_nome": st.column_config.TextColumn("Perito"),
                 "status": st.column_config.TextColumn("Status"),
             }
