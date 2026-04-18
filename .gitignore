@@ -1,6 +1,9 @@
 # Ambiente virtual — nunca vai pro GitHub
 venv/
 
+# Especificação e planejamento de arquitetura, features e sprints
+spec
+
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
 *.sqlite
