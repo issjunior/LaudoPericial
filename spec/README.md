@@ -76,9 +76,17 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 
 ---
 
+## Features Recentes (Sprint 2)
+
+| Feature | Arquivo | Descrição |
+|--------|--------|-----------|
+| Vincular Laudo a REP | `pages/novo_laudo.py` | Cria laudo vinculando REP + Template |
+| Editor de Laudo | `pages/editor_laudo.py` | Edita seções com placeholders |
+| listar_laudos() | `services/laudo_service.py` | Lista laudos com filtros |
+
 ## Issues Conhecidos
 
 | Issue | Descrição | Status |
 |-------|-----------|--------|
-| Menu Editar REP | Só aparece após clicar em outra página | ⏳ Pendente |
+| Menu Laudos | Expansão automática não funciona | ⏳ Pendente |
 | Logout | Redireciona para página de logout | ✅ Correto |

@@ -19,6 +19,62 @@ if ROOT not in sys.path:
 from database.db import executar_query, executar_comando
 
 
+def listar_laudos(
+    status: str = None,
+    usuario_id: int = None,
+    rep_id: int = None
+) -> list:
+    """
+    Lista laudos com filtros.
+
+    Args:
+        status: Status específico (Rascunho, Em Revisão, Finalizado).
+        usuario_id: ID do usuário (através da REP).
+        rep_id: ID da REP específica.
+
+    Returns:
+        Lista de dicionários com os dados dos laudos.
+    """
+    sql = """
+        SELECT
+            l.id,
+            l.rep_id,
+            l.template_id,
+            l.status,
+            l.versao_atual,
+            l.criado_em,
+            l.atualizado_em,
+            r.numero_rep,
+            r.status AS rep_status,
+            te.nome AS tipo_exame_nome
+        FROM laudos l
+        JOIN rep r ON l.rep_id = r.id
+        JOIN tipos_exame te ON r.tipo_exame_id = te.id
+    """
+    params = []
+    conditions = []
+
+    if status:
+        conditions.append("l.status = ?")
+        params.append(status)
+
+    if usuario_id:
+        conditions.append("r.usuario_id = ?")
+        params.append(usuario_id)
+
+    if rep_id:
+        conditions.append("l.rep_id = ?")
+        params.append(rep_id)
+
+    if conditions:
+        sql += " WHERE " + " AND ".join(conditions)
+
+    sql += " ORDER BY l.atualizado_em DESC"
+
+    rows = executar_query(sql, tuple(params))
+    return [dict(row) for row in rows]
+
+
 def buscar_laudo_por_rep(rep_id: int) -> dict | None:
     """
     Busca um laudo vinculado a uma REP.

@@ -43,14 +43,15 @@
 
 | ID | Task | Módulo | Responsável | Status |
 |----|------|--------|-------------|--------|
-| T02.1 | Criar laudo (service + muda REP→Em Andamento) | Laudos | 🚧 |
-| T02.2 | Editor de laudo (seções editáveis) | Laudos | ⏳ |
-| T02.3 | Salvar versão (snapshot) | Laudos | ⏳ |
-| T02.4 | Carregar versão anterior | Laudos | ⏳ |
-| T02.5 | Upload de fotos/ilustrações | Laudos | ⏳ |
-| T02.6 | Remover foto | Laudos | ⏳ |
-| T02.7 | Preview do laudo | Laudos | ⏳ |
-| T02.8 | Validar laudo (seções obrigatórias) | Laudos | ⏳ |
+| T02.1 | Vincular Laudo a REP: page novo_laudo.py + menu (ao vincular REP a Template, status REP→"Em Andamento") | Laudos | ✅ |
+| T02.2 | Editor de Laudo: page editor_laudo.py + menu + editar seções com placeholders | Laudos | ✅ |
+| T02.3 | Incluir Editor de texto (Quill Editor) em cada seção  | Laudos | ⏳ |
+| T02.4 | Salvar versão (snapshot) | Laudos | ⏳ |
+| T02.5 | Carregar versão anterior | Laudos | ⏳ |
+| T02.6 | Upload de fotos/ilustrações | Laudos | ⏳ |
+| T02.7 | Remover foto | Laudos | ⏳ |
+| T02.8 | Preview do laudo | Laudos | ⏳ |
+| T02.9 | Validar laudo (seções obrigatórias) | Laudos | ⏳ |
 
 **Duração**: 2 sprints (4 semanas)
 **Prioridade**: CRÍTICA (funcionalidade core)

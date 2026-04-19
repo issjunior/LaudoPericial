@@ -141,11 +141,16 @@ def renderizar_menu():
 
         with st.expander(
             "📝 Laudos",
-            expanded=pagina_ativa(secao_laudos)
+            expanded=True
         ):
             st.page_link(
                 "pages/novo_laudo.py",
-                label="Novo Laudo",
+                label="Vincular Laudo a REP",
+                icon="➕"
+            )
+            st.page_link(
+                "pages/editor_laudo.py",
+                label="Editar Laudo",
                 icon="✏️"
             )
 
