@@ -107,13 +107,13 @@
 
 | ID | Funcionalidade | Descrição | Status |
 |----|----------------|-----------|--------|
-| LAU-01 | Criar laudo a partir de REP | Gerar laudo do template + muda REP para "Em Andamento" | ⏳ Parcial |
+| LAU-01 | Criar laudo a partir de REP | Gerar laudo do template + muda REP para "Em Andamento" | 🚧 Parcial |
 | LAU-02 | Editar laudo | Editar seções e conteúdo | ⏳ Pendente |
 | LAU-03 | Visualizar laudo | Modo leitura | ⏳ Pendente |
 | LAU-04 | Upload fotos | Adicionar ilustraciones | ⏳ Pendente |
 | LAU-05 | Remover foto | Excluir ilustracao | ⏳ Pendente |
 | LAU-06 | Salvar versão | Snapshot do laudo | ⏳ Pendente |
-| LAU-07 | Finalizar laudo | Marcar como Finalizado + muda REP para "Concluído" | ⏳ Pendente |
+| LAU-07 | Finalizar laudo | Marcar como Finalizado + muda REP para "Concluído" | 🚧 Parcial |
 | LAU-08 | Exportar PDF | Gerar documento PDF | ⏳ Pendente |
 | LAU-09 | Exportar DOCX | Gerar documento Word | ⏳ Pendente |
 
@@ -165,8 +165,16 @@
 
 ---
 
+## Módulo: IA (Inteligência Artificial)
+
+| ID | Funcionalidade | Descrição | Status |
+|----|----------------|-----------|--------|
+| IA-01 | Uso de IA na Módulo Laudos | Integração com IA remota ou Local  | ⏳ Pendente |
+| IA-02 | Ajuda para escrever o laudo por seção de template | Sugestão de texto voltado para a seção especifica do template | ⏳ Pendente |
+| IA-03 | Descrição de locais e objetos | Sugestão de descrição de imagem | ⏳ Pendente |
+
 ## Legenda
 
 - ✅ Implantado - Fully implemented
-- ✅ Parcial - Partially implemented (bugs/todos)
+- 🚧 Parcial - Partially implemented (bugs/todos)
 - ⏳ Pendente - Not yet implemented

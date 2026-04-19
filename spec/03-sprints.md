@@ -43,7 +43,7 @@
 
 | ID | Task | Módulo | Responsável | Status |
 |----|------|--------|-------------|--------|
-| T02.1 | Criar laudo (service + muda REP→Em Andamento) | Laudos | ⏳ Parcial |
+| T02.1 | Criar laudo (service + muda REP→Em Andamento) | Laudos | 🚧 |
 | T02.2 | Editor de laudo (seções editáveis) | Laudos | ⏳ |
 | T02.3 | Salvar versão (snapshot) | Laudos | ⏳ |
 | T02.4 | Carregar versão anterior | Laudos | ⏳ |
@@ -63,7 +63,7 @@
 
 | ID | Task | Módulo | Responsável | Status |
 |----|------|--------|-------------|--------|
-| T03.1 | Finalizar laudo (muda REP→Concluído) | Laudos | ⏳ Parcial |
+| T03.1 | Finalizar laudo (muda REP→Concluído) | Laudos | 🚧 |
 | T03.2 | Gerar preâmbulo automático | Generators | ⏳ |
 | T03.3 | Exportar PDF | Generators | ⏳ |
 | T03.4 | Exportar DOCX | Generators | ⏳ |

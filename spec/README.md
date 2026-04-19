@@ -34,9 +34,9 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 
 | Símbolo | Significado |
 |---------|-------------|
-| ✅ | Implementado |
+| ✅ | Implantado |
+| 🚧 | Parcial |
 | ⏳ | Pendente |
-| ⚠️ | Em desenvolvimento |
 
 ## Como Usar
 
