@@ -25,6 +25,11 @@ from services.laudo_service import (
     atualizar_secao_laudo
 )
 
+try:
+    from streamlit_quill import st_quill
+except ImportError:
+    st_quill = None
+
 st.set_page_config(
     page_title="Editar Laudo — LaudoPericial",
     page_icon="✏️",
@@ -69,23 +74,31 @@ def renderizar_secoes(laudo_id: int):
     | `{{data_documento}}` | Data do documento |
     """
 
-    with st.expander("📋 Ver Placeholders Disponíveis", expanded=False):
+    with st.expander("Ver Placeholders Disponíveis", expanded=False):
         st.markdown(placeholders_disponiveis)
 
     secoes_salvas = {}
 
-    for secao in secoes:
-        with st.expander(f"📄 {secao['titulo']}", expanded=True):
+    for idx, secao in enumerate(secoes, 1):
+        with st.expander(f"{idx} - {secao['titulo'].upper()}", expanded=True):
             if secao['obrigatoria']:
                 st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
 
-            conteudo = st.text_area(
-                "Conteúdo",
-                value=secao['conteudo'] or "",
-                height=200,
-                key=f"secao_{secao['id']}",
-                help=f"Seção: {secao['titulo']}. Use os placeholders listados no expander acima."
-            )
+            if st_quill:
+                conteudo = st_quill(
+                    html=True,
+                    value=secao['conteudo'] or "",
+                    key=f"secao_{secao['id']}"
+                )
+            else:
+                st.warning("Quill Editor não disponível. Usando campo de texto padrão.")
+                conteudo = st.text_area(
+                    "Conteúdo",
+                    value=secao['conteudo'] or "",
+                    height=200,
+                    key=f"secao_{secao['id']}",
+                    help=f"Seção: {secao['titulo']}. Use os placeholders listados no expander acima."
+                )
 
             secoes_salvas[secao['id']] = {
                 'titulo': secao['titulo'],
