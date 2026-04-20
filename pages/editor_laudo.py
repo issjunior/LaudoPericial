@@ -40,9 +40,9 @@ def formatar_data_br(data_iso: str) -> str:
 
 
 try:
-    from streamlit_quill import st_quill
+    from streamlit_lexical_extended import streamlit_lexical_extended
 except ImportError:
-    st_quill = None
+    streamlit_lexical_extended = None
 
 st.set_page_config(
     page_title="Editar Laudo — LaudoPericial",
@@ -78,17 +78,45 @@ def renderizar_secoes(laudo_id: int):
     placeholders_disponiveis = """
     **Placeholders disponíveis (copie e cole no texto):**
 
+    *Dados Gerais da REP:*
     | Placeholder | Descrição |
     |-------------|-----------|
     | `{{numero_rep}}` | Número da REP |
     | `{{data_solicitacao}}` | Data da solicitação |
-    | `{{nome_autoridade}}` | Nome da autoridade solicitante |
+    | `{{tipo_exame}}` | Nome do tipo de exame |
     | `{{nome_envolvido}}` | Nome do envolvido/vítima |
-    | `{{local_fato}}` | Descrição do local do fato |
-    | `{{tipo_exame}}` | Tipo de exame |
-    | `{{solicitante}}` | Órgão solicitante |
+
+    *Dados do Solicitante:*
+    | Placeholder | Descrição |
+    |-------------|-----------|
+    | `{{solicitante}}` | Nome do órgão solicitante |
+    | `{{solicitante_orgao}}` | Órgão do solicitante |
+    | `{{nome_autoridade}}` | Nome da autoridade solicitante |
+
+    *Detalhes da Solicitação:*
+    | Placeholder | Descrição |
+    |-------------|-----------|
+    | `{{tipo_solicitacao}}` | Tipo de documento (BO, Ofício, etc) |
     | `{{numero_documento}}` | Número do documento |
     | `{{data_documento}}` | Data do documento |
+
+    *Dados do Local (se aplicável):*
+    | Placeholder | Descrição |
+    |-------------|-----------|
+    | `{{local_fato}}` | Descrição do local do fato |
+    | `{{horario_acionamento}}` | Horário de acionamento |
+    | `{{horario_chegada}}` | Horário de chegada ao local |
+    | `{{horario_saida}}` | Horário de saída do local |
+    | `{{latitude}}` | Latitude do local |
+    | `{{longitude}}` | Longitude do local |
+
+    *Dados do Perito:*
+    | Placeholder | Descrição |
+    |-------------|-----------|
+    | `{{perito_nome}}` | Nome do perito responsável |
+    | `{{perito_matricula}}` | Matrícula do perito |
+    | `{{perito_cargo}}` | Cargo do perito |
+    | `{{perito_lotacao}}` | Lotação do perito |
     """
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):
@@ -101,14 +129,13 @@ def renderizar_secoes(laudo_id: int):
             if secao['obrigatoria']:
                 st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
 
-            if st_quill:
-                conteudo = st_quill(
-                    html=True,
+            if streamlit_lexical_extended:
+                conteudo = streamlit_lexical_extended(
                     value=secao['conteudo'] or "",
                     key=f"secao_{secao['id']}"
                 )
             else:
-                st.warning("Quill Editor não disponível. Usando campo de texto padrão.")
+                st.warning("Editor Lexical não disponível. Usando campo de texto padrão.")
                 conteudo = st.text_area(
                     "Conteúdo",
                     value=secao['conteudo'] or "",

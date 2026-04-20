@@ -82,7 +82,7 @@ bcrypt==4.2.1
 cryptography==44.0.0
 
 # Editor de texto rico
-streamlit-quill==0.0.3
+streamlit-lexical-extended==0.2.1
 
 # Geração de documentos
 python-docx==1.1.2

@@ -72,6 +72,8 @@ def listar_reps(
             s.nome AS solicitante_nome,
             s.orgao AS solicitante_orgao,
             r.nome_autoridade,
+            r.nome_envolvido,
+            r.local_fato_descricao,
             r.tipo_exame_id,
             te.nome AS tipo_exame_nome,
             te.codigo AS tipo_exame_codigo,
@@ -158,6 +160,8 @@ def buscar_rep(rep_id: int) -> dict | None:
             s.orgao AS solicitante_orgao,
             s.contato AS solicitante_email, -- Adicionado para o placeholder
             r.nome_autoridade,
+            r.nome_envolvido,
+            r.local_fato_descricao,
             r.tipo_exame_id,
             te.nome AS tipo_exame_nome,
             te.codigo AS tipo_exame_codigo,

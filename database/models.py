@@ -251,6 +251,19 @@ CREATE TABLE IF NOT EXISTS versoes_laudo (
 );
 """
 
+SQL_CRIAR_MODELO_CABECALHO = """
+CREATE TABLE IF NOT EXISTS modelo_cabecalho (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    modelo      TEXT    NOT NULL,
+    conteudo    TEXT    NOT NULL DEFAULT '',
+    ativo       INTEGER NOT NULL DEFAULT 1,
+    criado_em   TEXT    NOT NULL
+                    DEFAULT (datetime('now','localtime')),
+    atualizado_em TEXT  NOT NULL
+                    DEFAULT (datetime('now','localtime'))
+);
+"""
+
 # ──────────────────────────────────────────────────────
 # TABELA: historico
 # Log completo de todas as operações no sistema.
@@ -290,15 +303,16 @@ CREATE_ALL_TABLES = [
     SQL_CRIAR_USUARIOS,         # 1º — sem dependências
     SQL_CRIAR_TIPOS_EXAME,      # 2º — sem dependências
     SQL_CRIAR_SOLICITANTES,     # 3º — sem dependências
-    SQL_CRIAR_TEMPLATES,        # 4º — depende de tipos_exame
-    SQL_CRIAR_SECOES_TEMPLATE,  # 5º — depende de templates
-    SQL_CRIAR_REP,              # 6º — depende de usuarios,
+    SQL_CRIAR_MODELO_CABECALHO, # 4º — sem dependências
+    SQL_CRIAR_TEMPLATES,        # 5º — depende de tipos_exame
+    SQL_CRIAR_SECOES_TEMPLATE,  # 6º — depende de templates
+    SQL_CRIAR_REP,              # 7º — depende de usuarios,
                                 #        tipos_exame, solicitantes
-    SQL_CRIAR_LAUDOS,           # 7º — depende de rep, templates
-    SQL_CRIAR_SECOES_LAUDO,     # 8º — depende de laudos,
+    SQL_CRIAR_LAUDOS,           # 8º — depende de rep, templates
+    SQL_CRIAR_SECOES_LAUDO,     # 9º — depende de laudos,
                                 #        secoes_template
-    SQL_CRIAR_ILUSTRACOES,      # 9º — depende de secoes_laudo,
+    SQL_CRIAR_ILUSTRACOES,      # 10º — depende de secoes_laudo,
                                 #        laudos
-    SQL_CRIAR_VERSOES_LAUDO,    # 10º — depende de laudos
-    SQL_CRIAR_HISTORICO,        # 11º — depende de usuarios
+    SQL_CRIAR_VERSOES_LAUDO,    # 11º — depende de laudos
+    SQL_CRIAR_HISTORICO,        # 12º — depende de usuarios
 ]

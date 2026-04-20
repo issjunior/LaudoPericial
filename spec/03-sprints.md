@@ -68,12 +68,13 @@ DIAS_PARA_ALERTA_VENCENDO = 3 # Quantos dias antes do prazo para alertar "Vencen
 | T02.1 | Vincular Laudo a REP: criação automática ao criar REP se existir template (+ menu manual) | Laudos | ✅ |
 | T02.2 | Editor de Laudo: page editor_laudo.py + menu + editar seções com placeholders | Laudos | ✅ |
 | T02.3 | Editor de texto Quill em cada seção (com numeração) | Laudos | ✅ |
-| T02.4 | Salvar versão (snapshot) | Laudos | ⏳ |
-| T02.5 | Carregar versão anterior | Laudos | ⏳ |
-| T02.6 | Upload de fotos/ilustrações | Laudos | ⏳ |
-| T02.7 | Remover foto | Laudos | ⏳ |
-| T02.8 | Preview do laudo | Laudos | ⏳ |
-| T02.9 | Validar laudo (seções obrigatórias) | Laudos | ⏳ |
+| T02.4 | Salvar versão (snapshot) | Laudos | ✅ |
+| T02.5 | Carregar versão anterior | Laudos | ✅ |
+| T02.6 | Configurar a formatação da exportação do PDF de acordo com o padrão de laudos da PCR  | Laudos | ⏳ |
+| T02.7 | Upload de fotos/ilustrações | Laudos | ⏳ |
+| T02.8 | Remover foto | Laudos | ⏳ |
+| T02.9 | Preview do laudo | Laudos | ⏳ |
+| T02.10 | Validar laudo (seções obrigatórias) | Laudos | ⏳ |
 
 **Duração**: 2 sprints (4 semanas)
 **Prioridade**: CRÍTICA (funcionalidade core)

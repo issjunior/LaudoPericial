@@ -79,7 +79,7 @@ def renderizar_menu():
         "pages/tipos_exame.py",
         "pages/solicitantes.py",
         "pages/gerenciar_templates.py",
-        "pages/editor_template.py",
+        "pages/cabecalho.py",
     ]
     secao_sistema = [
         "pages/busca.py",
@@ -178,10 +178,15 @@ def renderizar_menu():
                 label="Templates de Laudo",
                 icon="📋"
             )
+            st.page_link(
+                "pages/cabecalho.py",
+                label="Cabeçalho do Laudo",
+                icon="📄"
+            )
 
         with st.expander(
             "⚙️ Sistema",
-            expanded=pagina_ativa(secao_sistema) # AQUI VAI USAR A LÓGICA ATUALIZADA
+            expanded=pagina_ativa(secao_sistema)
         ):
             st.page_link(
                 "pages/busca.py",

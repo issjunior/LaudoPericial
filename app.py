@@ -417,7 +417,7 @@ def tela_dashboard():
         "pages/tipos_exame.py",
         "pages/solicitantes.py",
         "pages/gerenciar_templates.py",
-        "pages/editor_template.py",
+        "pages/cabecalho.py",
     ]
     secao_sistema = [
         "pages/busca.py",
@@ -523,6 +523,11 @@ def tela_dashboard():
                 "pages/gerenciar_templates.py",
                 label="Templates de Laudo",
                 icon="📋"
+            )
+            st.page_link(
+                "pages/cabecalho.py",
+                label="Cabeçalho do Laudo",
+                icon="📄"
             )
 
         # ── Sistema ─────────────────────────────────────
