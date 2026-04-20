@@ -20,7 +20,7 @@ if ROOT not in sys.path:
 from components.menu import renderizar_menu
 from core.auth import obter_usuario_logado
 from services.cadastro_service import listar_tipos_exame, listar_solicitantes
-from services.rep_service import buscar_rep, atualizar_rep, listar_reps, excluir_rep
+from services.rep_service import buscar_rep, atualizar_rep, listar_reps, excluir_rep, verificar_laudo_vinculado
 
 st.set_page_config(
     page_title="Editar REP — LaudoPericial",
@@ -300,14 +300,33 @@ def main():
                 st.error(f"❌ Erro inesperado: {e}")
 
     with st.expander("🗑️ Excluir REP", expanded=False):
-        st.warning(f"Tem certeza que deseja excluir a REP **{rep.get('numero_rep')}**? Esta ação não pode ser desfeita.")
-        if st.button("🗑️ Confirmar Exclusão", type="primary"):
-            try:
-                excluir_rep(rep_id)
-                st.success("✅ REP excluída com sucesso!")
-                st.session_state["rep_selecionado_id"] = None
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Erro ao excluir: {e}")
+        st.warning(f"Tem certeza que deseja excluir a REP **{rep.get('numero_rep')}**?")
+
+        laudo = verificar_laudo_vinculado(rep_id)
+        if laudo:
+            st.error("⚠️ AVISO: Esta REP tem um laudo vinculado que será excluído junto!")
+            st.caption(f"Laudo ID: {laudo['id']} | Status: {laudo['status']}")
+
+            col_confirma, _ = st.columns([1, 2])
+            with col_confirma:
+                confirmar = st.checkbox("Entendo o risco, quero excluir mesmo assim")
+
+            if confirmar and st.button("🗑️ Confirmar Exclusão", type="primary"):
+                try:
+                    excluir_rep(rep_id, forcar_exclusao=True)
+                    st.success("✅ REP excluída com sucesso!")
+                    st.session_state["rep_selecionado_id"] = None
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao excluir: {e}")
+        else:
+            if st.button("🗑️ Confirmar Exclusão", type="primary"):
+                try:
+                    excluir_rep(rep_id)
+                    st.success("✅ REP excluída com sucesso!")
+                    st.session_state["rep_selecionado_id"] = None
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao excluir: {e}")
 
 main()

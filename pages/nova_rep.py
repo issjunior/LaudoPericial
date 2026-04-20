@@ -151,7 +151,12 @@ def main():
             )
 
         # Abas: Dados Gerais e Dados do Local
-        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados complementares de Local"])
+        st.markdown("### 📝 Dados da REP")
+        st.markdown("**Selecione uma aba abaixo:**")
+        if st.session_state.get("exame_de_local_selecionado"):
+            st.warning("⚠️ IMPORTANTE: Este tipo de exame requer dados do local. Clique na aba **'Dados do Local'** para preencher!")
+
+        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local"])
 
         with tab1:
             if st.session_state.get("exame_de_local_selecionado"):

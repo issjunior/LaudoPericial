@@ -435,31 +435,37 @@ def verificar_laudo_vinculado(rep_id: int) -> dict | None:
     return None
 
 
-def excluir_rep(rep_id: int) -> None:
+def excluir_rep(rep_id: int, forcar_exclusao: bool = False) -> str:
     """
     Exclui uma REP pelo ID.
 
     Args:
         rep_id: ID da REP.
+        forcar_exclusao: Se True, exclui mesmo com laudo vinculado (exclui o laudo também).
+
+    Returns:
+        Mensagem de confirmação.
 
     Raises:
-        ValueError: Se a REP não existir ou tiver laudos vinculados.
+        ValueError: Se a REP não existir.
     """
     rep_existente = buscar_rep(rep_id)
     if not rep_existente:
         raise ValueError("REP não encontrada.")
 
     laudo_vinculado = verificar_laudo_vinculado(rep_id)
-    if laudo_vinculado:
-        raise ValueError(
-            f"Não é possível excluir REP com laudo vinculado (ID: {laudo_vinculado['id']}, Status: {laudo_vinculado['status']}). "
-            "Exclua primeiro o laudo ou altere seu status."
-        )
+    if laudo_vinculado and not forcar_exclusao:
+        return "AVISO: Esta REP tem um laudo vinculado que será excluído junto."
 
     from database.db import executar_comando
     from core.audit import registrar
 
     try:
+        if laudo_vinculado:
+            from services.laudo_service import buscar_laudo_por_rep
+            from database.db import executar_comando
+            executar_comando("DELETE FROM laudos WHERE rep_id = ?", (rep_id,))
+
         executar_comando(
             "DELETE FROM rep WHERE id = ?",
             (rep_id,)
@@ -470,6 +476,9 @@ def excluir_rep(rep_id: int) -> None:
             operacao="EXCLUIR",
             descricao=f"REP '{rep_existente['numero_rep']}' excluída"
         )
+
+        return "REP excluída com sucesso!"
+
     except Exception as e:
         raise ValueError(f"Erro ao excluir REP: {e}")
 
