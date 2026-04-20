@@ -150,31 +150,37 @@ def main():
                 help="Data de emissão do documento de solicitação."
             )
 
-        # Campos de Exame de Local (condicionais)
-        if st.session_state["exame_de_local_selecionado"]:
-            with st.expander("🌍 Dados do Local de Exame", expanded=True):
+        # Abas: Dados Gerais e Dados do Local
+        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local (Exame de Local)"])
+
+        with tab1:
+            st.info("Dados básicos para todos os tipos de exame.")
+
+        with tab2:
+            if st.session_state["exame_de_local_selecionado"]:
+                st.caption("Campos específicos para exames realizados no local do fato.")
                 local_fato_descricao = st.text_area(
-                    "Descrição do Local do Fato (Opcional)",
+                    "Descrição do Local do Fato",
                     placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
                     help="Descrição detalhada do local onde ocorreu o fato.",
-                    height=100
+                    height=80
                 )
                 col_horario1, col_horario2, col_horario3 = st.columns(3)
                 with col_horario1:
                     horario_acionamento = st.time_input(
-                        "Horário de Acionamento (Opcional)",
+                        "Horário de Acionamento",
                         value=None,
                         help="Horário em que a equipe pericial foi acionada."
                     )
                 with col_horario2:
                     horario_chegada = st.time_input(
-                        "Horário de Chegada ao Local (Opcional)",
+                        "Horário de Chegada",
                         value=None,
                         help="Horário de chegada da equipe pericial ao local."
                     )
                 with col_horario3:
                     horario_saida = st.time_input(
-                        "Horário de Saída do Local (Opcional)",
+                        "Horário de Saída",
                         value=None,
                         help="Horário de saída da equipe pericial do local."
                     )
@@ -182,23 +188,24 @@ def main():
                 col_coords1, col_coords2 = st.columns(2)
                 with col_coords1:
                     latitude = st.text_input(
-                        "Latitude (Opcional)",
+                        "Latitude",
                         placeholder="Ex: -25.4284",
                         help="Coordenada de latitude do local do exame."
                     )
                 with col_coords2:
                     longitude = st.text_input(
-                        "Longitude (Opcional)",
+                        "Longitude",
                         placeholder="Ex: -49.2733",
                         help="Coordenada de longitude do local do exame."
                     )
-        else:
-            local_fato_descricao = None
-            horario_acionamento = None
-            horario_chegada = None
-            horario_saida = None
-            latitude = None
-            longitude = None
+            else:
+                local_fato_descricao = None
+                horario_acionamento = None
+                horario_chegada = None
+                horario_saida = None
+                latitude = None
+                longitude = None
+                st.info("Este tipo de exame não requer deslocamento ao local do fato.")
 
         with st.expander("📝 Observações Adicionais", expanded=False):
             observacoes = st.text_area(
@@ -208,14 +215,22 @@ def main():
             )
 
         st.markdown("---")
+
         col_submit, col_cancel = st.columns([1, 5])
 
         with col_submit:
-            submitted = st.form_submit_button(
-                "💾 Registrar REP",
-                use_container_width=True,
-                type="primary"
-            )
+            if st.session_state.get("exame_de_local_selecionado"):
+                submitted = st.form_submit_button(
+                    "💾 Atualizar REP",
+                    use_container_width=True,
+                    type="primary"
+                )
+            else:
+                submitted = st.form_submit_button(
+                    "💾 Registrar REP",
+                    use_container_width=True,
+                    type="primary"
+                )
 
         if submitted:
             # Validações
