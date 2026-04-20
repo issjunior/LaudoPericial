@@ -230,20 +230,33 @@ def criar_rep(
             numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
             horario_saida, tipo_solicitacao, numero_documento, data_documento,
             solicitante_id, nome_autoridade, tipo_exame_id,
-            nome_envolvido, local_fato_descricao, -- NOVOS CAMPOS AQUI
+            nome_envolvido, local_fato_descricao,
             latitude, longitude, status, observacoes, usuario_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
     """
-    return executar_comando(
+    rep_id = executar_comando(
         sql,
         (
             numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
             horario_saida, tipo_solicitacao, numero_documento, data_documento,
             solicitante_id, nome_autoridade, tipo_exame_id,
-            nome_envolvido, local_fato_descricao, # NOVOS VALORES AQUI
+            nome_envolvido, local_fato_descricao,
             latitude, longitude, observacoes, usuario_id
         )
     )
+
+    # Verificar se existe template para o tipo de exame e criar laudo automaticamente
+    try:
+        from services.template_service import listar_templates
+        templates = listar_templates(apenas_ativos=True, tipo_exame_id=tipo_exame_id)
+        if templates:
+            template_id = templates[0]['id']
+            from services.laudo_service import criar_laudo
+            criar_laudo(rep_id, template_id)
+    except Exception:
+        pass  # Se nao conseguir criar laudo, ignora (nao bloqueia criacao da REP)
+
+    return rep_id
 
 def atualizar_rep(
     rep_id:              int,
