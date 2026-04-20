@@ -22,8 +22,21 @@ from services.laudo_service import (
     listar_laudos,
     buscar_laudo,
     listar_secoes_laudo,
-    atualizar_secao_laudo
+    atualizar_secao_laudo,
+    listar_versoes,
+    restaurar_versao,
+    excluir_versao,
+    salvar_versao_snapshot
 )
+
+
+def formatar_data_br(data_iso: str) -> str:
+    from datetime import datetime
+    try:
+        dt = datetime.fromisoformat(data_iso.replace(' ', 'T'))
+        return dt.strftime("%d/%m/%Y - %H:%M:%S")
+    except:
+        return data_iso
 
 try:
     from streamlit_quill import st_quill
@@ -106,7 +119,7 @@ def renderizar_secoes(laudo_id: int):
                 'obrigatoria': secao['obrigatoria']
             }
 
-    if st.button("💾 Salvar Seções", type="primary"):
+    if st.button("💾 Salvar Laudo", type="primary"):
         erros = []
         for secao_id, dados in secoes_salvas.items():
             if dados['obrigatoria'] and not dados['conteudo'].strip():
@@ -117,8 +130,38 @@ def renderizar_secoes(laudo_id: int):
         else:
             for secao_id, dados in secoes_salvas.items():
                 atualizar_secao_laudo(secao_id, dados['conteudo'])
-            st.success("✅ Seções salvas com sucesso!")
+            
+            try:
+                versao = salvar_versao_snapshot(laudo_id)
+                st.success(f"✅ Laudo salvo! Versão {versao} criada (máx. 3 versões)")
+            except ValueError:
+                st.success("✅ Laudo salvo com sucesso!")
             st.rerun()
+
+    versoes = listar_versoes(laudo_id)
+    if versoes:
+        with st.expander("Versoes Anteriores"):
+            st.caption("Apos restaurar clique no Menu Editar Laudo novamente para atualizar as informacoes.")
+            for v in versoes:
+                col_v1, col_v2, col_v3 = st.columns([3, 1, 1])
+                with col_v1:
+                    st.markdown(f"**Versao {v['versao']}** - {formatar_data_br(v['criado_em'])}")
+                with col_v2:
+                    if st.button("Restaurar", key=f"restaurar_{v['id']}"):
+                        try:
+                            restaurar_versao(v['id'])
+                            st.success(f"Versao {v['versao']} restaurada!")
+                            st.rerun()
+                        except ValueError as e:
+                            st.error(f"Erro: {e}")
+                with col_v3:
+                    if st.button("Excluir", key=f"excluir_{v['id']}"):
+                        try:
+                            excluir_versao(v['id'])
+                            st.success("Versao excluida!")
+                            st.rerun()
+                        except ValueError as e:
+                            st.error(f"Erro: {e}")
 
 
 def main():

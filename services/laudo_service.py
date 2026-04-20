@@ -16,6 +16,7 @@ ROOT = os.path.dirname(
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+import json
 from database.db import executar_query, executar_comando
 
 
@@ -220,7 +221,7 @@ def atualizar_secao_laudo(secao_laudo_id: int, conteudo: str) -> None:
     """
     from database.db import executar_comando
     executar_comando(
-        "UPDATE secoes_laudo SET conteudo = ?, updated_at = datetime('now','localtime') WHERE id = ?",
+        "UPDATE secoes_laudo SET conteudo = ?, atualizado_em = datetime('now','localtime') WHERE id = ?",
         (conteudo, secao_laudo_id)
     )
 
@@ -250,3 +251,154 @@ def finalizar_laudo(laudo_id: int) -> None:
     rep = buscar_rep(laudo['rep_id'])
     if rep:
         alterar_status_rep_simples(rep['id'], "Concluído")
+
+
+def salvar_versao_snapshot(laudo_id: int) -> int:
+    """
+    Salva um snapshot do laudo com todas as seções.
+    Mantém máximo de 3 versões (remove a mais antiga se houver mais).
+
+    Args:
+        laudo_id: ID do laudo.
+
+    Returns:
+        Número da versão salva.
+
+    Raises:
+        ValueError: Se o laudo não existir.
+    """
+    laudo = buscar_laudo(laudo_id)
+    if not laudo:
+        raise ValueError("Laudo não encontrado.")
+
+    secoes = listar_secoes_laudo(laudo_id)
+    
+    snapshot_data = {
+        "laudo_id": laudo_id,
+        "rep_id": laudo['rep_id'],
+        "template_id": laudo['template_id'],
+        "versao_atual": laudo['versao_atual'],
+        "secoes": [
+            {
+                "id": s['id'],
+                "titulo": s['titulo'],
+                "conteudo": s['conteudo'],
+                "ordem": s['ordem'],
+                "obrigatoria": s['obrigatoria'],
+                "permite_fotos": s['permite_fotos']
+            }
+            for s in secoes
+        ]
+    }
+    
+    snapshot_json = json.dumps(snapshot_data, ensure_ascii=False)
+    
+    ultima_versao = buscar_ultima_versao(laudo_id)
+    nova_versao = (ultima_versao['versao'] + 1) if ultima_versao else 1
+    
+    executar_comando(
+        "INSERT INTO versoes_laudo (laudo_id, versao, snapshot) VALUES (?, ?, ?)",
+        (laudo_id, nova_versao, snapshot_json)
+    )
+    
+    limitar_versoes(laudo_id)
+    
+    return nova_versao
+
+
+def limitar_versoes(laudo_id: int) -> None:
+    """
+    Limita o número de versões para no máximo 3 (as mais recentes).
+    Remove as versões mais antigas se houver mais de 3.
+    """
+    sql_count = "SELECT COUNT(*) as total FROM versoes_laudo WHERE laudo_id = ?"
+    resultado = executar_query(sql_count, (laudo_id,))
+    total = resultado[0]['total'] if resultado else 0
+    
+    if total > 3:
+        versoes_a_manter = """
+            SELECT id FROM versoes_laudo 
+            WHERE laudo_id = ? 
+            ORDER BY versao DESC 
+            LIMIT 3
+        """
+        ids_manter = [row['id'] for row in executar_query(versoes_a_manter, (laudo_id,))]
+        
+        if ids_manter:
+            placeholders = ','.join('?' * len(ids_manter))
+            sql_delete = f"""
+                DELETE FROM versoes_laudo 
+                WHERE laudo_id = ? AND id NOT IN ({placeholders})
+            """
+            executar_comando(sql_delete, (laudo_id, *ids_manter))
+
+
+def buscar_ultima_versao(laudo_id: int) -> dict | None:
+    """Busca a última versão salva do laudo."""
+    sql = """
+        SELECT id, laudo_id, versao, snapshot, criado_em
+        FROM versoes_laudo
+        WHERE laudo_id = ?
+        ORDER BY versao DESC
+        LIMIT 1
+    """
+    rows = executar_query(sql, (laudo_id,))
+    if rows:
+        return dict(rows[0])
+    return None
+
+
+def listar_versoes(laudo_id: int) -> list:
+    """
+    Lista todas as versões de um laudo (máximo 3).
+
+    Args:
+        laudo_id: ID do laudo.
+
+    Returns:
+        Lista de versões ordenadas da mais recente para a mais antiga.
+    """
+    sql = """
+        SELECT id, laudo_id, versao, snapshot, criado_em
+        FROM versoes_laudo
+        WHERE laudo_id = ?
+        ORDER BY versao DESC
+    """
+    rows = executar_query(sql, (laudo_id,))
+    return [dict(row) for row in rows]
+
+
+def excluir_versao(versao_id: int) -> bool:
+    """Exclui uma versão específica do laudo."""
+    sql = "SELECT id FROM versoes_laudo WHERE id = ?"
+    rows = executar_query(sql, (versao_id,))
+    
+    if not rows:
+        return False
+    
+    executar_comando("DELETE FROM versoes_laudo WHERE id = ?", (versao_id,))
+    return True
+
+
+def restaurar_versao(versao_id: int) -> None:
+    """
+    Restaura o laudo para uma versão anterior.
+
+    Args:
+        versao_id: ID da versão a ser restaurada.
+    """
+    sql = "SELECT snapshot FROM versoes_laudo WHERE id = ?"
+    rows = executar_query(sql, (versao_id,))
+    
+    if not rows:
+        raise ValueError("Versão não encontrada.")
+    
+    snapshot_data = json.loads(rows[0]['snapshot'])
+    
+    for secao in snapshot_data['secoes']:
+        executar_comando(
+            """UPDATE secoes_laudo 
+               SET conteudo = ?, atualizado_em = datetime('now','localtime') 
+               WHERE id = ?""",
+            (secao['conteudo'], secao['id'])
+        )
