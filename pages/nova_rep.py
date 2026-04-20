@@ -33,6 +33,9 @@ st.set_page_config(
     layout="wide",
 )
 
+# Define a página atual na sessão para o menu funcionar corretamente
+st.session_state["_active_page"] = __file__
+
 # Renderiza o menu lateral (já exige autenticação)
 renderizar_menu()
 

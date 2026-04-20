@@ -477,6 +477,11 @@ def tela_dashboard():
                 label="Listar REPs",
                 icon="📄"
             )
+            st.page_link(
+                "pages/editar_rep.py",
+                label="Editar REP",
+                icon="✏️"
+            )
 
         # ── Laudos ──────────────────────────────────────
         with st.expander(
@@ -485,8 +490,18 @@ def tela_dashboard():
         ):
             st.page_link(
                 "pages/novo_laudo.py",
-                label="Novo Laudo",
+                label="Vincular Laudo a REP",
+                icon="➕"
+            )
+            st.page_link(
+                "pages/editor_laudo.py",
+                label="Editar Laudo",
                 icon="✏️"
+            )
+            st.page_link(
+                "pages/visualizar_laudo.py",
+                label="Visualizar Laudo",
+                icon="👁️"
             )
 
         # ── Cadastros ───────────────────────────────────

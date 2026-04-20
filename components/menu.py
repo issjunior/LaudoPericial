@@ -153,6 +153,11 @@ def renderizar_menu():
                 label="Editar Laudo",
                 icon="✏️"
             )
+            st.page_link(
+                "pages/visualizar_laudo.py",
+                label="Visualizar Laudo",
+                icon="👁️"
+            )
 
         with st.expander(
             "🗂️ Cadastros",
