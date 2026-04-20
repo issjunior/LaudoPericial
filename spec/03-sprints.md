@@ -12,7 +12,29 @@
 | T00.4 | Menu de navegação | UI | ✅ |
 | T00.5 | Dashboard com métricas | Dashboard | ✅ |
 
-**Duração**: N/A (já implementado)
+---
+
+## Status de REP
+
+| Status | Descrição | Transição |
+|--------|-----------|-----------|
+| **Pendente** | REP aguardando início do laudo | Estado inicial |
+| **Em Andamento** | Laudo em elaboração | automaticamene ao criar laudo |
+| **Concluído** | Laudo finalizado | ao finalizar laudo |
+
+### Lógica de Prazos (Dashboard)
+
+O sistema calcula automaticamente o status de prazo com base na `data_solicitacao`:
+
+- **Prazo Padrão**: 10 dias para completar um laudo
+- **Prazo Vencendo**: REP ativa (Pendente/Em Andamento) com 7-10 dias desde a solicitação
+- **Em Atraso**: REP ativa com mais de 10 dias desde a solicitação
+
+Constantes em `app.py:298-299`:
+```python
+PRAZO_PADRAO_DIAS = 10        # Prazo total para uma REP
+DIAS_PARA_ALERTA_VENCENDO = 3 # Quantos dias antes do prazo para alertar "Vencendo"
+```
 
 ---
 

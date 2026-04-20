@@ -554,39 +554,29 @@ def tela_dashboard():
     # Obtém as métricas atualizadas
     metricas = obter_metricas_reps(usuario["id"])
 
-    # Adicionando uma nova coluna para "Em Atraso"
-    col1, col2, col3, col4, col5 = st.columns(5)
+    def card_metrica(label, valor, cor, icon):
+        return f"""
+        <div style="
+            background: linear-gradient(135deg, {cor}15, {cor}08);
+            border: 1px solid {cor}30;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        ">
+            <div style="font-size: 32px; margin-bottom: 8px;">{icon}</div>
+            <div style="font-size: 36px; font-weight: bold; color: {cor};">{valor}</div>
+            <div style="font-size: 14px; color: #666; margin-top: 4px;">{label}</div>
+        </div>
+        """
 
-    with col1:
-        st.metric(
-            label="📋 REPs Pendentes",
-            value=metricas["pendentes"],
-            help="REPs aguardando início do laudo"
-        )
-    with col2:
-        st.metric(
-            label="📝 Em Andamento",
-            value=metricas["em_andamento"],
-            help="Laudos em elaboração"
-        )
-    with col3:
-        st.metric(
-            label="✅ Concluídos",
-            value=metricas["concluidos"],
-            help="Laudos finalizados"
-        )
-    with col4:
-        st.metric(
-            label="⚠️ Prazo Vencendo",
-            value=metricas["prazo_vencendo"],
-            help=f"REPs ativas com mais de {PRAZO_PADRAO_DIAS - DIAS_PARA_ALERTA_VENCENDO} dias da solicitação, mas ainda não em atraso." # <--- Ajuda atualizada
-        )
-    with col5:
-        st.metric(
-            label="🚨 Em Atraso",
-            value=metricas["em_atraso"],
-            help=f"REPs ativas com mais de {PRAZO_PADRAO_DIAS} dias da solicitação." # <--- Ajuda atualizada
-        )
+    st.markdown("### 📊 Visão Geral")
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.markdown(card_metrica("📋 Pendentes", metricas["pendentes"], "#FFA500", "📋"), unsafe_allow_html=True)
+    col2.markdown(card_metrica("📝 Em Andamento", metricas["em_andamento"], "#1E90FF", "📝"), unsafe_allow_html=True)
+    col3.markdown(card_metrica("✅ Concluídos", metricas["concluidos"], "#2ECC71", "✅"), unsafe_allow_html=True)
+    col4.markdown(card_metrica(f"⚠️ Vencendo ({PRAZO_PADRAO_DIAS - DIAS_PARA_ALERTA_VENCENDO}-{PRAZO_PADRAO_DIAS}d)", metricas["prazo_vencendo"], "#FF6B6B", "⚠️"), unsafe_allow_html=True)
+    col5.markdown(card_metrica(f"🚨 Atrasado (> {PRAZO_PADRAO_DIAS}d)", metricas["em_atraso"], "#DC143C", "🚨"), unsafe_allow_html=True)
 
     st.markdown("---")
     st.info(
