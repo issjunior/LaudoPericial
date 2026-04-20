@@ -4,6 +4,9 @@ venv/
 # Especificação e planejamento de arquitetura, features e sprints
 #spec
 
+# Scripts de desenvolvimento e testes
+#scripts
+
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
 *.sqlite

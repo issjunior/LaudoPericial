@@ -64,8 +64,8 @@ def extrair_username(email: str) -> str:
         Nome de usuário em minúsculo
 
     Exemplo:
-        izaias.santos@policiacientifica.pr.gov.br
-        → izaias.santos
+        nome.sobrenome@policiacientifica.pr.gov.br
+        → nome.sobrenome
     """
     return email.strip().lower().split("@")[0].strip()
 
@@ -140,7 +140,7 @@ def buscar_usuario_por_username(username: str) -> dict | None:
     Usado no login do sistema.
 
     Args:
-        username: nome de usuário (ex: izaias.santos)
+        username: nome de usuário (ex: nome.sobrenome)
 
     Returns:
         Dicionário com os dados do usuário ou None
@@ -277,7 +277,7 @@ def fazer_login(username: str, senha: str) -> bool:
     Se correto, salva os dados na sessão do Streamlit.
 
     Args:
-        username: nome de usuário (ex: izaias.santos)
+        username: nome de usuário (ex: nome.sobrenome)
         senha:    senha digitada
 
     Returns:

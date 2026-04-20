@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 """
 # username → prefixo do e-mail (antes do @)
-# Ex: izaias.santos@policiacientifica.pr.gov.br → izaias.santos
+# Ex: nome.sobrenome@policiacientifica.pr.gov.br → nome.sobrenome
 
 # ──────────────────────────────────────────────────────
 # TABELA: tipos_exame

@@ -40,7 +40,7 @@ if esta_autenticado():
     st.switch_page("app.py")
 
 def main():
-    st.title("🔐 LaudoPericial PCPR")
+    st.title("🔐 Laudo Pericial PCP")
     st.markdown("Sistema de Gestão de Laudos Periciais")
     st.markdown("---")
 
@@ -48,7 +48,7 @@ def main():
 
     with tab_login:
         with st.form("form_login"):
-            username = st.text_input("Usuário", placeholder="izaias.santos")
+            username = st.text_input("Usuário", placeholder="nome.sobrenome")
             senha = st.text_input("Senha", type="password")
 
             submitted = st.form_submit_button("Entrar", type="primary", use_container_width=True)

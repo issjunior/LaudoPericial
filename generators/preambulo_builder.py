@@ -1,1 +1,0 @@
-# Montagem automática do preâmbulo

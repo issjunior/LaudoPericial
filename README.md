@@ -127,6 +127,29 @@ O sistema abrirá automaticamente em `http://localhost:8501`
 3. Configure tipos de exame, solicitantes e templates
 4. Comece a criar requisições e laudos
 
+### Criar Dados de Teste (Opcional)
+
+Para testar o sistema com dados mockados, execute o script de dados de teste:
+
+```bash
+# Execute o script
+python scripts/criar_dados_teste.py
+```
+
+O script está localizado em: `scripts/criar_dados_teste.py`
+
+**O que o script cria:**
+- 1 usuário de teste (login: `teste`, senha: `teste`) - se não existir usuário
+- 5 tipos de exame
+- 5 solicitantes
+- 5 templates de laudo
+- 5 REPs em diferentes estágios (Pendente/Em Andamento)
+- 2 laudos vinculados
+
+**Tipos de documento usados:** BO, Ofício, BO PC, BO PM, CECOMP
+
+**Tipos de exame:** Acidente, Equipamento Eletrônico, Numerações, Local de Morte, Eficiência
+
 ---
 
 ## 📁 Estrutura do Projeto
@@ -149,6 +172,8 @@ LaudoPericial/
 ├── database/                # Banco de dados
 │   ├── db.py               # Conexão
 │   └── models.py           # Estrutura das tabelas
+├── scripts/                 # Scripts utilitários
+│   └── criar_dados_teste.py # Criar dados mockados
 ├── generators/              # Exportação (PDF, Word, etc)
 └── spec/                    # Documentação técnica
 ```

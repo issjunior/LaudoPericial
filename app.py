@@ -2,7 +2,7 @@
 """
 app.py
 ──────────────────────────────────────────────────────
-Ponto de entrada do sistema LaudoPericial PCPR.
+Ponto de entrada do sistema LaudoPericial PCP.
 Controla o fluxo inicial: primeiro acesso ou login.
 ──────────────────────────────────────────────────────
 """
@@ -34,7 +34,7 @@ from datetime import date, timedelta
 # Deve ser o primeiro comando Streamlit do arquivo
 # ──────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="LaudoPericial PCPR",
+    page_title="PCP - Laudo",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -81,7 +81,7 @@ def tela_primeiro_acesso():
     ou importa um banco de dados existente.
     """
     st.markdown(
-        "<h1 class='header-title'>🔍 LaudoPericial PCPR</h1>",
+        "<h1 class='header-title'>🔍 Laudo Pericial</h1>",
         unsafe_allow_html=True
     )
     st.markdown(
@@ -141,11 +141,11 @@ def tela_primeiro_acesso():
         with col1:
             nome = st.text_input(
                 "Nome Completo *",
-                placeholder="Ex: Izaias Santos de Souza Junior"
+                placeholder="Ex: Nome completo"
             )
             email = st.text_input(
                 "E-mail Institucional *",
-                placeholder="Ex: izaias.santos@policiacientifica.pr.gov.br"
+                placeholder="Ex: perito@policiacientifica.pr.gov.br"
             )
             matricula = st.text_input(
                 "Matrícula",
@@ -242,7 +242,7 @@ def tela_login():
     Tela de login — identificação por nome de usuário.
     """
     st.markdown(
-        "<h1 class='header-title'>🔍 LaudoPericial PCPR</h1>",
+        "<h1 class='header-title'>🔍 Laudo Pericial PCP</h1>",
         unsafe_allow_html=True
     )
     st.markdown(
@@ -260,7 +260,7 @@ def tela_login():
 
             username = st.text_input(
                 "Usuário",
-                placeholder="Ex: izaias.santos"
+                placeholder="Ex: nome.sobrenome"
             )
             senha = st.text_input(
                 "Senha",
