@@ -43,7 +43,7 @@
 
 | ID | Task | Módulo | Responsável | Status |
 |----|------|--------|-------------|--------|
-| T02.1 | Vincular Laudo a REP: page novo_laudo.py + menu (ao vincular REP a Template, status REP→"Em Andamento") | Laudos | ✅ |
+| T02.1 | Vincular Laudo a REP: criação automática ao criar REP se existir template (+ menu manual) | Laudos | ✅ |
 | T02.2 | Editor de Laudo: page editor_laudo.py + menu + editar seções com placeholders | Laudos | ✅ |
 | T02.3 | Editor de texto Quill em cada seção (com numeração) | Laudos | ✅ |
 | T02.4 | Salvar versão (snapshot) | Laudos | ⏳ |

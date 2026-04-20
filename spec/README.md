@@ -80,8 +80,9 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 
 | Feature | Arquivo | Descrição |
 |--------|--------|-----------|
-| Vincular Laudo a REP | `pages/novo_laudo.py` | Cria laudo vinculando REP + Template |
+| Criação automática de Laudo | `services/rep_service.py` | Ao criar REP com tipo que tem template, laudo é criado automaticamente |
 | Editor de Laudo | `pages/editor_laudo.py` | Edita seções com placeholders |
+| Quill Editor | `pages/editor_laudo.py` | Editor de texto rico em cada seção |
 | listar_laudos() | `services/laudo_service.py` | Lista laudos com filtros |
 
 ## Issues Conhecidos
@@ -89,4 +90,3 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 | Issue | Descrição | Status |
 |-------|-----------|--------|
 | Menu Laudos | Expansão automática não funciona | ⏳ Pendente |
-| Logout | Redireciona para página de logout | ✅ Correto |
