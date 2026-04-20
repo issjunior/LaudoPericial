@@ -53,9 +53,9 @@ def salvar_cabecalho(modelo: str, conteudo: str) -> None:
 
 
 try:
-    from streamlit_lexical_extended import streamlit_lexical_extended
+    from streamlit_jodit import st_jodit
 except ImportError:
-    streamlit_lexical_extended = None
+    st_jodit = None
 
 
 def main():
@@ -84,10 +84,19 @@ Código: {{tipo_exame_codigo}}
 REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
 
     conteudo_cabecalho = None
-    if streamlit_lexical_extended:
-        conteudo_cabecalho = streamlit_lexical_extended(
+    if st_jodit:
+        config = {
+            'minHeight': 350,
+            'height': 400,
+            'theme': 'default',
+            'allowResizeY': True,
+            'allowResizeX': True,
+            'enableDragAndDropFileToEditor': False,
+        }
+        conteudo_cabecalho = st_jodit(
             value=cabecalho_atual.get('conteudo', valor_padrao) if cabecalho_atual else valor_padrao,
-            key="cabecalho_editor"
+            key="cabecalho_editor",
+            config=config
         )
     else:
         conteudo_cabecalho = st.text_area(

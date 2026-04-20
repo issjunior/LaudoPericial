@@ -40,9 +40,9 @@ def formatar_data_br(data_iso: str) -> str:
 
 
 try:
-    from streamlit_lexical_extended import streamlit_lexical_extended
+    from streamlit_jodit import st_jodit
 except ImportError:
-    streamlit_lexical_extended = None
+    st_jodit = None
 
 st.set_page_config(
     page_title="Editar Laudo — LaudoPericial",
@@ -129,13 +129,22 @@ def renderizar_secoes(laudo_id: int):
             if secao['obrigatoria']:
                 st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
 
-            if streamlit_lexical_extended:
-                conteudo = streamlit_lexical_extended(
+            if st_jodit:
+                config = {
+                    'minHeight': 350,
+                    'height': 400,
+                    'theme': 'default',
+                    'allowResizeY': True,
+                    'allowResizeX': True,
+                    'enableDragAndDropFileToEditor': False,
+                }
+                conteudo = st_jodit(
                     value=secao['conteudo'] or "",
-                    key=f"secao_{secao['id']}"
+                    key=f"secao_{secao['id']}",
+                    config=config
                 )
             else:
-                st.warning("Editor Lexical não disponível. Usando campo de texto padrão.")
+                st.warning("Editor Jodit não disponível. Usando campo de texto padrão.")
                 conteudo = st.text_area(
                     "Conteúdo",
                     value=secao['conteudo'] or "",

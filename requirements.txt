@@ -1,4 +1,4 @@
 streamlit
 bcrypt
 python-dotenv
-streamlit-quill
+streamlit-jodit
