@@ -181,9 +181,10 @@ def buscar_laudo(laudo_id: int) -> dict | None:
         Dicionário com os dados do laudo ou None.
     """
     sql = """
-        SELECT id, rep_id, template_id, status, versao_atual, criado_em, atualizado_em
-        FROM laudos
-        WHERE id = ?
+        SELECT l.id, l.rep_id, l.template_id, l.status, l.versao_atual, l.criado_em, l.atualizado_em, r.usuario_id
+        FROM laudos l
+        JOIN rep r ON l.rep_id = r.id
+        WHERE l.id = ?
     """
     rows = executar_query(sql, (laudo_id,))
     if rows:

@@ -1,9 +1,9 @@
 # pages/editor_laudo.py
 """
 pages/editor_laudo.py
-─────────────────────────────────────────────────────
+────────────────────────────────────────────────────
 Página para editar Laudos existentes.
-─────────────────────────────────────────────────────
+────────────────────────────────────────────────────
 """
 
 import sys
@@ -38,6 +38,7 @@ def formatar_data_br(data_iso: str) -> str:
     except:
         return data_iso
 
+
 try:
     from streamlit_quill import st_quill
 except ImportError:
@@ -69,7 +70,7 @@ def renderizar_secoes(laudo_id: int):
     rep = buscar_rep(laudo['rep_id'])
 
     st.markdown("---")
-    st.markdown(f"### 📝 Editando: REP {rep['numero_rep']} - {rep['tipo_exame_nome']}")
+    st.markdown(f"### Editando: REP {rep['numero_rep']} - {rep['tipo_exame_nome']}")
 
     placeholders_disponiveis = """
     **Placeholders disponíveis (copie e cole no texto):**
@@ -119,29 +120,49 @@ def renderizar_secoes(laudo_id: int):
                 'obrigatoria': secao['obrigatoria']
             }
 
-    if st.button("💾 Salvar Laudo", type="primary"):
+    if st.button("Salvar Laudo", type="primary"):
         erros = []
         for secao_id, dados in secoes_salvas.items():
             if dados['obrigatoria'] and not dados['conteudo'].strip():
                 erros.append(dados['titulo'])
 
         if erros:
-            st.error(f"❌ Preencha as seções obrigatórias: {', '.join(erros)}")
+            st.error(f"Preencha as seções obrigatórias: {', '.join(erros)}")
         else:
             for secao_id, dados in secoes_salvas.items():
                 atualizar_secao_laudo(secao_id, dados['conteudo'])
             
             try:
                 versao = salvar_versao_snapshot(laudo_id)
-                st.success(f"✅ Laudo salvo! Versão {versao} criada (máx. 3 versões)")
+                st.success(f"Laudo salvo! Versao {versao} criada (max. 3 versoes)")
             except ValueError:
-                st.success("✅ Laudo salvo com sucesso!")
+                st.success("Laudo salvo com sucesso!")
             st.rerun()
+
+    st.markdown("---")
+    col_vis, col_salvar = st.columns([1, 3])
+    with col_vis:
+        try:
+            from services.gerador_pdf import gerar_pdf_laudo
+            from services.rep_service import buscar_rep
+            laudo = buscar_laudo(laudo_id)
+            rep = buscar_rep(laudo['rep_id'])
+            numero_rep = rep['numero_rep'].replace('/', '_')
+            pdf_bytes = gerar_pdf_laudo(laudo_id)
+            st.download_button(
+                label="Visualizar PDF",
+                data=pdf_bytes,
+                file_name=f"{numero_rep}.pdf",
+                mime="application/pdf",
+                icon="👁️"
+            )
+        except Exception as e:
+            st.error(f"Erro ao gerar PDF: {e}")
 
     versoes = listar_versoes(laudo_id)
     if versoes:
         with st.expander("Versoes Anteriores"):
-            st.caption("Apos restaurar clique no Menu Editar Laudo novamente para atualizar as informacoes.")
+            st.caption("Apos restaurar use o botao Visualizar PDF para ver o resultado.")
             for v in versoes:
                 col_v1, col_v2, col_v3 = st.columns([3, 1, 1])
                 with col_v1:
@@ -165,7 +186,7 @@ def renderizar_secoes(laudo_id: int):
 
 
 def main():
-    st.title("✏️ Editar Laudo")
+    st.title("Editar Laudo")
     st.markdown("Editar laudos existentes.")
     st.markdown("---")
 
