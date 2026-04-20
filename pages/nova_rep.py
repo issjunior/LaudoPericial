@@ -151,14 +151,16 @@ def main():
             )
 
         # Abas: Dados Gerais e Dados do Local
-        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local (Exame de Local)"])
+        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados complementares de Local"])
 
         with tab1:
-            st.info("Dados básicos para todos os tipos de exame.")
+            if st.session_state.get("exame_de_local_selecionado"):
+                st.info("Dados básicos para este tipo de exame.")
+            else:
+                st.info("Dados básicos para todos os tipos de exame.")
 
         with tab2:
             if st.session_state["exame_de_local_selecionado"]:
-                st.caption("Campos específicos para exames realizados no local do fato.")
                 local_fato_descricao = st.text_area(
                     "Descrição do Local do Fato",
                     placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
