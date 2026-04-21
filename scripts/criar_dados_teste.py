@@ -1,6 +1,8 @@
 """
 Script para criar dados de teste no banco.
-Executar: python scripts/criar_dados_teste.py
+
+Executar (usar ambiente virtual):
+    venv\Scripts\python scripts\criar_dados_teste.py
 """
 
 import sys
