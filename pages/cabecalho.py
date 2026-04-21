@@ -64,8 +64,12 @@ except ImportError:
 
 def main():
     st.title("📄 Configurar Cabeçalho do Laudo")
-    st.markdown("O texto do cabeçalho aparece em todos os PDFs gerados.")
-    st.markdown("---")
+    
+    with st.expander("ℹ️ O que é o Cabeçalho?", expanded=True):
+        st.markdown("""
+        O **cabeçalho** é o texto personalizado que aparece no topo de todos os laudos 
+        Periciais, independente do template utilizado.
+        """)
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):
         st.markdown("""
@@ -97,11 +101,12 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
             'allowResizeX': True,
             'enableDragAndDropFileToEditor': False,
         }
-        conteudo_cabecalho = st_jodit(
+        st_jodit(
             value=cabecalho_atual.get('conteudo', valor_padrao) if cabecalho_atual else valor_padrao,
             key="cabecalho_editor",
             config=config
         )
+        conteudo_cabecalho = st.session_state.get("cabecalho_editor") or cabecalho_atual.get('conteudo', valor_padrao) if cabecalho_atual else valor_padrao
     else:
         conteudo_cabecalho = st.text_area(
             "Conteúdo do Cabeçalho",
@@ -120,15 +125,17 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
         preview = preview.replace('{{data_solicitacao}}', '2024-01-01')
         st.markdown(f'<div style="background-color:white;padding:15px;border-radius:5px;">{preview}</div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1, 4])
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 1, 3])
     with col1:
-        if st.button("💾 Salvar Cabeçalho", type="primary", use_container_width=True):
-            try:
-                salvar_cabecalho("Padrão", conteudo_cabecalho)
-                st.success("✅ Cabeçalho salvo com sucesso!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Erro ao salvar: {e}")
+        salvar = st.button("💾 Salvar Cabeçalho", type="primary", use_container_width=True)
+    if salvar:
+        try:
+            salvar_cabecalho("Padrão", conteudo_cabecalho)
+            st.success("✅ Cabeçalho salvo com sucesso!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"❌ Erro ao salvar: {e}")
 
 
 main()
