@@ -48,14 +48,18 @@ def main():
     col_busca1, col_busca2 = st.columns([3, 1])
     with col_busca1:
         Todas_REPs = listar_reps()
+        
         opcoes_rep = {f"{r['numero_rep']} - {r['tipo_exame_nome']} ({r['status']})": r['id'] for r in Todas_REPs}
-        nomes_rep = ["Selecione uma REP"] + list(opcoes_rep.keys())
+        nomes_rep = ["Selecione uma REP"] + sorted(list(opcoes_rep.keys()))
+        
         rep_selecionado = st.selectbox(
-            "Selecione a REP para editar:",
+            "Digite ou selecione a REP:",
             options=nomes_rep,
             index=0,
-            key="rep_select"
+            key="rep_select",
+            help="Digite o número da REP para filtrar automaticamente"
         )
+    
     with col_busca2:
         st.write("")
         st.write("")

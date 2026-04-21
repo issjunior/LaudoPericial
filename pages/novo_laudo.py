@@ -72,7 +72,7 @@ def main():
         st.stop()
 
     opcoes_reps = {
-        f"{rep['numero_rep']} — {rep['tipo_exame_nome']} ({rep['status']})": rep['id']
+        f"{rep['numero_rep']} — {rep['tipo_exame_nome']} — ({rep['status']})": rep['id']
         for rep in reps_disponiveis
     }
     if opcoes_reps:
@@ -91,7 +91,7 @@ def main():
         st.stop()
 
     opcoes_templates = {
-        f"{t['nome']} ({t['tipo_exame_nome']})": t['id']
+        f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
         for t in templates
     }
     nomes_templates = ["Selecione um Template"] + list(opcoes_templates.keys())
