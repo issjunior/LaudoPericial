@@ -121,6 +121,21 @@ streamlit run app.py
 
 O sistema abrirá automaticamente em `http://localhost:8501`
 
+### Instalação do Chromium (Geração de PDF)
+
+Para gerar PDFs, o sistema usa o Chromium:
+
+```bash
+# Execute no ambiente virtual
+venv\Scripts\pip install playwright
+venv\Scripts\playwright install chromium
+
+# Opcional: copiar chromium para o projeto (não precisa do playwright no servidor)
+xcopy "%LOCALAPPDATA%\ms-playwright\chromium-1208\chrome-win64\*" "chromium\" /E /I /Y
+```
+
+**Deploy:** Inclua a pasta `chromium/` no servidor ou instale o Playwright conforme acima.
+
 ### Primeiro Acesso
 1. Crie sua conta administrativa (primeira vez)
 2. Faça login
@@ -157,6 +172,7 @@ O script está localizado em: `scripts/criar_dados_teste.py`
 ```
 LaudoPericial/
 ├── app.py                    # Entrada principal
+├── chromium/                 # Chromium para geração de PDF
 ├── pages/                    # Páginas do aplicativo
 │   ├── 00_login.py          # Autenticação
 │   ├── 01_dashboard.py      # Dashboard
