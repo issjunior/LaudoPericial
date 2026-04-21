@@ -35,8 +35,10 @@ from services.template_service import (
     excluir_secao_template,
 )
 
-# ──────────────────────────────────────────────────────
-# CONFIGURAÇÃO DA PÁGINA
+try:
+    from streamlit_jodit import st_jodit
+except ImportError:
+    st_jodit = None
 # ──────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Templates de Laudo — LaudoPericial",
@@ -519,11 +521,26 @@ def formulario_criar_secao(template_id: int):
             "Título da Seção *",
             placeholder="Ex: Preâmbulo, Histórico, Objetivo Pericial"
         )
-        conteudo_base = st.text_area(
-            "Conteúdo Padrão (Opcional)",
-            placeholder="Texto que aparecerá por padrão nesta seção do laudo.",
-            height=150
-        )
+        
+        if st_jodit:
+            config = {
+                'minHeight': 200,
+                'height': 250,
+                'theme': 'default',
+                'allowResizeY': True,
+            }
+            conteudo_base = st_jodit(
+                value="",
+                key="criar_secao_conteudo",
+                config=config
+            )
+        else:
+            conteudo_base = st.text_area(
+                "Conteúdo Padrão (Opcional)",
+                placeholder="Texto que aparecerá por padrão nesta seção do laudo.",
+                height=150
+            )
+        
         col_opcoes, col_ordem = st.columns([2, 1])
         with col_opcoes:
             obrigatoria = st.checkbox("Seção Obrigatória", help="Marque se esta seção deve sempre aparecer no laudo.")
@@ -591,11 +608,26 @@ def formulario_editar_secao(secao_id: int):
             "Título da Seção *",
             value=secao["titulo"]
         )
-        conteudo_base = st.text_area(
-            "Conteúdo Padrão (Opcional)",
-            value=secao["conteudo_base"] or "",
-            height=150
-        )
+        
+        if st_jodit:
+            config = {
+                'minHeight': 200,
+                'height': 250,
+                'theme': 'default',
+                'allowResizeY': True,
+            }
+            conteudo_base = st_jodit(
+                value=secao["conteudo_base"] or "",
+                key=f"editar_secao_conteudo_{secao_id}",
+                config=config
+            )
+        else:
+            conteudo_base = st.text_area(
+                "Conteúdo Padrão (Opcional)",
+                value=secao["conteudo_base"] or "",
+                height=150
+            )
+        
         col_opcoes, col_ordem = st.columns([2, 1])
         with col_opcoes:
             obrigatoria = st.checkbox(
