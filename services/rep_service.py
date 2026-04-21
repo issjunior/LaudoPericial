@@ -398,6 +398,9 @@ def atualizar_rep(
     # Se tipo_exame_id for None, reverte status para Pendente (não pode ter laudo sem tipo)
     if tipo_exame_id is None and status != "Pendente":
         status = "Pendente"
+    # Se tipo_exame_id era None e agora tem valor, muda status para Em Andamento
+    elif rep_existente['tipo_exame_id'] is None and tipo_exame_id and status == "Pendente":
+        status = "Em Andamento"
 
     sql = """
         UPDATE rep
