@@ -2,3 +2,5 @@ streamlit
 bcrypt
 python-dotenv
 streamlit-jodit
+playwright
+Pillow

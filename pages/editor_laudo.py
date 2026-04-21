@@ -182,7 +182,7 @@ def renderizar_secoes(laudo_id: int):
     col_vis, col_salvar = st.columns([1, 3])
     with col_vis:
         try:
-            from services.gerador_pdf import gerar_pdf_laudo
+            from services.gerador_pdf_playwright import gerar_pdf_laudo
             from services.rep_service import buscar_rep
             laudo = buscar_laudo(laudo_id)
             rep = buscar_rep(laudo['rep_id'])

@@ -3,6 +3,10 @@ pages/cabecalho.py
 ─────────────────────────────────────────────────────
 Página para configurar o cabeçalho do Laudo PDF.
 Permite personalização do texto que aparece em todos os laudos.
+
+Nota: O cabeçalho editado aqui é automaticamente utilizado pelo novo
+gerador de PDF (Playwright) em services/gerador_pdf_playwright.py
+para manter a formatação completa no documento final.
 ─────────────────────────────────────────────────────
 """
 

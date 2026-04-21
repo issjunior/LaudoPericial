@@ -35,5 +35,8 @@ __pycache__/
 *.tmp
 *.log
 
+# Chromium (baixar no deploy: playwright install chromium)
+chromium/
+
 # Documentos gerados (laudos exportados)
 /exports/
