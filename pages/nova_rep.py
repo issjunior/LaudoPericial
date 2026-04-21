@@ -60,7 +60,7 @@ def main():
 
     # Mapeia para {nome: id} para os selectboxes e ORDENA ALFABETICAMENTE
     opcoes_tipos_exame = {f"{te['codigo']} - {te['nome']}": te['id'] for te in tipos_exame}
-    nomes_tipos_exame = ["Selecione um Tipo de Exame"] + sorted(list(opcoes_tipos_exame.keys()))
+    nomes_tipos_exame = ["— Não definido —"] + sorted(list(opcoes_tipos_exame.keys()))
 
     opcoes_solicitantes = {f"{s['orgao']} ({s['nome'] or 'N/A'})": s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
@@ -95,7 +95,7 @@ def main():
                 help="Selecione o tipo de exame pericial."
             )
             # Atualiza o estado para mostrar/esconder campos de local
-            if tipo_exame_selecionado != "Selecione um Tipo de Exame":
+            if tipo_exame_selecionado != "— Não definido —":
                 tipo_exame_id_selecionado = opcoes_tipos_exame[tipo_exame_selecionado]
                 exame_info = next((te for te in tipos_exame if te['id'] == tipo_exame_id_selecionado), None)
                 if exame_info and exame_info['exame_de_local']:
@@ -247,9 +247,6 @@ def main():
             if not numero_rep:
                 st.error("❌ O número da REP é obrigatório.")
                 st.stop()
-            if tipo_exame_selecionado == "Selecione um Tipo de Exame":
-                st.error("❌ Por favor, selecione um Tipo de Exame.")
-                st.stop()
             if solicitante_selecionado == "Selecione um Solicitante":
                 st.error("❌ Por favor, selecione um Solicitante.")
                 st.stop()
@@ -260,8 +257,8 @@ def main():
                 st.error("❌ O número do documento é obrigatório.")
                 st.stop()
 
-            # Converte IDs
-            tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado]
+            # Converte IDs (tipo_exame_id pode ser None)
+            tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado] if tipo_exame_selecionado != "— Não definido —" else None
             solicitante_id = opcoes_solicitantes[solicitante_selecionado]
 
             # Formata datas e horários para o banco (YYYY-MM-DD para SQLite)

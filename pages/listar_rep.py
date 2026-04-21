@@ -46,7 +46,7 @@ def buscar_reps(
             r.tipo_solicitacao,
             r.numero_documento,
             s.orgao AS orgao_solicitante,
-            te.codigo || ' - ' || te.nome AS tipo_exame_nome,
+            COALESCE(te.codigo || ' - ' || te.nome, 'Não definido') AS tipo_exame_nome,
             r.status,
             SUBSTR(u.nome, 1, INSTR(u.nome || ' ', ' ') - 1) AS perito_primeiro_nome
         FROM

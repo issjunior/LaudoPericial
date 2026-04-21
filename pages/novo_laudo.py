@@ -72,7 +72,7 @@ def main():
         st.stop()
 
     opcoes_reps = {
-        f"{rep['numero_rep']} — {rep['tipo_exame_nome']} — ({rep['status']})": rep['id']
+        f"{rep['numero_rep']} — {rep.get('tipo_exame_nome') or 'Tipo não definido'} — ({rep['status']})": rep['id']
         for rep in reps_disponiveis
     }
     if opcoes_reps:

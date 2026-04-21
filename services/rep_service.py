@@ -221,10 +221,10 @@ def criar_rep(
         (numero_rep,)
     )
     if existe:
-        raise ValueError(f"Já existe uma REP com o número '{numero_rep}'.")
+        raise ValueError(f"Já existe outra REP com o número '{numero_rep}'.")
 
-    # Validações de IDs
-    if not buscar_tipo_exame(tipo_exame_id):
+    # Validações de IDs (tipo_exame_id pode ser None)
+    if tipo_exame_id and not buscar_tipo_exame(tipo_exame_id):
         raise ValueError("Tipo de exame não encontrado.")
     if solicitante_id and not buscar_solicitante(solicitante_id):
         raise ValueError("Solicitante não encontrado.")
@@ -389,11 +389,15 @@ def atualizar_rep(
     if existe:
         raise ValueError(f"Já existe outra REP com o número '{numero_rep}'.")
 
-    # Validações de IDs
-    if not buscar_tipo_exame(tipo_exame_id):
+    # Validações de IDs (tipo_exame_id pode ser None)
+    if tipo_exame_id and not buscar_tipo_exame(tipo_exame_id):
         raise ValueError("Tipo de exame não encontrado.")
     if solicitante_id and not buscar_solicitante(solicitante_id):
         raise ValueError("Solicitante não encontrado.")
+
+    # Se tipo_exame_id for None, reverte status para Pendente (não pode ter laudo sem tipo)
+    if tipo_exame_id is None and status != "Pendente":
+        status = "Pendente"
 
     sql = """
         UPDATE rep

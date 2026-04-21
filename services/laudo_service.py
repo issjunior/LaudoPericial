@@ -146,11 +146,12 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
     from services.template_service import listar_secoes_template
     secoes = listar_secoes_template(template_id)
     for secao in secoes:
+        from database.db import executar_comando
         executar_comando(
             """
             INSERT INTO secoes_laudo (
-                laudo_id, secao_template_id, titulo, conteudo, ordem, obrigatoria, permite_fotos
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                laudo_id, secao_template_id, titulo, conteudo, ordem, obrigatoria
+            ) VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
                 novo_laudo['id'],
@@ -159,11 +160,9 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
                 secao['conteudo_base'],
                 secao['ordem'],
                 secao['obrigatoria'],
-                secao['permite_fotos']
             )
         )
 
-    from services.rep_service import buscar_rep
     from services.rep_service import alterar_status_rep_simples
     alterar_status_rep_simples(rep_id, "Em Andamento")
 
@@ -225,7 +224,7 @@ def listar_secoes_laudo(laudo_id: int) -> list:
         Lista de dicionários com as seções.
     """
     sql = """
-        SELECT id, laudo_id, secao_template_id, titulo, conteudo, ordem, obrigatoria, permite_fotos
+        SELECT id, laudo_id, secao_template_id, titulo, conteudo, ordem, obrigatoria
         FROM secoes_laudo
         WHERE laudo_id = ?
         ORDER BY ordem
@@ -308,7 +307,6 @@ def salvar_versao_snapshot(laudo_id: int) -> int:
                 "conteudo": s['conteudo'],
                 "ordem": s['ordem'],
                 "obrigatoria": s['obrigatoria'],
-                "permite_fotos": s['permite_fotos']
             }
             for s in secoes
         ]

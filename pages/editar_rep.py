@@ -49,7 +49,7 @@ def main():
     with col_busca1:
         Todas_REPs = listar_reps()
         
-        opcoes_rep = {f"{r['numero_rep']} - {r['tipo_exame_nome']} ({r['status']})": r['id'] for r in Todas_REPs}
+        opcoes_rep = {f"{r['numero_rep']} - {r.get('tipo_exame_nome') or 'Tipo não definido'} ({r['status']})": r['id'] for r in Todas_REPs}
         nomes_rep = ["Selecione uma REP"] + sorted(list(opcoes_rep.keys()))
         
         rep_selecionado = st.selectbox(
@@ -86,7 +86,7 @@ def main():
     solicitantes = listar_solicitantes(apenas_ativos=True)
 
     opcoes_tipos_exame = {f"{te['codigo']} - {te['nome']}": te['id'] for te in tipos_exame}
-    nomes_tipos_exame = ["Selecione um Tipo de Exame"] + sorted(list(opcoes_tipos_exame.keys()))
+    nomes_tipos_exame = ["— Não definido —"] + sorted(list(opcoes_tipos_exame.keys()))
 
     opcoes_solicitantes = {f"{s['orgao']} ({s['nome'] or 'N/A'})": s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
@@ -94,7 +94,7 @@ def main():
     TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"]
     STATUS_REP = ["Pendente", "Em Andamento", "Concluído"]
 
-    tipo_exame_atual = next((k for k, v in opcoes_tipos_exame.items() if v == rep.get('tipo_exame_id')), "Selecione um Tipo de Exame")
+    tipo_exame_atual = next((k for k, v in opcoes_tipos_exame.items() if v == rep.get('tipo_exame_id')), "— Não definido —")
     solicitante_atual = next((k for k, v in opcoes_solicitantes.items() if v == rep.get('solicitante_id')), "Selecione um Solicitante")
 
     if "exame_de_local_selecionado" not in st.session_state:
@@ -264,7 +264,7 @@ def main():
                 st.error("❌ O número do documento é obrigatório.")
                 st.stop()
 
-            tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado]
+            tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado] if tipo_exame_selecionado != "— Não definido —" else None
             solicitante_id = opcoes_solicitantes[solicitante_selecionado] if solicitante_selecionado != "Selecione um Solicitante" else None
 
             data_solicitacao_str = data_solicitacao.strftime("%Y-%m-%d")

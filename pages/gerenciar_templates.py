@@ -473,19 +473,18 @@ def gerenciar_secoes(template_id: int):
         st.info("📭 Nenhuma seção cadastrada para este template ainda.")
     else:
         # Cabeçalho da tabela de seções
-        col_titulo, col_ordem, col_obrigatoria, col_fotos, col_acoes = st.columns(
-            [4, 1.5, 1.5, 1.5, 2]
+        col_titulo, col_ordem, col_obrigatoria, col_acoes = st.columns(
+            [4, 1.5, 1.5, 2]
         )
         col_titulo.markdown("**Título**")
         col_ordem.markdown("**Ordem**")
         col_obrigatoria.markdown("**Obrigatória**")
-        col_fotos.markdown("**Permite Fotos**")
         col_acoes.markdown("**Ações**")
         st.markdown("---")
 
         for secao in secoes:
-            col_titulo, col_ordem, col_obrigatoria, col_fotos, col_acoes = st.columns(
-                [4, 1.5, 1.5, 1.5, 2]
+            col_titulo, col_ordem, col_obrigatoria, col_acoes = st.columns(
+                [4, 1.5, 1.5, 2]
             )
             with col_titulo:
                 st.markdown(f"**{secao['titulo']}**")
@@ -493,8 +492,6 @@ def gerenciar_secoes(template_id: int):
                 st.markdown(str(secao['ordem']))
             with col_obrigatoria:
                 st.markdown("✅ Sim" if secao['obrigatoria'] else "— Não")
-            with col_fotos:
-                st.markdown("🖼️ Sim" if secao['permite_fotos'] else "— Não")
             with col_acoes:
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
@@ -544,7 +541,6 @@ def formulario_criar_secao(template_id: int):
         col_opcoes, col_ordem = st.columns([2, 1])
         with col_opcoes:
             obrigatoria = st.checkbox("Seção Obrigatória", help="Marque se esta seção deve sempre aparecer no laudo.")
-            permite_fotos = st.checkbox("Permite Fotos", help="Marque se esta seção pode ter fotos anexadas.")
         with col_ordem:
             ordem = st.number_input(
                 "Ordem de Exibição",
@@ -580,7 +576,6 @@ def formulario_criar_secao(template_id: int):
                     conteudo_base = conteudo_base,
                     ordem         = ordem,
                     obrigatoria   = obrigatoria,
-                    permite_fotos = permite_fotos,
                 )
                 st.success(f"✅ Seção **{titulo}** criada com sucesso!")
                 st.session_state["secao_modo"] = None # Fecha o formulário de seção
@@ -635,11 +630,6 @@ def formulario_editar_secao(secao_id: int):
                 value=bool(secao["obrigatoria"]),
                 help="Marque se esta seção deve sempre aparecer no laudo."
             )
-            permite_fotos = st.checkbox(
-                "Permite Fotos",
-                value=bool(secao["permite_fotos"]),
-                help="Marque se esta seção pode ter fotos anexadas."
-            )
         with col_ordem:
             ordem = st.number_input(
                 "Ordem de Exibição",
@@ -675,7 +665,6 @@ def formulario_editar_secao(secao_id: int):
                     conteudo_base = conteudo_base,
                     ordem         = ordem,
                     obrigatoria   = obrigatoria,
-                    permite_fotos = permite_fotos,
                 )
                 st.success(f"✅ Seção **{titulo}** atualizada com sucesso!")
                 st.session_state["secao_modo"] = None # Fecha o formulário de seção

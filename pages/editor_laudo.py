@@ -75,7 +75,7 @@ def renderizar_secoes(laudo_id: int):
     rep = buscar_rep(laudo['rep_id'])
 
     st.markdown("---")
-    st.markdown(f"### Editando: REP {rep['numero_rep']} - {rep['tipo_exame_nome']}")
+    st.markdown(f"### Editando: REP {rep['numero_rep']} - {rep.get('tipo_exame_nome') or 'Tipo não definido'}")
 
     placeholders_disponiveis = """
     **Placeholders disponíveis (copie e cole no texto):**

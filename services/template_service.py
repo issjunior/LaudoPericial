@@ -281,7 +281,7 @@ def listar_secoes_template(template_id: int) -> list:
         Lista de dicionários com as seções.
     """
     sql = """
-        SELECT id, template_id, titulo, conteudo_base, ordem, obrigatoria, permite_fotos
+        SELECT id, template_id, titulo, conteudo_base, ordem, obrigatoria
         FROM secoes_template
         WHERE template_id = ?
         ORDER BY ordem
@@ -301,7 +301,7 @@ def buscar_secao_template(secao_id: int) -> dict | None:
         Dicionário com os dados ou None se não encontrada
     """
     sql = """
-        SELECT id, template_id, titulo, conteudo_base, ordem, obrigatoria, permite_fotos
+        SELECT id, template_id, titulo, conteudo_base, ordem, obrigatoria
         FROM secoes_template
         WHERE id = ?
     """
@@ -317,7 +317,6 @@ def criar_secao_template(
     conteudo_base: str = "",
     ordem:         int = 0,
     obrigatoria:   bool = False,
-    permite_fotos: bool = False,
 ) -> int:
     """
     Cria uma nova seção para um template.
@@ -328,7 +327,6 @@ def criar_secao_template(
         conteudo_base: Conteúdo padrão da seção
         ordem:         Ordem de exibição
         obrigatoria:   Se a seção é obrigatória
-        permite_fotos: Se a seção permite anexar fotos
 
     Returns:
         ID da nova seção criada
@@ -358,12 +356,12 @@ def criar_secao_template(
         )
 
     sql = """
-        INSERT INTO secoes_template (template_id, titulo, conteudo_base, ordem, obrigatoria, permite_fotos)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO secoes_template (template_id, titulo, conteudo_base, ordem, obrigatoria)
+        VALUES (?, ?, ?, ?, ?)
     """
     return executar_comando(
         sql,
-        (template_id, titulo, conteudo_base, ordem, int(obrigatoria), int(permite_fotos))
+        (template_id, titulo, conteudo_base, ordem, int(obrigatoria))
     )
 
 
@@ -373,7 +371,6 @@ def atualizar_secao_template(
     conteudo_base: str = "",
     ordem:         int = 0,
     obrigatoria:   bool = False,
-    permite_fotos: bool = False,
 ) -> None:
     """
     Atualiza os dados de uma seção de template existente.
@@ -384,7 +381,6 @@ def atualizar_secao_template(
         conteudo_base: Novo conteúdo padrão
         ordem:         Nova ordem de exibição
         obrigatoria:   Novo status de obrigatoriedade
-        permite_fotos: Novo status de permissão de fotos
 
     Raises:
         ValueError: Se a seção não existir, título vazio ou já em uso
@@ -415,12 +411,12 @@ def atualizar_secao_template(
 
     sql = """
         UPDATE secoes_template
-        SET titulo = ?, conteudo_base = ?, ordem = ?, obrigatoria = ?, permite_fotos = ?
+        SET titulo = ?, conteudo_base = ?, ordem = ?, obrigatoria = ?
         WHERE id = ?
     """
     executar_comando(
         sql,
-        (titulo, conteudo_base, ordem, int(obrigatoria), int(permite_fotos), secao_id)
+        (titulo, conteudo_base, ordem, int(obrigatoria), secao_id)
     )
 
 

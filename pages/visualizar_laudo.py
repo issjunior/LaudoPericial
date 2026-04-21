@@ -64,7 +64,7 @@ def renderizar_laudo(laudo_id: int):
     rep = buscar_rep(laudo['rep_id'])
 
     st.markdown("---")
-    st.markdown(f"### REP {rep['numero_rep']} — {rep['tipo_exame_nome']}")
+    st.markdown(f"### REP {rep['numero_rep']} — {rep.get('tipo_exame_nome') or 'Tipo não definido'}")
 
     col_st1, col_st2, col_pdf = st.columns([1, 1, 1])
     with col_st1:

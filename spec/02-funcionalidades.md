@@ -34,7 +34,7 @@
 - `nome_envolvido`
 - `local_fato_descricao`
 - `latitude` / `longitude` (exame local)
-- `status` (Pendente, Em Andamento, Concluído, Arquivado, Cancelado)
+- `status` (Pendente, Em Andamento, Concluído)
 - `observacoes`
 
 ---
@@ -120,7 +120,7 @@
 ### Campos Laudo
 - `rep_id` (FK única)
 - `template_id` (FK)
-- `status` (Rascunho, Em Revisão, Finalizado)
+- `status` (Em Andamento, Finalizado, Entregue)
 - `versao_atual`
 
 ### Campos Seção Laudo

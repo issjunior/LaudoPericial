@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS solicitantes (
 SQL_CRIAR_TEMPLATES = """
 CREATE TABLE IF NOT EXISTS templates (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    tipo_exame_id       INTEGER NOT NULL
+    tipo_exame_id       INTEGER
                             REFERENCES tipos_exame(id),
     nome                TEXT    NOT NULL,
     descricao_exame     TEXT,
@@ -106,10 +106,9 @@ CREATE TABLE IF NOT EXISTS secoes_template (
     conteudo_base   TEXT    DEFAULT '',
     ordem           INTEGER NOT NULL DEFAULT 0,
     obrigatoria     INTEGER NOT NULL DEFAULT 0,
-    permite_fotos   INTEGER NOT NULL DEFAULT 0,
     criado_em       TEXT    NOT NULL
                         DEFAULT (datetime('now','localtime')),
-    atualizado_em   TEXT    NOT NULL
+    atualizado_em  TEXT    NOT NULL
                         DEFAULT (datetime('now','localtime'))
 );
 """
@@ -195,15 +194,14 @@ CREATE TABLE IF NOT EXISTS secoes_laudo (
                             ON DELETE CASCADE,
     secao_template_id   INTEGER
                             REFERENCES secoes_template(id),
-    titulo              TEXT    NOT NULL,
+titulo              TEXT    NOT NULL,
     conteudo            TEXT    DEFAULT '',
     ordem               INTEGER NOT NULL DEFAULT 0,
     obrigatoria         INTEGER NOT NULL DEFAULT 0,
-    permite_fotos       INTEGER NOT NULL DEFAULT 0,
     criado_em           TEXT    NOT NULL
-                            DEFAULT (datetime('now','localtime')),
-    atualizado_em       TEXT    NOT NULL
-                            DEFAULT (datetime('now','localtime'))
+                        DEFAULT (datetime('now','localtime')),
+    atualizado_em      TEXT    NOT NULL
+                        DEFAULT (datetime('now','localtime'))
 );
 """
 
