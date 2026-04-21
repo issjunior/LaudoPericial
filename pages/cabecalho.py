@@ -94,9 +94,10 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
     conteudo_cabecalho = None
     if st_jodit:
         config = {
-            'minHeight': 350,
-            'height': 400,
+            'minHeight': 250,
+            'height': 300,
             'theme': 'default',
+            'defaultLineHeight': 1,
             'allowResizeY': True,
             'allowResizeX': True,
             'enableDragAndDropFileToEditor': False,
@@ -119,8 +120,8 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
 
     if conteudo_cabecalho:
         st.markdown("#### Preview")
-        preview = conteudo_cabecalho.replace('{{tipo_exame}}', 'Necropsia')
-        preview = preview.replace('{{tipo_exame_codigo}}', 'NEC-001')
+        preview = conteudo_cabecalho.replace('{{tipo_exame}}', 'Exame de equipamento Eletrônico')
+        preview = preview.replace('{{tipo_exame_codigo}}', 'E-381')
         preview = preview.replace('{{numero_rep}}', '00.000-2024')
         preview = preview.replace('{{data_solicitacao}}', '2024-01-01')
         st.markdown(f'<div style="background-color:white;padding:15px;border-radius:5px;">{preview}</div>', unsafe_allow_html=True)
