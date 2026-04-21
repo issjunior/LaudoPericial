@@ -168,10 +168,9 @@ CREATE TABLE IF NOT EXISTS laudos (
     rep_id          INTEGER NOT NULL UNIQUE
                         REFERENCES rep(id),
     template_id     INTEGER REFERENCES templates(id),
-    status          TEXT    NOT NULL DEFAULT 'Rascunho'
+    status          TEXT    NOT NULL DEFAULT 'Em Andamento'
                         CHECK(status IN (
-                            'Rascunho',
-                            'Em Revisão',
+                            'Em Andamento',
                             'Finalizado',
                             'Entregue'
                         )),

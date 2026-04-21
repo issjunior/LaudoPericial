@@ -142,8 +142,8 @@ def criar_dados():
     
     # Laudos
     laudos_rep = [
-        ("0004-2026", 4, "Rascunho"),
-        ("0005-2026", 5, "Em Revisão"),
+        ("0004-2026", 4, "Em Andamento"),
+        ("0005-2026", 5, "Finalizado"),
         ("0001-2026", 1, "Finalizado"),
         ("0002-2026", 2, "Entregue"),
     ]

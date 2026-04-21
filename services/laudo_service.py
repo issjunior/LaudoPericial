@@ -134,7 +134,7 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
     executar_comando(
         """
         INSERT INTO laudos (rep_id, template_id, status, versao_atual)
-        VALUES (?, ?, 'Rascunho', 1)
+        VALUES (?, ?, 'Em Andamento', 1)
         """,
         (rep_id, template_id)
     )
@@ -190,6 +190,28 @@ def buscar_laudo(laudo_id: int) -> dict | None:
     if rows:
         return dict(rows[0])
     return None
+
+
+def atualizar_status_laudo(laudo_id: int, novo_status: str) -> None:
+    """
+    Atualiza o status de um laudo.
+
+    Args:
+        laudo_id: ID do laudo.
+        novo_status: Novo status (Em Andamento, Finalizado, Entregue).
+
+    Raises:
+        ValueError: Se o status for inválido.
+    """
+    STATUS_VALIDOS = ["Em Andamento", "Finalizado", "Entregue"]
+    if novo_status not in STATUS_VALIDOS:
+        raise ValueError(f"Status inválido: {novo_status}")
+
+    from database.db import executar_comando
+    executar_comando(
+        "UPDATE laudos SET status = ?, atualizado_em = datetime('now','localtime') WHERE id = ?",
+        (novo_status, laudo_id)
+    )
 
 
 def listar_secoes_laudo(laudo_id: int) -> list:

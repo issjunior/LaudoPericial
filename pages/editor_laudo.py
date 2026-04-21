@@ -178,6 +178,19 @@ def renderizar_secoes(laudo_id: int):
                 st.success("Laudo salvo com sucesso!")
             st.rerun()
 
+    if laudo['status'] == 'Em Andamento':
+        st.markdown("---")
+        col_btn_finalizar, _ = st.columns([1, 3])
+        with col_btn_finalizar:
+            if st.button("✅ Marcar como Finalizado", type="primary", use_container_width=True):
+                from services.laudo_service import atualizar_status_laudo
+                try:
+                    atualizar_status_laudo(laudo_id, 'Finalizado')
+                    st.success("Laudo marcado como Finalizado!")
+                    st.rerun()
+                except ValueError as e:
+                    st.error(f"Erro: {e}")
+
     st.markdown("---")
     col_vis, col_salvar = st.columns([1, 3])
     with col_vis:
@@ -231,7 +244,7 @@ def main():
 
     laudos_existentes = listar_laudos(
         usuario_id=usuario_logado['id'],
-        status='Rascunho'
+        status='Em Andamento'
     )
 
     if not laudos_existentes:
