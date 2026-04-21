@@ -28,6 +28,8 @@ from services.laudo_service import (
     excluir_versao,
     salvar_versao_snapshot
 )
+from services.rep_service import listar_reps
+from services.laudo_service import buscar_laudo_por_rep
 
 
 def formatar_data_br(data_iso: str) -> str:
@@ -242,34 +244,38 @@ def main():
     st.markdown("Editar laudos existentes.")
     st.markdown("---")
 
-    laudos_existentes = listar_laudos(
-        usuario_id=usuario_logado['id'],
-        status='Em Andamento'
+    reps_em_andamento = listar_reps(
+        status='Em Andamento',
+        usuario_id=usuario_logado['id']
     )
 
-    if not laudos_existentes:
-        st.info("Nenhum laudo em rascunho encontrado.")
+    if not reps_em_andamento:
+        st.info("Nenhuma REP em andamento encontrada.")
         st.markdown("---")
         st.markdown("### Como criar um novo laudo?")
         st.page_link("pages/novo_laudo.py", label="Clique aqui para vincular um laudo a uma REP", use_container_width=True)
         st.stop()
 
-    opcoes_laudos = {
-        f"{l['numero_rep']} - {l['tipo_exame_nome']} ({l['status']})": l['id']
-        for l in laudos_existentes
+    opcoes_reps = {
+        f"{r['numero_rep']} — {r['tipo_exame_nome']} — ({r['status']})": r['id']
+        for r in reps_em_andamento
     }
-    nomes_laudos = ["Selecione um Laudo"] + list(opcoes_laudos.keys())
+    nomes_reps = ["Selecione uma REP"] + sorted(list(opcoes_reps.keys()))
 
-    laudo_selecionado = st.selectbox(
-        "Selecione um Laudo para Editar",
-        options=nomes_laudos,
-        key="laudo_selecionado"
+    rep_selecionada = st.selectbox(
+        "Selecione uma REP para Editar o Laudo",
+        options=nomes_reps,
+        key="rep_selecionada"
     )
 
-    if laudo_selecionado != "Selecione um Laudo":
-        laudo_id = opcoes_laudos[laudo_selecionado]
-        st.session_state["laudo_id_selecionado"] = laudo_id
-        renderizar_secoes(laudo_id)
+    if rep_selecionada != "Selecione uma REP":
+        rep_id = opcoes_reps[rep_selecionada]
+        laudo = buscar_laudo_por_rep(rep_id)
+        if laudo:
+            st.session_state["laudo_id_selecionado"] = laudo['id']
+            renderizar_secoes(laudo['id'])
+        else:
+            st.warning("Esta REP não possui laudo vinculado.")
 
 
 main()

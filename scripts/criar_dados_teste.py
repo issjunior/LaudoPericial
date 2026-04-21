@@ -120,13 +120,18 @@ def criar_dados():
         )
     print("  Secoes de template")
     
-    # REPs - corrigido para colunas certas
+    # REPs - 10 REPs (5 com laudo, 5 pendentes)
     reps = [
         ("0001-2026", "BO", "12345/2026", "2026-01-14", 1, "Joao Silva", "Veiculo VW/Gol", "Rua ABC, 123", "A-470"),
         ("0002-2026", "Ofício", "500/2026", "2026-01-15", 2, "Pedro Santos", "Celular iPhone", "Av. Central, 100", "E-381"),
         ("0003-2026", "BO PC", "12346/2026", "2026-01-16", 3, "Maria Oliveira", "Moto Honda", "Rua XYZ, 200", "I-801"),
         ("0004-2026", "BO PM", "111/2026", "2026-01-17", 4, "Ana Costa", "Local de morte", "Rodovia BR-376, Km 150", "M-112"),
         ("0005-2026", "CECOMP", "CECOMP-001/2026", "2026-01-18", 5, "Carlos Lima", "Arma de fogo", "Pracas publicas", "B-602"),
+        ("0006-2026", "BO", "12347/2026", "2026-01-19", 1, "Roberto Lima", "Veiculo Fiat", "Rua DEF, 456", "A-470"),
+        ("0007-2026", "Ofício", "600/2026", "2026-01-20", 2, "Fernanda Costa", "Notebook Dell", "Av. Norte, 200", "E-381"),
+        ("0008-2026", "BO PM", "112/2026", "2026-01-21", 4, "Paulo Souza", "Local de acidente", "BR-101, Km 80", "M-112"),
+        ("0009-2026", "BO", "12348/2026", "2026-01-22", 1, "Julia Santos", "Veiculo Renault", "Rua GHI, 789", "A-470"),
+        ("0010-2026", "CECOMP", "CECOMP-002/2026", "2026-01-23", 5, "Marcos Silva", "Computador", "Escritorio central", "B-602"),
     ]
     for num, tipo, numdoc, data, solid, aut, env, local, cod in reps:
         row = executar_query("SELECT id FROM tipos_exame WHERE codigo = ?", (cod,))
@@ -138,14 +143,15 @@ def criar_dados():
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', 1)""",
                 (num, dsol, tipo, numdoc, data, solid, aut, env, local, tid)
             )
-    print("  5 REPs")
+    print("  10 REPs")
     
-    # Laudos
+    # Laudos - vincula laudos a 5 REPs
     laudos_rep = [
+        ("0001-2026", 1, "Em Andamento"),
+        ("0002-2026", 2, "Em Andamento"),
+        ("0003-2026", 3, "Em Andamento"),
         ("0004-2026", 4, "Em Andamento"),
-        ("0005-2026", 5, "Finalizado"),
-        ("0001-2026", 1, "Finalizado"),
-        ("0002-2026", 2, "Entregue"),
+        ("0005-2026", 5, "Em Andamento"),
     ]
     for num, template_id, status in laudos_rep:
         rrow = executar_query("SELECT id FROM rep WHERE numero_rep = ?", (num,))
@@ -154,14 +160,8 @@ def criar_dados():
                 "INSERT INTO laudos (rep_id, template_id, status, versao_atual) VALUES (?, ?, ?, 1)",
                 (rrow[0]['id'], template_id, status)
             )
-            if status in ("Rascunho", "Em Revisão"):
-                rep_status = "Em Andamento"
-            elif status in ("Finalizado", "Entregue"):
-                rep_status = "Concluído"
-            else:
-                rep_status = "Pendente"
-            executar_comando("UPDATE rep SET status = ? WHERE id = ?", (rep_status, rrow[0]['id']))
-    print("  2 Laudos")
+            executar_comando("UPDATE rep SET status = ? WHERE id = ?", ("Em Andamento", rrow[0]['id']))
+    print("  5 Laudos")
     
     # Secoes laudo
     for lid in executar_query("SELECT id, template_id FROM laudos"):

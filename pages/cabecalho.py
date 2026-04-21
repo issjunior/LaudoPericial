@@ -118,7 +118,7 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
         preview = preview.replace('{{tipo_exame_codigo}}', 'NEC-001')
         preview = preview.replace('{{numero_rep}}', '00.000-2024')
         preview = preview.replace('{{data_solicitacao}}', '2024-01-01')
-        st.code(preview, language=None)
+        st.markdown(f'<div style="background-color:white;padding:15px;border-radius:5px;">{preview}</div>', unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 4])
     with col1:
