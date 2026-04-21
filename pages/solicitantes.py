@@ -250,8 +250,8 @@ def tabela_solicitantes(solicitantes: list):
         [3, 2, 2, 1.5, 2]
     )
     col_orgao.markdown("**Órgão**")
-    col_nome.markdown("**Contato**") # Agora é o nome do contato
-    col_email.markdown("**Email**")  # Agora é o email do órgão
+    col_nome.markdown("**Responsável**")
+    col_email.markdown("**Email**")
     col_status.markdown("**Status**")
     col_acoes.markdown("**Ações**")
 

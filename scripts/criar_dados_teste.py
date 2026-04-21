@@ -49,16 +49,17 @@ def criar_dados():
     
     # Solicitantes
     sols = [
-        ("18ª SDP - Telêmaco Borba", "Delegacia de Policia Civil"),
-        ("DP - Curiúva", "Delegacia de Polícia de Curiúva"),
-        ("DP - Reserva", "Delegacia de Polícia de Reserva"),
-        ("DP - Tibagi", "Delegacia de Polícia de Tibagi"),
-        ("MP-PR", "Ministerio Publico do Estado do Paraná"),
+        ("Delegado 1", "delegado1@pcp.pr.gov.br", "18ª SDP - Telêmaco Borba"),
+        ("Escrivão 1", "escrivao1@pcp.pr.gov.br", "DP - Curiúva"),
+        ("Delegado 2", "delegado2@pcp.pr.gov.br", "DP - Reserva"),
+        ("Escrivão 2", "escrivao2@pcp.pr.gov.br", "DP - Tibagi"),
+        ("Promotor 1", "promotor1@mpr.mp.br", "MP-PR"),
+        ("Juiz 1", "juiz1@tjpr.jus.br", "Fórum de Telêmaco Borba"),
     ]
-    for nome, orgao in sols:
+    for resp, email, orgao in sols:
         executar_comando(
-            "INSERT INTO solicitantes (nome, orgao, ativo) VALUES (?, ?, 1)",
-            (nome, orgao)
+            "INSERT INTO solicitantes (nome, orgao, contato, ativo) VALUES (?, ?, ?, 1)",
+            (resp, orgao, email)
         )
     print("  5 Solicitantes")
     
