@@ -107,7 +107,7 @@
 
 | ID | Funcionalidade | Descrição | Status |
 |----|----------------|-----------|--------|
-| LAU-01 | Criar laudo a partir de REP | Gerar laudo do template + muda REP para "Em Andamento" | 🚧 Parcial |
+| LAU-01 | Criar laudo a partir de REP | Copia seções do template para laudo + muda REP para "Em Andamento" | ✅ Implantado |
 | LAU-02 | Editar laudo | Editar seções e conteúdo | ⏳ Pendente |
 | LAU-03 | Visualizar laudo | Modo leitura | ⏳ Pendente |
 | LAU-04 | Upload fotos | Adicionar ilustraciones | ⏳ Pendente |
@@ -130,7 +130,11 @@
 - `conteudo` (editável)
 - `ordem`
 - `obrigatoria`
-- `permite_fotos`
+
+### Notas
+- Ao criar o laudo, as seções são **copiadas do template** para `secoes_laudo`.
+- Se a REP mudar de tipo de exame **depois** da criação do laudo, as seções já existentes **não são atualizadas** automaticamente.
+- Isso é intencional para preservar o conteúdo digitado pelo perito.
 
 ### Campos Ilustracao
 - `secao_laudo_id` (FK)

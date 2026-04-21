@@ -193,8 +193,8 @@ def criar_rep(
     data_solicitacao:    str, # YYYY-MM-DD
     tipo_solicitacao:    str,
     numero_documento:    str,
-    tipo_exame_id:       int,
     usuario_id:          int,
+    tipo_exame_id:       int | None = None,
     horario_acionamento: str = None, # HH:MM
     horario_chegada:     str = None, # HH:MM
     horario_saida:       str = None, # HH:MM
@@ -248,17 +248,6 @@ def criar_rep(
             latitude, longitude, observacoes, usuario_id
         )
     )
-
-    # Verificar se existe template para o tipo de exame e criar laudo automaticamente
-    try:
-        from services.template_service import listar_templates
-        templates = listar_templates(apenas_ativos=True, tipo_exame_id=tipo_exame_id)
-        if templates:
-            template_id = templates[0]['id']
-            from services.laudo_service import criar_laudo
-            criar_laudo(rep_id, template_id)
-    except Exception:
-        pass  # Se nao conseguir criar laudo, ignora (nao bloqueia criacao da REP)
 
     return rep_id
 
