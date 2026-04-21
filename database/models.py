@@ -147,9 +147,7 @@ CREATE TABLE IF NOT EXISTS rep (
                             CHECK(status IN (
                                 'Pendente',
                                 'Em Andamento',
-                                'Concluído',
-                                'Arquivado',
-                                'Cancelado'
+                                'Concluído'
                             )),
     observacoes         TEXT,
     usuario_id          INTEGER NOT NULL REFERENCES usuarios(id),
@@ -174,7 +172,8 @@ CREATE TABLE IF NOT EXISTS laudos (
                         CHECK(status IN (
                             'Rascunho',
                             'Em Revisão',
-                            'Finalizado'
+                            'Finalizado',
+                            'Entregue'
                         )),
     versao_atual    INTEGER NOT NULL DEFAULT 1,
     criado_em       TEXT    NOT NULL

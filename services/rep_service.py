@@ -495,7 +495,7 @@ def alterar_status_rep_simples(rep_id: int, novo_status: str) -> None:
         rep_id: ID da REP.
         novo_status: Novo status.
     """
-    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído"]
     if novo_status not in STATUS_VALIDOS:
         raise ValueError(f"Status inválido: {novo_status}")
 

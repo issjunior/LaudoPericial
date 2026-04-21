@@ -1,6 +1,15 @@
 """
 Script para criar dados de teste.
-Executar com ambiente virtual: venv/Scripts/python scripts/criar_dados_teste.py
+
+COMO EXECUTAR:
+  1. Ative o ambiente virtual:
+       No Windows:  venv\Scripts\activate
+       No Linux/Mac: source venv/bin/activate
+
+  2. Execute o script:
+       python scripts/criar_dados_teste.py
+
+NOTA: Ants de executar o script delete o arquivo 'laudopericial.db'.
 """
 
 import sys
@@ -54,7 +63,7 @@ def criar_dados():
         ("Delegado 2", "delegado2@pcp.pr.gov.br", "DP - Reserva"),
         ("Escrivão 2", "escrivao2@pcp.pr.gov.br", "DP - Tibagi"),
         ("Promotor 1", "promotor1@mpr.mp.br", "MP-PR"),
-        ("Juiz 1", "juiz1@tjpr.jus.br", "Fórum de Telêmaco Borba"),
+        ("Juiz 1", "juiz1@tjpr.jus.br", "8ª Vara de Telêmaco Borba"),
     ]
     for resp, email, orgao in sols:
         executar_comando(
@@ -113,11 +122,11 @@ def criar_dados():
     
     # REPs - corrigido para colunas certas
     reps = [
-        ("0001-2026", "BO", "12345/2026", "2026-01-14", 1, "Delegado Jose", "Joao Silva", "Rua ABC, 123", "A-470"),
-        ("0002-2026", "Ofício", "500/2026", "2026-01-15", 1, "Promotor Carlos", "Pedro Santos", "Av. Central, 100", "E-381"),
-        ("0003-2026", "BO PC", "12346/2026", "2026-01-16", 1, "Delegado Maria", "Maria Oliveira", "Rua XYZ, 200", "I-801"),
-        ("0004-2026", "BO PM", "111/2026", "2026-01-17", 1, "Capitao PM", "Ana Costa", "Rodovia BR-376, Km 150", "M-112"),
-        ("0005-2026", "CECOMP", "CECOMP-001/2026", "2026-01-18", 1, "Comandante", "Carlos Lima", "Pracas publicas", "B-602"),
+        ("0001-2026", "BO", "12345/2026", "2026-01-14", 1, "Joao Silva", "Veiculo VW/Gol", "Rua ABC, 123", "A-470"),
+        ("0002-2026", "Ofício", "500/2026", "2026-01-15", 2, "Pedro Santos", "Celular iPhone", "Av. Central, 100", "E-381"),
+        ("0003-2026", "BO PC", "12346/2026", "2026-01-16", 3, "Maria Oliveira", "Moto Honda", "Rua XYZ, 200", "I-801"),
+        ("0004-2026", "BO PM", "111/2026", "2026-01-17", 4, "Ana Costa", "Local de morte", "Rodovia BR-376, Km 150", "M-112"),
+        ("0005-2026", "CECOMP", "CECOMP-001/2026", "2026-01-18", 5, "Carlos Lima", "Arma de fogo", "Pracas publicas", "B-602"),
     ]
     for num, tipo, numdoc, data, solid, aut, env, local, cod in reps:
         row = executar_query("SELECT id FROM tipos_exame WHERE codigo = ?", (cod,))
@@ -132,15 +141,26 @@ def criar_dados():
     print("  5 REPs")
     
     # Laudos
-    laudos_rep = [("0004-2026", 4), ("0005-2026", 5)]
-    for num, template_id in laudos_rep:
+    laudos_rep = [
+        ("0004-2026", 4, "Rascunho"),
+        ("0005-2026", 5, "Em Revisão"),
+        ("0001-2026", 1, "Finalizado"),
+        ("0002-2026", 2, "Entregue"),
+    ]
+    for num, template_id, status in laudos_rep:
         rrow = executar_query("SELECT id FROM rep WHERE numero_rep = ?", (num,))
         if rrow:
             executar_comando(
-                "INSERT INTO laudos (rep_id, template_id, status, versao_atual) VALUES (?, ?, 'Rascunho', 1)",
-                (rrow[0]['id'], template_id)
+                "INSERT INTO laudos (rep_id, template_id, status, versao_atual) VALUES (?, ?, ?, 1)",
+                (rrow[0]['id'], template_id, status)
             )
-            executar_comando("UPDATE rep SET status = 'Em Andamento' WHERE id = ?", (rrow[0]['id'],))
+            if status in ("Rascunho", "Em Revisão"):
+                rep_status = "Em Andamento"
+            elif status in ("Finalizado", "Entregue"):
+                rep_status = "Concluído"
+            else:
+                rep_status = "Pendente"
+            executar_comando("UPDATE rep SET status = ? WHERE id = ?", (rep_status, rrow[0]['id']))
     print("  2 Laudos")
     
     # Secoes laudo

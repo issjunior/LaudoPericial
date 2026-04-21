@@ -11,6 +11,7 @@ from database.db import executar_query, executar_comando
 from core.auth import obter_usuario_logado
 from components.menu import renderizar_menu
 from datetime import date
+from pandas import DataFrame
 
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -97,12 +98,12 @@ def alterar_status_rep(rep_id: int, novo_status: str) -> None:
 
     Args:
         rep_id: ID da REP.
-        novo_status: Novo status (Pendente, Em Andamento, Concluído, Arquivado, Cancelado).
+        novo_status: Novo status (Pendente, Em Andamento, Concluído).
 
     Raises:
         ValueError: Se o status for inválido.
     """
-    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído"]
     if novo_status not in STATUS_VALIDOS:
         raise ValueError(f"Status inválido: {novo_status}")
 
@@ -166,7 +167,7 @@ def main():
         # Segunda linha de filtros (Status e Data da Solicitação)
         col2_a, col2_b = st.columns([1, 2]) # Proporção para a data ocupar mais espaço
         with col2_a:
-            status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído", "Arquivado", "Cancelado"]
+            status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído"]
             filtro_status = st.selectbox("Status", status_opcoes)
             if filtro_status == "Todos":
                 filtro_status = None
@@ -195,6 +196,24 @@ def main():
     )
 
     if reps:
+        col_leg1, col_leg2, col_leg3, col_leg4 = st.columns(4)
+        with col_leg1:
+            with st.container(border=True):
+                st.markdown("**🟡 Pendente**")
+                st.caption("REP criada, mas não vinculada.")
+        with col_leg2:
+            with st.container(border=True):
+                st.markdown("**🔵 Em Andamento**")
+                st.caption("Laudo está sendo elaborado.")
+        with col_leg3:
+            with st.container(border=True):
+                st.markdown("**🟢 Concluído**")
+                st.caption("Laudo finalizedo, pronto para entrega.")
+        with col_leg4:
+            with st.container(border=True):
+                st.markdown("**✅ Entregue**")
+                st.caption("Laudo enviado (GDL).")
+
         st.dataframe(
             reps,
             use_container_width=True,
@@ -206,7 +225,6 @@ def main():
                 "numero_documento",
                 "orgao_solicitante",
                 "tipo_exame_nome",
-                "perito_primeiro_nome",
                 "status"
             ],
             column_config={
@@ -216,7 +234,6 @@ def main():
                 "numero_documento": st.column_config.TextColumn("Número do Documento"),
                 "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),
                 "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"),
-                "perito_primeiro_nome": st.column_config.TextColumn("Perito"),
                 "status": st.column_config.TextColumn("Status"),
             }
         )
