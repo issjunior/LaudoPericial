@@ -65,7 +65,7 @@ except ImportError:
 def main():
     st.title("📄 Configurar Cabeçalho do Laudo")
     
-    with st.expander("ℹ️ O que é o Cabeçalho?", expanded=True):
+    with st.expander("ℹ️ O que é o Cabeçalho?", expanded=False):
         st.markdown("""
         O **cabeçalho** é o texto personalizado que aparece no topo de todos os laudos 
         Periciais, independente do template utilizado.
