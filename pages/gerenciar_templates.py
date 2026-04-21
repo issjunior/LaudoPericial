@@ -39,6 +39,51 @@ try:
     from streamlit_jodit import st_jodit
 except ImportError:
     st_jodit = None
+
+PLACEHOLDERS = """
+**Placeholders disponíveis (copie e cole no texto):**
+
+*Dados Gerais da REP:*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{numero_rep}}` | Número da REP |
+| `{{data_solicitacao}}` | Data da solicitação |
+| `{{tipo_exame}}` | Nome do tipo de exame |
+| `{{nome_envolvido}}` | Nome do envolvido/vítima |
+
+*Dados do Solicitante:*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{solicitante}}` | Nome do órgão solicitante |
+| `{{solicitante_orgao}}` | Órgão do solicitante |
+| `{{nome_autoridade}}` | Nome da autoridade solicitante |
+
+*Detalhes da Solicitação:*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{tipo_solicitacao}}` | Tipo de documento (BO, Ofício, etc) |
+| `{{numero_documento}}` | Número do documento |
+| `{{data_documento}}` | Data do documento |
+
+*Dados do Local (se aplicável):*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{local_fato}}` | Descrição do local do fato |
+| `{{horario_acionamento}}` | Horário de acionamento |
+| `{{horario_chegada}}` | Horário de chegada ao local |
+| `{{horario_saida}}` | Horário de saída do local |
+| `{{latitude}}` | Latitude do local |
+| `{{longitude}}` | Longitude do local |
+
+*Dados do Perito:*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{perito_nome}}` | Nome do perito responsável |
+| `{{perito_matricula}}` | Matrícula do perito |
+| `{{perito_cargo}}` | Cargo do perito |
+| `{{perito_lotacao}}` | Lotação do perito |
+"""
+
 # ──────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Templates de Laudo — LaudoPericial",
@@ -512,17 +557,20 @@ def formulario_criar_secao(template_id: int):
     """
     Formulário para criação de nova seção para um template.
     """
+    with st.expander("Ver Placeholders Disponíveis", expanded=False):
+        st.markdown(PLACEHOLDERS)
+
     st.markdown("#### ➕ Nova Seção")
     with st.form("form_criar_secao"):
         titulo = st.text_input(
             "Título da Seção *",
             placeholder="Ex: Preâmbulo, Histórico, Objetivo Pericial"
         )
-        
+
         if st_jodit:
             config = {
-                'minHeight': 200,
-                'height': 250,
+                'minHeight': 300,
+                'height': 500,
                 'theme': 'default',
                 'allowResizeY': True,
             }
@@ -535,7 +583,7 @@ def formulario_criar_secao(template_id: int):
             conteudo_base = st.text_area(
                 "Conteúdo Padrão (Opcional)",
                 placeholder="Texto que aparecerá por padrão nesta seção do laudo.",
-                height=150
+                height=300
             )
         
         col_opcoes, col_ordem = st.columns([2, 1])
@@ -597,6 +645,9 @@ def formulario_editar_secao(secao_id: int):
         st.rerun()
         return
 
+    with st.expander("Ver Placeholders Disponíveis", expanded=False):
+        st.markdown(PLACEHOLDERS)
+
     st.markdown(f"#### ✏️ Editando Seção: {secao['titulo']}")
     with st.form("form_editar_secao"):
         titulo = st.text_input(
@@ -606,8 +657,8 @@ def formulario_editar_secao(secao_id: int):
         
         if st_jodit:
             config = {
-                'minHeight': 200,
-                'height': 250,
+                'minHeight': 300,
+                'height': 500,
                 'theme': 'default',
                 'allowResizeY': True,
             }
@@ -620,7 +671,7 @@ def formulario_editar_secao(secao_id: int):
             conteudo_base = st.text_area(
                 "Conteúdo Padrão (Opcional)",
                 value=secao["conteudo_base"] or "",
-                height=150
+                height=300
             )
         
         col_opcoes, col_ordem = st.columns([2, 1])
