@@ -42,13 +42,13 @@ def gerar_pdf_do_html(html: str, pdf_path: str = None) -> bytes:
 
         cmd = [
             chrome_path,
-            "--headless",
+            "--headless=new",
             "--disable-gpu",
             "--no-sandbox",
             "--disable-dev-shm-usage",
             f"--print-to-pdf={output_path}",
-            "--print-to-pdf-no-header",
-            "--virtual-time-budget=10000",
+            "--no-pdf-header-footer",
+            "--virtual-time-budget=15000",
             html_path
         ]
 
