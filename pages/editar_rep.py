@@ -40,6 +40,7 @@ if not usuario_logado:
 
 def main():
     st.title("✏️ Editar Requisição de Exame Pericial (REP)")
+
     st.markdown("---")
 
     if "rep_selecionado_id" not in st.session_state:
@@ -123,7 +124,7 @@ def main():
         )
     with col2:
         data_solicitacao = st.date_input(
-            "Data da Solicitação *",
+            "Data de recebimento de REP *",
             value=datetime.strptime(rep['data_solicitacao'], '%Y-%m-%d').date() if rep.get('data_solicitacao') else date.today(),
             format="DD/MM/YYYY",
             key="data_solicitacao_key"
@@ -293,58 +294,75 @@ def main():
             type="primary"
         )
 
-        if submitted:
-            if not numero_rep:
-                st.error("❌ O número da REP é obrigatório.")
-                st.stop()
-            if tipo_exame_selecionado == "Selecione um Tipo de Exame":
-                st.error("❌ Por favor, selecione um Tipo de Exame.")
-                st.stop()
-            if tipo_documento not in TIPO_SOLICITACAO:
-                st.error("❌ Por favor, selecione o Tipo de Documento.")
-                st.stop()
-            if not numero_documento:
-                st.error("❌ O número do documento é obrigatório.")
-                st.stop()
+    # ── VALIDAÇÃO E EXECUÇÃO (Fora das colunas para usar largura total) ──
+    if submitted:
+        erros_validacao = []
 
-            tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado] if tipo_exame_selecionado != "— Não definido —" else None
-            solicitante_id = opcoes_solicitantes[solicitante_selecionado] if solicitante_selecionado != "Selecione um Solicitante" else None
+        if not numero_rep:
+            erros_validacao.append("O campo **Número da REP** é obrigatório.")
 
-            data_solicitacao_str = data_solicitacao.strftime("%Y-%m-%d")
-            data_documento_str = data_documento.strftime("%Y-%m-%d") if data_documento else None
-            horario_acionamento_str = horario_acionamento.strftime("%H:%M") if horario_acionamento else None
-            horario_chegada_str = horario_chegada.strftime("%H:%M") if horario_chegada else None
-            horario_saida_str = horario_saida.strftime("%H:%M") if horario_saida else None
+        if tipo_exame_selecionado == "Selecione um Tipo de Exame":
+            erros_validacao.append("Por favor, selecione um **Tipo de Exame** válido.")
 
-            try:
-                atualizar_rep(
-                    rep_id              = rep_id,
-                    numero_rep          = numero_rep,
-                    data_solicitacao    = data_solicitacao_str,
-                    tipo_solicitacao    = tipo_documento,
-                    numero_documento    = numero_documento,
-                    tipo_exame_id       = tipo_exame_id,
-                    usuario_id          = usuario_logado['id'],
-                    horario_acionamento = horario_acionamento_str,
-                    horario_chegada     = horario_chegada_str,
-                    horario_saida       = horario_saida_str,
-                    data_documento      = data_documento_str,
-                    solicitante_id      = solicitante_id,
-                    nome_autoridade     = nome_autoridade,
-                    nome_envolvido      = nome_envolvido,
-                    local_fato_descricao= local_fato_descricao,
-                    latitude            = latitude,
-                    longitude           = longitude,
-                    status              = rep['status'],
-                    observacoes         = observacoes,
-                )
-                st.success(f"✅ REP **{numero_rep}** atualizada com sucesso!")
-                st.rerun()
+        if tipo_documento not in TIPO_SOLICITACAO:
+            erros_validacao.append("O **Tipo de Documento** deve ser selecionado.")
 
-            except ValueError as e:
-                st.error(f"❌ Erro ao atualizar REP: {e}")
-            except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+        if not numero_documento:
+            erros_validacao.append("O **Número do Documento** é obrigatório.")
+
+        # Validação de data
+        if data_documento and data_solicitacao < data_documento:
+            data_rec_str = data_solicitacao.strftime('%d/%m/%Y')
+            data_doc_str = data_documento.strftime('%d/%m/%Y')
+            erros_validacao.append(f"A **Data de recebimento** ({data_rec_str}) não pode ser anterior à **Data do Documento** ({data_doc_str}).")
+
+        if erros_validacao:
+            st.session_state["erros_temp_edit"] = erros_validacao
+            st.rerun()
+
+        # Se passou na validação, prossegue
+        tipo_exame_id = opcoes_tipos_exame[tipo_exame_selecionado] if tipo_exame_selecionado != "— Não definido —" else None
+        solicitante_id = opcoes_solicitantes[solicitante_selecionado] if solicitante_selecionado != "Selecione um Solicitante" else None
+
+        data_solicitacao_str = data_solicitacao.strftime("%Y-%m-%d")
+        data_documento_str = data_documento.strftime("%Y-%m-%d") if data_documento else None
+        horario_acionamento_str = horario_acionamento.strftime("%H:%M") if horario_acionamento else None
+        horario_chegada_str = horario_chegada.strftime("%H:%M") if horario_chegada else None
+        horario_saida_str = horario_saida.strftime("%H:%M") if horario_saida else None
+
+        try:
+            atualizar_rep(
+                rep_id              = rep_id,
+                numero_rep          = numero_rep,
+                data_solicitacao    = data_solicitacao_str,
+                tipo_solicitacao    = tipo_documento,
+                numero_documento    = numero_documento,
+                tipo_exame_id       = tipo_exame_id,
+                usuario_id          = usuario_logado['id'],
+                horario_acionamento = horario_acionamento_str,
+                horario_chegada     = horario_chegada_str,
+                horario_saida       = horario_saida_str,
+                data_documento      = data_documento_str,
+                solicitante_id      = solicitante_id,
+                nome_autoridade     = nome_autoridade,
+                nome_envolvido      = nome_envolvido,
+                local_fato_descricao= local_fato_descricao,
+                latitude            = latitude,
+                longitude           = longitude,
+                status              = rep['status'],
+                observacoes         = observacoes,
+            )
+            st.success(f"✅ REP **{numero_rep}** atualizada com sucesso!")
+            st.rerun()
+        except ValueError as e:
+            st.error(f"❌ Erro ao atualizar REP: {e}")
+        except Exception as e:
+            st.error(f"❌ Erro inesperado: {e}")
+
+    # Exibe erros de validação (se houver) em largura total
+    if "erros_temp_edit" in st.session_state:
+        st.error("### ⚠️ Erro ao salvar alterações:\n\n" + "\n".join([f"- {e}" for e in st.session_state["erros_temp_edit"]]))
+        del st.session_state["erros_temp_edit"]
 
     with st.expander("🗑️ Excluir REP", expanded=False):
         st.warning(f"Tem certeza que deseja excluir a REP **{rep.get('numero_rep')}**?")

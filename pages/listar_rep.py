@@ -173,7 +173,7 @@ def main():
                 filtro_status = None
         with col2_b:
             with st.container(border=True):
-                st.markdown("Data da Solicitação")
+                st.markdown("Data de recebimento de REP")
                 col_data_inicio, col_data_fim = st.columns(2)
                 with col_data_inicio:
                     filtro_data_inicio = st.date_input("De", value=None, format="DD/MM/YYYY", key="data_inicio_filtro", label_visibility="collapsed")
@@ -229,7 +229,7 @@ def main():
             ],
             column_config={
                 "numero_rep": st.column_config.TextColumn("Número da REP"),
-                "data_solicitacao": st.column_config.DateColumn("Data da Solicitação", format="DD/MM/YYYY"),
+                "data_solicitacao": st.column_config.DateColumn("Data de recebimento", format="DD/MM/YYYY"),
                 "tipo_solicitacao": st.column_config.TextColumn("Tipo de Documento"),
                 "numero_documento": st.column_config.TextColumn("Número do Documento"),
                 "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),

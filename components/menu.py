@@ -89,126 +89,85 @@ def renderizar_menu():
     ]
 
     with st.sidebar:
-
-        # Cabeçalho do usuário
+        # ── Perfil do Usuário (Design Moderno) ──
         st.markdown(f"""
         <div style='
-            background-color: #1a3a5c;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #1a3a5c 0%, #2a5298 100%);
+            padding: 1.25rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
         '>
-            <p style='color: white; font-size: 0.8rem; margin: 0;'>
-                Bem-vindo,
-            </p>
-            <p style='color: white; font-weight: bold;
-                      font-size: 1rem; margin: 0;'>
-                {usuario['nome'].split()[0]}
-            </p>
-            <p style='color: #aac4e0; font-size: 0.75rem; margin: 0;'>
-                {usuario['cargo']}
-            </p>
-            <p style='color: #aac4e0; font-size: 0.75rem; margin: 0;'>
-                📍 {usuario['lotacao']}
-            </p>
+            <div style='display: flex; align-items: center; margin-bottom: 10px;'>
+                <div style='
+                    background: rgba(255,255,255,0.2);
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-right: 12px;
+                    font-size: 20px;
+                '>👤</div>
+                <div>
+                    <p style='color: rgba(255,255,255,0.7); font-size: 0.75rem; margin: 0; text-transform: uppercase; letter-spacing: 1px;'>
+                        Perito Logado
+                    </p>
+                    <p style='color: white; font-weight: 700; font-size: 1.1rem; margin: 0; line-height: 1.2;'>
+                        {usuario['nome'].split()[0]}
+                    </p>
+                </div>
+            </div>
+            <div style='border-top: 1px solid rgba(255,255,255,0.1); pt: 10px; margin-top: 10px;'>
+                <p style='color: #aac4e0; font-size: 0.8rem; margin: 0; display: flex; align-items: center;'>
+                    <span style='margin-right: 8px;'>🎖️</span> {usuario['cargo']}
+                </p>
+                <p style='color: #aac4e0; font-size: 0.8rem; margin: 4px 0 0 0; display: flex; align-items: center;'>
+                    <span style='margin-right: 8px;'>📍</span> {usuario['lotacao']}
+                </p>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.page_link(
             "app.py",
-            label="Dashboard",
+            label="Dashboard Inicial",
             icon="🏠"
         )
 
-        st.markdown("---")
+        st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
 
-        with st.expander("📋 Requisições (REPs)", expanded=True):
-            st.page_link(
-                "pages/nova_rep.py",
-                label="Nova REP",
-                icon="➕"
-            )
-            st.page_link(
-                "pages/listar_rep.py",
-                label="Listar REPs",
-                icon="📄"
-            )
-            st.page_link(
-                "pages/editar_rep.py",
-                label="Editar REP",
-                icon="✏️"
-            )
+        # ── Seção: Fluxo de Trabalho ──
+        st.caption("🚀 FLUXO DE TRABALHO")
+        
+        with st.expander("📋 Requisições (REPs)", expanded=pagina_ativa(secao_rep)):
+            st.page_link("pages/nova_rep.py", label="Nova REP", icon="➕")
+            st.page_link("pages/listar_rep.py", label="Listar REPs", icon="📄")
+            st.page_link("pages/editar_rep.py", label="Editar REP", icon="✏️")
 
-        with st.expander(
-            "📝 Laudos",
-            expanded=True
-        ):
-            st.page_link(
-                "pages/novo_laudo.py",
-                label="Vincular Laudo a REP",
-                icon="➕"
-            )
-            st.page_link(
-                "pages/editor_laudo.py",
-                label="Editar Laudo",
-                icon="✏️"
-            )
-            st.page_link(
-                "pages/visualizar_laudo.py",
-                label="Visualizar Laudo",
-                icon="👁️"
-            )
+        with st.expander("✍️ Laudos Periciais", expanded=pagina_ativa(secao_laudos)):
+            st.page_link("pages/novo_laudo.py", label="Vincular Laudo", icon="🔗")
+            st.page_link("pages/editor_laudo.py", label="Escrever Laudo", icon="✒️")
+            st.page_link("pages/visualizar_laudo.py", label="Visualizar / Exportar", icon="👁️")
 
-        with st.expander(
-            "🗂️ Cadastros",
-            expanded=pagina_ativa(secao_cadastros)
-        ):
-            st.page_link(
-                "pages/tipos_exame.py",
-                label="Tipos de Exame",
-                icon="🏷️"
-            )
-            st.page_link(
-                "pages/solicitantes.py",
-                label="Solicitantes",
-                icon="🏛️"
-            )
-            st.page_link(
-                "pages/gerenciar_templates.py",
-                label="Templates de Laudo",
-                icon="📋"
-            )
-            st.page_link(
-                "pages/cabecalho.py",
-                label="Cabeçalho do Laudo",
-                icon="📄"
-            )
+        st.markdown("<div style='margin: 1rem 0;'></div>", unsafe_allow_html=True)
 
-        with st.expander(
-            "⚙️ Sistema",
-            expanded=pagina_ativa(secao_sistema)
-        ):
-            st.page_link(
-                "pages/busca.py",
-                label="Busca",
-                icon="🔍"
-            )
-            st.page_link(
-                "pages/historico.py",
-                label="Histórico",
-                icon="📜"
-            )
-            st.page_link(
-                "pages/backup.py",
-                label="Importar e Exportar BD",
-                icon="💾"
-            )
-            
-            st.page_link(
-                "pages/perfil.py",
-                label="Perfil e Configurações",
-                icon="👤"
-            )
+        # ── Seção: Configurações e Dados ──
+        st.caption("⚙️ CONFIGURAÇÕES")
+
+        with st.expander("🗂️ Cadastros Base", expanded=pagina_ativa(secao_cadastros)):
+            st.page_link("pages/tipos_exame.py", label="Tipos de Exame", icon="🏷️")
+            st.page_link("pages/solicitantes.py", label="Solicitantes", icon="🏛️")
+            st.page_link("pages/gerenciar_templates.py", label="Templates de Laudo", icon="📋")
+            st.page_link("pages/cabecalho.py", label="Cabeçalho / Rodapé", icon="🖼️")
+
+        with st.expander("🛠️ Ferramentas", expanded=pagina_ativa(secao_sistema)):
+            st.page_link("pages/busca.py", label="Busca Avançada", icon="🔍")
+            st.page_link("pages/historico.py", label="Histórico de Ações", icon="📜")
+            st.page_link("pages/backup.py", label="Backup (Import/Export)", icon="💾")
+            st.page_link("pages/perfil.py", label="Meu Perfil", icon="👤")
 
         st.markdown("---")
         st.page_link(
