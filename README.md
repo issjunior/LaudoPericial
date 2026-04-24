@@ -2,7 +2,7 @@
 
 Documentação de especificação seguindo filosofia SDD (Spec-Driven Development).
 
-## Arquivos
+## Arquivos de documentação
 
 | Arquivo | Descrição |
 |---------|-----------|
@@ -19,25 +19,16 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 │  Tech Stack: Python 3.13 + Streamlit + SQLite           │
 │                                                         │
 │  Módulos:                                               │
-│  ├── Auth (login/logout/alterar senha)                     │
-│  ├── REP (Requisição de Exame Pericial)                   │
-│  ├── Tipos de Exame                                    │
-│  ├── Solicitantes                                      │
-│  ├── Templates (com seções)                           │
-│  ├── Laudos ⭐ (core)                                │
+│  ├── Auth (login/logout/alterar senha)                  │
+│  ├── REP (Requisição de Exame Pericial)                 │
+│  ├── Tipos de Exame                                     │
+│  ├── Solicitantes                                       │
+│  ├── Templates de laudos a depender do tipo de exame    │
+│  ├── Laudos ⭐ (core)                                  │
 │  ├── Dashboard (métricas + prazos)                      │
 │  └── Sistema (backup, busca, perfil)                    │
 └─────────────────────────────────────────────────────────┘
 ```
-
-## Legenda de Status
-
-| Símbolo | Significado |
-|---------|-------------|
-| ✅ | Implantado |
-| 🚧 | Parcial |
-| ⏳ | Pendente |
-
 ## Conteúdo
 
 ### 01 - Tecnologias
@@ -48,7 +39,7 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 - streamlit-jodit (editor de texto)
 - Playwright/Chromium (geração PDF)
 
-### 02 - Funcionalidades
+### 02 - Resumo de Funcionalidades
 - **Auth**: Login, Logout, Alterar senha
 - **REP**: CRUD completo, filtros, status automático
 - **Tipos de Exame**: CRUD, ativo/inativo
@@ -58,15 +49,31 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 - **Dashboard**: Métricas, prazos
 - **Sistema**: Backup, Restore, Busca, Histórico, Perfil
 
-### 03 - Sprints
-- Sprint 0: Fundação (✅)
-- Sprint 1: REP e Cadastros (✅)
-- Sprint 2: Laudos - Criação e Edição (✅)
-- Sprint 3: Laudos - Export PDF (✅)
-- Sprint 4: Visualização e Busca (✅)
-- Sprint 5: Backup e Sistema (✅)
-- Sprint 6: Prazos e Alertas (🚧)
-- Sprint 7: Fotos e Ilustrações (⏳)
-- Sprint 8: Export DOCX/ODT (⏳)
-
 ---
+
+## Execução Local
+
+### 1. Criar ambiente virtual
+
+```bash
+python -m venv venv
+.\venv\Scripts\Activate
+```
+
+### 2. Instalar dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Instalar Chromium (para geração de PDF)
+
+```bash
+playwright install chromium
+```
+
+### 4. Executar o app
+
+```bash
+streamlit run app.py
+```
