@@ -88,6 +88,21 @@ def renderizar_menu():
         "pages/perfil.py",
     ]
 
+    # ── MÓDULOS DO SISTEMA ──
+    modulos_config = {
+        "📋 Requisições (REPs)": secao_rep,
+        "✍️ Laudos Periciais": secao_laudos,
+        "🗂️ Cadastros Base": secao_cadastros,
+        "🛠️ Sistema / Ferramentas": secao_sistema
+    }
+
+    # Detecta o módulo da página atual para pré-seleção
+    modulo_detectado = "📋 Requisições (REPs)"
+    for nome, paginas in modulos_config.items():
+        if pagina_ativa(paginas):
+            modulo_detectado = nome
+            break
+
     with st.sidebar:
         # ── Perfil do Usuário (Design Moderno) ──
         st.markdown(f"""
@@ -131,44 +146,38 @@ def renderizar_menu():
         </div>
         """, unsafe_allow_html=True)
 
-        st.page_link(
-            "app.py",
-            label="Dashboard Inicial",
-            icon="🏠"
-        )
+        st.page_link("app.py", label="Dashboard Inicial", icon="🏠")
+        st.markdown("---")
 
-        st.markdown("<div style='margin: 0.5rem 0;'></div>", unsafe_allow_html=True)
+        # ── EXPANSORES (Estilo Padrão) ──
 
-        # ── Seção: Fluxo de Trabalho ──
-        st.caption("🚀 FLUXO DE TRABALHO")
-        
+        # 1. REPs
         with st.expander("📋 Requisições (REPs)", expanded=pagina_ativa(secao_rep)):
             st.page_link("pages/nova_rep.py", label="Nova REP", icon="➕")
             st.page_link("pages/listar_rep.py", label="Listar REPs", icon="📄")
             st.page_link("pages/editar_rep.py", label="Editar REP", icon="✏️")
-
+        
+        # 2. Laudos
         with st.expander("✍️ Laudos Periciais", expanded=pagina_ativa(secao_laudos)):
             st.page_link("pages/novo_laudo.py", label="Vincular Laudo", icon="🔗")
             st.page_link("pages/editor_laudo.py", label="Escrever Laudo", icon="✒️")
             st.page_link("pages/visualizar_laudo.py", label="Visualizar / Exportar", icon="👁️")
 
-        st.markdown("<div style='margin: 1rem 0;'></div>", unsafe_allow_html=True)
-
-        # ── Seção: Configurações e Dados ──
-        st.caption("⚙️ CONFIGURAÇÕES")
-
+        # 3. Cadastros
         with st.expander("🗂️ Cadastros Base", expanded=pagina_ativa(secao_cadastros)):
             st.page_link("pages/tipos_exame.py", label="Tipos de Exame", icon="🏷️")
             st.page_link("pages/solicitantes.py", label="Solicitantes", icon="🏛️")
             st.page_link("pages/gerenciar_templates.py", label="Templates de Laudo", icon="📋")
             st.page_link("pages/cabecalho.py", label="Cabeçalho / Rodapé", icon="🖼️")
 
-        with st.expander("🛠️ Ferramentas", expanded=pagina_ativa(secao_sistema)):
+        # 4. Sistema
+        with st.expander("🛠️ Sistema / Ferramentas", expanded=pagina_ativa(secao_sistema)):
             st.page_link("pages/busca.py", label="Busca Avançada", icon="🔍")
             st.page_link("pages/historico.py", label="Histórico de Ações", icon="📜")
             st.page_link("pages/backup.py", label="Backup (Import/Export)", icon="💾")
             st.page_link("pages/perfil.py", label="Meu Perfil", icon="👤")
 
+        # ── RODAPÉ ──
         st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
         with st.container(border=True):
             st.page_link(
