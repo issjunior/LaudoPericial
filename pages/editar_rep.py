@@ -88,7 +88,7 @@ def main():
     opcoes_tipos_exame = {f"{te['codigo']} - {te['nome']}": te['id'] for te in tipos_exame}
     nomes_tipos_exame = ["— Não definido —"] + sorted(list(opcoes_tipos_exame.keys()))
 
-    opcoes_solicitantes = {f"{s['orgao']} ({s['nome'] or 'N/A'})": s['id'] for s in solicitantes}
+    opcoes_solicitantes = {s['orgao']: s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
 
     TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"]
@@ -100,155 +100,196 @@ def main():
     if "exame_de_local_selecionado" not in st.session_state:
         st.session_state["exame_de_local_selecionado"] = bool(rep.get('exame_de_local'))
 
-    with st.form("form_editar_rep"):
-        st.markdown("### Dados Gerais da REP")
-        col1, col2, col3 = st.columns(3)
+    # Estado para controlar a exibição dos campos de local
+    if "exame_de_local_selecionado" not in st.session_state:
+        st.session_state["exame_de_local_selecionado"] = bool(rep.get('exame_de_local'))
 
-        with col1:
-            numero_rep = st.text_input(
-                "Número da REP *",
-                value=rep.get('numero_rep', '')
-            )
-        with col2:
-            data_solicitacao = st.date_input(
-                "Data da Solicitação *",
-                value=datetime.strptime(rep['data_solicitacao'], '%Y-%m-%d').date() if rep.get('data_solicitacao') else date.today()
-            )
-        with col3:
-            tipo_exame_selecionado = st.selectbox(
-                "Tipo de Exame *",
-                options=nomes_tipos_exame,
-                index=nomes_tipos_exame.index(tipo_exame_atual) if tipo_exame_atual in nomes_tipos_exame else 0
-            )
+    # Callback para preencher a autoridade automaticamente
+    def on_change_solicitante():
+        sel = st.session_state.get("solicitante_selecionado_key")
+        if sel and sel != "Selecione um Solicitante":
+            sol_data = next((s for s in solicitantes if s['orgao'] == sel), None)
+            if sol_data and sol_data.get('nome'):
+                st.session_state["nome_autoridade_key"] = sol_data['nome']
 
-        nome_envolvido = st.text_input(
-            "Nome do Envolvido / Vítima (Opcional)",
-            value=rep.get('nome_envolvido') or ''
+    st.markdown("### Dados Gerais da REP")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        numero_rep = st.text_input(
+            "Número da REP *",
+            value=rep.get('numero_rep', ''),
+            key="numero_rep_key"
+        )
+    with col2:
+        data_solicitacao = st.date_input(
+            "Data da Solicitação *",
+            value=datetime.strptime(rep['data_solicitacao'], '%Y-%m-%d').date() if rep.get('data_solicitacao') else date.today(),
+            key="data_solicitacao_key"
+        )
+    with col3:
+        tipo_exame_selecionado = st.selectbox(
+            "Tipo de Exame *",
+            options=nomes_tipos_exame,
+            index=nomes_tipos_exame.index(tipo_exame_atual) if tipo_exame_atual in nomes_tipos_exame else 0,
+            key="tipo_exame_key"
+        )
+        # Atualiza o estado para mostrar/esconder campos de local
+        if tipo_exame_selecionado != "— Não definido —":
+            tipo_exame_id_selecionado = opcoes_tipos_exame[tipo_exame_selecionado]
+            exame_info = next((te for te in tipos_exame if te['id'] == tipo_exame_id_selecionado), None)
+            if exame_info and exame_info['exame_de_local']:
+                st.session_state["exame_de_local_selecionado"] = True
+            else:
+                st.session_state["exame_de_local_selecionado"] = False
+        else:
+            st.session_state["exame_de_local_selecionado"] = False
+
+    nome_envolvido = st.text_input(
+        "Nome do Envolvido / Vítima (Opcional)",
+        value=rep.get('nome_envolvido') or '',
+        key="nome_envolvido_key"
+    )
+
+    st.markdown("### Dados do Solicitante")
+    col4, col5 = st.columns(2)
+
+    with col4:
+        solicitante_selecionado = st.selectbox(
+            "Órgão Solicitante",
+            options=nomes_solicitantes,
+            index=nomes_solicitantes.index(solicitante_atual) if solicitante_atual in nomes_solicitantes else 0,
+            key="solicitante_selecionado_key",
+            on_change=on_change_solicitante
+        )
+    with col5:
+        # Inicializa o valor da autoridade na primeira carga se ainda não houver na sessão
+        if "nome_autoridade_key" not in st.session_state:
+            st.session_state["nome_autoridade_key"] = rep.get('nome_autoridade') or ''
+        
+        nome_autoridade = st.text_input(
+            "Nome da Autoridade Solicitante (Opcional)",
+            key="nome_autoridade_key"
         )
 
-        st.markdown("### Dados do Solicitante")
-        col4, col5 = st.columns(2)
+    st.markdown("### Detalhes da Solicitação")
+    col6, col7, col8 = st.columns(3)
 
-        with col4:
-            solicitante_selecionado = st.selectbox(
-                "Órgão Solicitante",
-                options=nomes_solicitantes,
-                index=nomes_solicitantes.index(solicitante_atual) if solicitante_atual in nomes_solicitantes else 0
-            )
-        with col5:
-            nome_autoridade = st.text_input(
-                "Nome da Autoridade Solicitante (Opcional)",
-                value=rep.get('nome_autoridade') or ''
-            )
+    tipo_solicitacao_atual = rep.get('tipo_solicitacao', 'BO')
+    with col6:
+        tipo_documento = st.selectbox(
+            "Tipo de Documento *",
+            options=TIPO_SOLICITACAO,
+            index=TIPO_SOLICITACAO.index(tipo_solicitacao_atual) if tipo_solicitacao_atual in TIPO_SOLICITACAO else 0,
+            key="tipo_documento_key"
+        )
+    with col7:
+        numero_documento = st.text_input(
+            "Número do Documento *",
+            value=rep.get('numero_documento') or '',
+            key="numero_documento_key"
+        )
+    with col8:
+        data_documento_val = None
+        if rep.get('data_documento'):
+            try:
+                data_documento_val = datetime.strptime(rep['data_documento'], '%Y-%m-%d').date()
+            except:
+                pass
+        data_documento = st.date_input(
+            "Data do Documento (Opcional)",
+            value=data_documento_val,
+            key="data_documento_key"
+        )
 
-        st.markdown("### Detalhes da Solicitação")
-        col6, col7, col8 = st.columns(3)
+    if st.session_state["exame_de_local_selecionado"]:
+        with st.expander("🌍 Dados do Local de Exame", expanded=True):
+            local_fato_descricao = st.text_area(
+                "Descrição do Local do Fato (Opcional)",
+                value=rep.get('local_fato_descricao') or '',
+                key="local_fato_key"
+            )
+            col_horario1, col_horario2, col_horario3 = st.columns(3)
 
-        tipo_solicitacao_atual = rep.get('tipo_solicitacao', 'BO')
-        with col6:
-            tipo_documento = st.selectbox(
-                "Tipo de Documento *",
-                options=TIPO_SOLICITACAO,
-                index=TIPO_SOLICITACAO.index(tipo_solicitacao_atual) if tipo_solicitacao_atual in TIPO_SOLICITACAO else 0
-            )
-        with col7:
-            numero_documento = st.text_input(
-                "Número do Documento *",
-                value=rep.get('numero_documento') or ''
-            )
-        with col8:
-            data_documento_val = None
-            if rep.get('data_documento'):
+            h_acionamento = None
+            if rep.get('horario_acionamento'):
                 try:
-                    data_documento_val = datetime.strptime(rep['data_documento'], '%Y-%m-%d').date()
+                    h_acionamento = datetime.strptime(rep['horario_acionamento'], '%H:%M').time()
                 except:
                     pass
-            data_documento = st.date_input(
-                "Data do Documento (Opcional)",
-                value=data_documento_val
-            )
 
-        if st.session_state["exame_de_local_selecionado"]:
-            with st.expander("🌍 Dados do Local de Exame", expanded=True):
-                local_fato_descricao = st.text_area(
-                    "Descrição do Local do Fato (Opcional)",
-                    value=rep.get('local_fato_descricao') or ''
+            h_chegada = None
+            if rep.get('horario_chegada'):
+                try:
+                    h_chegada = datetime.strptime(rep['horario_chegada'], '%H:%M').time()
+                except:
+                    pass
+
+            h_saida = None
+            if rep.get('horario_saida'):
+                try:
+                    h_saida = datetime.strptime(rep['horario_saida'], '%H:%M').time()
+                except:
+                    pass
+
+            with col_horario1:
+                horario_acionamento = st.time_input(
+                    "Horário de Acionamento (Opcional)",
+                    value=h_acionamento,
+                    key="h_acionamento_key"
                 )
-                col_horario1, col_horario2, col_horario3 = st.columns(3)
+            with col_horario2:
+                horario_chegada = st.time_input(
+                    "Horário de Chegada ao Local (Opcional)",
+                    value=h_chegada,
+                    key="h_chegada_key"
+                )
+            with col_horario3:
+                horario_saida = st.time_input(
+                    "Horário de Saída do Local (Opcional)",
+                    value=h_saida,
+                    key="h_saida_key"
+                )
 
-                h_acionamento = None
-                if rep.get('horario_acionamento'):
-                    try:
-                        h_acionamento = datetime.strptime(rep['horario_acionamento'], '%H:%M').time()
-                    except:
-                        pass
+            col_coords1, col_coords2 = st.columns(2)
+            with col_coords1:
+                latitude = st.text_input(
+                    "Latitude (Opcional)",
+                    value=rep.get('latitude') or '',
+                    key="latitude_key"
+                )
+            with col_coords2:
+                longitude = st.text_input(
+                    "Longitude (Opcional)",
+                    value=rep.get('longitude') or '',
+                    key="longitude_key"
+                )
+    else:
+        local_fato_descricao = rep.get('local_fato_descricao')
+        horario_acionamento = None
+        horario_chegada = None
+        horario_saida = None
+        latitude = rep.get('latitude')
+        longitude = rep.get('longitude')
 
-                h_chegada = None
-                if rep.get('horario_chegada'):
-                    try:
-                        h_chegada = datetime.strptime(rep['horario_chegada'], '%H:%M').time()
-                    except:
-                        pass
+    st.markdown("### Observações")
+    observacoes = st.text_area(
+        "Observações Gerais (Opcional)",
+        value=rep.get('observacoes') or '',
+        key="observacoes_key"
+    )
 
-                h_saida = None
-                if rep.get('horario_saida'):
-                    try:
-                        h_saida = datetime.strptime(rep['horario_saida'], '%H:%M').time()
-                    except:
-                        pass
+    st.markdown(f"**Status:** {rep['status']} *(atualizado automaticamente via laudo)*")
 
-                with col_horario1:
-                    horario_acionamento = st.time_input(
-                        "Horário de Acionamento (Opcional)",
-                        value=h_acionamento
-                    )
-                with col_horario2:
-                    horario_chegada = st.time_input(
-                        "Horário de Chegada ao Local (Opcional)",
-                        value=h_chegada
-                    )
-                with col_horario3:
-                    horario_saida = st.time_input(
-                        "Horário de Saída do Local (Opcional)",
-                        value=h_saida
-                    )
+    st.markdown("---")
+    col_submit = st.columns([1])
 
-                col_coords1, col_coords2 = st.columns(2)
-                with col_coords1:
-                    latitude = st.text_input(
-                        "Latitude (Opcional)",
-                        value=rep.get('latitude') or ''
-                    )
-                with col_coords2:
-                    longitude = st.text_input(
-                        "Longitude (Opcional)",
-                        value=rep.get('longitude') or ''
-                    )
-        else:
-            local_fato_descricao = rep.get('local_fato_descricao')
-            horario_acionamento = None
-            horario_chegada = None
-            horario_saida = None
-            latitude = rep.get('latitude')
-            longitude = rep.get('longitude')
-
-        st.markdown("### Observações")
-        observacoes = st.text_area(
-            "Observações Gerais (Opcional)",
-            value=rep.get('observacoes') or ''
+    with col_submit[0]:
+        submitted = st.button(
+            "💾 Salvar Alterações",
+            use_container_width=True,
+            type="primary"
         )
-
-        st.markdown(f"**Status:** {rep['status']} *(atualizado automaticamente via laudo)*")
-
-        st.markdown("---")
-        col_submit = st.columns([1])
-
-        with col_submit[0]:
-            submitted = st.form_submit_button(
-                "💾 Salvar Alterações",
-                use_container_width=True,
-                type="primary"
-            )
 
         if submitted:
             if not numero_rep:

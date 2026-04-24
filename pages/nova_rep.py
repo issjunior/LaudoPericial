@@ -62,7 +62,7 @@ def main():
     opcoes_tipos_exame = {f"{te['codigo']} - {te['nome']}": te['id'] for te in tipos_exame}
     nomes_tipos_exame = ["— Não definido —"] + sorted(list(opcoes_tipos_exame.keys()))
 
-    opcoes_solicitantes = {f"{s['orgao']} ({s['nome'] or 'N/A'})": s['id'] for s in solicitantes}
+    opcoes_solicitantes = {s['orgao']: s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
 
 
@@ -70,177 +70,183 @@ def main():
     if "exame_de_local_selecionado" not in st.session_state:
         st.session_state["exame_de_local_selecionado"] = False
 
-    with st.form("form_nova_rep", clear_on_submit=True):
-        st.markdown("### Dados Gerais da REP")
-        col1, col2, col3 = st.columns(3)
+    # Callback para preencher a autoridade automaticamente
+    def on_change_solicitante():
+        sel = st.session_state.get("solicitante_selecionado_key")
+        if sel and sel != "Selecione um Solicitante":
+            sol_data = next((s for s in solicitantes if s['orgao'] == sel), None)
+            if sol_data and sol_data.get('nome'):
+                st.session_state["nome_autoridade_key"] = sol_data['nome']
 
-        with col1:
-            numero_rep = st.text_input(
-                "Número da REP *",
-                placeholder=f"Ex: 12.345-{date.today().year}", # NOVO PLACEHOLDER
-                help="Número único de identificação da Requisição de Exame Pericial no formato XX.XXX-ANO." # NOVA AJUDA
-            )
-        with col2:
-            data_solicitacao = st.date_input(
-                "Data da Solicitação *",
-                value=date.today(),
-                format="DD/MM/YYYY", # NOVO FORMATO DE EXIBIÇÃO
-                help="Data em que a REP foi solicitada."
-            )
-        with col3:
-            tipo_exame_selecionado = st.selectbox(
-                "Tipo de Exame *",
-                options=nomes_tipos_exame,
-                index=0,
-                help="Selecione o tipo de exame pericial."
-            )
-            # Atualiza o estado para mostrar/esconder campos de local
-            if tipo_exame_selecionado != "— Não definido —":
-                tipo_exame_id_selecionado = opcoes_tipos_exame[tipo_exame_selecionado]
-                exame_info = next((te for te in tipos_exame if te['id'] == tipo_exame_id_selecionado), None)
-                if exame_info and exame_info['exame_de_local']:
-                    st.session_state["exame_de_local_selecionado"] = True
-                else:
-                    st.session_state["exame_de_local_selecionado"] = False
+    st.markdown("### Dados Gerais da REP")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        numero_rep = st.text_input(
+            "Número da REP *",
+            placeholder=f"Ex: 12.345-{date.today().year}",
+            help="Número único de identificação da Requisição de Exame Pericial no formato XX.XXX-ANO."
+        )
+    with col2:
+        data_solicitacao = st.date_input(
+            "Data da Solicitação *",
+            value=date.today(),
+            format="DD/MM/YYYY",
+            help="Data em que a REP foi solicitada."
+        )
+    with col3:
+        tipo_exame_selecionado = st.selectbox(
+            "Tipo de Exame *",
+            options=nomes_tipos_exame,
+            index=0,
+            help="Selecione o tipo de exame pericial.",
+            key="tipo_exame_key"
+        )
+        # Atualiza o estado para mostrar/esconder campos de local
+        if tipo_exame_selecionado != "— Não definido —":
+            tipo_exame_id_selecionado = opcoes_tipos_exame[tipo_exame_selecionado]
+            exame_info = next((te for te in tipos_exame if te['id'] == tipo_exame_id_selecionado), None)
+            if exame_info and exame_info['exame_de_local']:
+                st.session_state["exame_de_local_selecionado"] = True
             else:
                 st.session_state["exame_de_local_selecionado"] = False
+        else:
+            st.session_state["exame_de_local_selecionado"] = False
 
-        # NOVO CAMPO: Nome do Envolvido/Vítima
-        nome_envolvido = st.text_input(
-            "Nome do Envolvido / Vítima (Opcional)",
-            placeholder="Ex: João da Silva, Vítima 01",
-            help="Nome da pessoa envolvida ou vítima principal da ocorrência."
+    # NOVO CAMPO: Nome do Envolvido/Vítima
+    nome_envolvido = st.text_input(
+        "Nome do Envolvido / Vítima (Opcional)",
+        placeholder="Ex: João da Silva, Vítima 01",
+        help="Nome da pessoa envolvida ou vítima principal da ocorrência."
+    )
+
+    st.markdown("### Dados do Solicitante")
+    col4, col5 = st.columns(2)
+
+    with col4:
+        solicitante_selecionado = st.selectbox(
+            "Órgão Solicitante *",
+            options=nomes_solicitantes,
+            index=0,
+            help="Selecione o órgão ou pessoa que solicitou a perícia.",
+            key="solicitante_selecionado_key",
+            on_change=on_change_solicitante
+        )
+    with col5:
+        nome_autoridade = st.text_input(
+            "Nome da Autoridade Solicitante (Opcional)",
+            placeholder="Ex: Delegado João da Silva",
+            help="Nome da autoridade que assina o documento de solicitação.",
+            key="nome_autoridade_key"
         )
 
-        st.markdown("### Dados do Solicitante")
-        col4, col5 = st.columns(2)
+    st.markdown("### Detalhes da Solicitação")
+    col6, col7, col8 = st.columns(3)
 
-        with col4:
-            solicitante_selecionado = st.selectbox(
-                "Órgão Solicitante *",
-                options=nomes_solicitantes,
-                index=0,
-                help="Selecione o órgão ou pessoa que solicitou a perícia."
-            )
-        with col5:
-            nome_autoridade = st.text_input(
-                "Nome da Autoridade Solicitante (Opcional)",
-                placeholder="Ex: Delegado João da Silva",
-                help="Nome da autoridade que assina o documento de solicitação."
-            )
+    with col6:
+        tipo_documento = st.selectbox(
+            "Tipo de Documento *",
+            options=["Selecione", "BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"],
+            index=0,
+            help="Tipo de documento que formaliza a solicitação (Boletim de Ocorrência, Ofício, etc.)."
+        )
+    with col7:
+        numero_documento = st.text_input(
+            "Número do Documento *",
+            placeholder="Ex: 12345/2024",
+            help="Número do documento de solicitação."
+        )
+    with col8:
+        data_documento = st.date_input(
+            "Data do Documento (Opcional)",
+            value=None,
+            format="DD/MM/YYYY",
+            help="Data de emissão do documento de solicitação."
+        )
 
-        st.markdown("### Detalhes da Solicitação")
-        col6, col7, col8 = st.columns(3)
+    # Abas: Dados Gerais e Dados do Local
+    st.markdown("### 📝 Dados da REP")
+    st.markdown("**Selecione uma aba abaixo:**")
+    if st.session_state.get("exame_de_local_selecionado"):
+        st.warning("⚠️ IMPORTANTE: Este tipo de exame requer dados do local. Clique na aba **'Dados do Local'** para preencher!")
 
-        with col6:
-            tipo_documento = st.selectbox(
-                "Tipo de Documento *",
-                options=["Selecione", "BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"], # NOVAS OPÇÕES
-                index=0,
-                help="Tipo de documento que formaliza a solicitação (Boletim de Ocorrência, Ofício, etc.)."
-            )
-        with col7:
-            numero_documento = st.text_input(
-                "Número do Documento *",
-                placeholder="Ex: 12345/2024",
-                help="Número do documento de solicitação."
-            )
-        with col8:
-            data_documento = st.date_input(
-                "Data do Documento (Opcional)",
-                value=None,
-                format="DD/MM/YYYY", # NOVO FORMATO DE EXIBIÇÃO
-                help="Data de emissão do documento de solicitação."
-            )
+    tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local"])
 
-        # Abas: Dados Gerais e Dados do Local
-        st.markdown("### 📝 Dados da REP")
-        st.markdown("**Selecione uma aba abaixo:**")
+    with tab1:
         if st.session_state.get("exame_de_local_selecionado"):
-            st.warning("⚠️ IMPORTANTE: Este tipo de exame requer dados do local. Clique na aba **'Dados do Local'** para preencher!")
+            st.info("Dados básicos para este tipo de exame.")
+        else:
+            st.info("Dados básicos para todos os tipos de exame.")
 
-        tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local"])
-
-        with tab1:
-            if st.session_state.get("exame_de_local_selecionado"):
-                st.info("Dados básicos para este tipo de exame.")
-            else:
-                st.info("Dados básicos para todos os tipos de exame.")
-
-        with tab2:
-            if st.session_state["exame_de_local_selecionado"]:
-                local_fato_descricao = st.text_area(
-                    "Descrição do Local do Fato",
-                    placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
-                    help="Descrição detalhada do local onde ocorreu o fato.",
-                    height=80
-                )
-                col_horario1, col_horario2, col_horario3 = st.columns(3)
-                with col_horario1:
-                    horario_acionamento = st.time_input(
-                        "Horário de Acionamento",
-                        value=None,
-                        help="Horário em que a equipe pericial foi acionada."
-                    )
-                with col_horario2:
-                    horario_chegada = st.time_input(
-                        "Horário de Chegada",
-                        value=None,
-                        help="Horário de chegada da equipe pericial ao local."
-                    )
-                with col_horario3:
-                    horario_saida = st.time_input(
-                        "Horário de Saída",
-                        value=None,
-                        help="Horário de saída da equipe pericial do local."
-                    )
-
-                col_coords1, col_coords2 = st.columns(2)
-                with col_coords1:
-                    latitude = st.text_input(
-                        "Latitude",
-                        placeholder="Ex: -25.4284",
-                        help="Coordenada de latitude do local do exame."
-                    )
-                with col_coords2:
-                    longitude = st.text_input(
-                        "Longitude",
-                        placeholder="Ex: -49.2733",
-                        help="Coordenada de longitude do local do exame."
-                    )
-            else:
-                local_fato_descricao = None
-                horario_acionamento = None
-                horario_chegada = None
-                horario_saida = None
-                latitude = None
-                longitude = None
-                st.info("Este tipo de exame não requer deslocamento ao local do fato.")
-
-        with st.expander("📝 Observações Adicionais", expanded=False):
-            observacoes = st.text_area(
-                "Observações Gerais (Opcional)",
-                height=100,
-                help="Qualquer informação extra relevante para a REP."
+    with tab2:
+        if st.session_state["exame_de_local_selecionado"]:
+            local_fato_descricao = st.text_area(
+                "Descrição do Local do Fato",
+                placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
+                help="Descrição detalhada do local onde ocorreu o fato.",
+                height=80
             )
-
-        st.markdown("---")
-
-        col_submit, col_cancel = st.columns([1, 5])
-
-        with col_submit:
-            if st.session_state.get("exame_de_local_selecionado"):
-                submitted = st.form_submit_button(
-                    "💾 Atualizar REP",
-                    use_container_width=True,
-                    type="primary"
+            col_horario1, col_horario2, col_horario3 = st.columns(3)
+            with col_horario1:
+                horario_acionamento = st.time_input(
+                    "Horário de Acionamento",
+                    value=None,
+                    help="Horário em que a equipe pericial foi acionada."
                 )
-            else:
-                submitted = st.form_submit_button(
-                    "💾 Registrar REP",
-                    use_container_width=True,
-                    type="primary"
+            with col_horario2:
+                horario_chegada = st.time_input(
+                    "Horário de Chegada",
+                    value=None,
+                    help="Horário de chegada da equipe pericial ao local."
                 )
+            with col_horario3:
+                horario_saida = st.time_input(
+                    "Horário de Saída",
+                    value=None,
+                    help="Horário de saída da equipe pericial do local."
+                )
+
+            col_coords1, col_coords2 = st.columns(2)
+            with col_coords1:
+                latitude = st.text_input(
+                    "Latitude",
+                    placeholder="Ex: -25.4284",
+                    help="Coordenada de latitude do local do exame."
+                )
+            with col_coords2:
+                longitude = st.text_input(
+                    "Longitude",
+                    placeholder="Ex: -49.2733",
+                    help="Coordenada de longitude do local do exame."
+                )
+        else:
+            local_fato_descricao = None
+            horario_acionamento = None
+            horario_chegada = None
+            horario_saida = None
+            latitude = None
+            longitude = None
+            st.info("Este tipo de exame não requer deslocamento ao local do fato.")
+
+    with st.expander("📝 Observações Adicionais", expanded=False):
+        observacoes = st.text_area(
+            "Observações Gerais (Opcional)",
+            height=100,
+            help="Qualquer informação extra relevante para a REP."
+        )
+
+    st.markdown("---")
+
+    col_submit, col_cancel = st.columns([1, 5])
+
+    with col_submit:
+        label_botao = "💾 Atualizar REP" if st.session_state.get("exame_de_local_selecionado") else "💾 Registrar REP"
+        # Botão normal em vez de form_submit
+        submitted = st.button(
+            label_botao,
+            use_container_width=True,
+            type="primary"
+        )
 
         if submitted:
             # Validações
