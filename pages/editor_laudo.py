@@ -119,6 +119,7 @@ def renderizar_secoes(laudo_id: int):
     | `{{perito_matricula}}` | Matrícula do perito |
     | `{{perito_cargo}}` | Cargo do perito |
     | `{{perito_lotacao}}` | Lotação do perito |
+    | `{{cidade}}` | Cidade do perito (lotação) |
     """
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):

@@ -105,6 +105,7 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'perito_matricula': perito.get('matricula', ''),
             'perito_cargo': perito.get('cargo', ''),
             'perito_lotacao': perito.get('lotacao', ''),
+            'cidade': perito.get('lotacao', ''),
         }
         
         return placeholders
