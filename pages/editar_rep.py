@@ -125,6 +125,7 @@ def main():
         data_solicitacao = st.date_input(
             "Data da Solicitação *",
             value=datetime.strptime(rep['data_solicitacao'], '%Y-%m-%d').date() if rep.get('data_solicitacao') else date.today(),
+            format="DD/MM/YYYY",
             key="data_solicitacao_key"
         )
     with col3:
@@ -199,6 +200,7 @@ def main():
         data_documento = st.date_input(
             "Data do Documento (Opcional)",
             value=data_documento_val,
+            format="DD/MM/YYYY",
             key="data_documento_key"
         )
 
