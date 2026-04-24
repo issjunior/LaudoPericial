@@ -169,9 +169,10 @@ def renderizar_menu():
             st.page_link("pages/backup.py", label="Backup (Import/Export)", icon="💾")
             st.page_link("pages/perfil.py", label="Meu Perfil", icon="👤")
 
-        st.markdown("---")
-        st.page_link(
-            "pages/99_logout.py",
-            label="Sair",
-            icon="🚪"
-        )
+        st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.page_link(
+                "pages/99_logout.py",
+                label="Sair",
+                icon="🚪"
+            )
