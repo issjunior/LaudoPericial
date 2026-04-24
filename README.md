@@ -6,9 +6,9 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 
 | Arquivo | Descrição |
 |---------|-----------|
-| [01-tecnologias.md](./01-tecnologias.md) | Stack tecnológico e estrutura |
-| [02-funcionalidades.md](./02-funcionalidades.md) | Lista completa de funcionalidades por módulo |
-| [03-sprints.md](./03-sprints.md) | Planejamento de sprints e tasks |
+| [01-tecnologias.md](spec\01-tecnologias.md) | Stack tecnológico e estrutura |
+| [02-funcionalidades.md](spec\02-funcionalidades.md) | Lista completa de funcionalidades por módulo |
+| [03-sprints.md](spec\03-sprints.md) | Planejamento de sprints e tasks |
 
 ## Visão Geral
 
