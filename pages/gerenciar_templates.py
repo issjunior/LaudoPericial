@@ -94,7 +94,6 @@ st.set_page_config(
 # Renderiza o menu lateral (já exige autenticação)
 renderizar_menu()
 
-
 # ──────────────────────────────────────────────────────
 # FUNÇÕES AUXILIARES DE ESTADO
 # ──────────────────────────────────────────────────────
@@ -345,131 +344,45 @@ def formulario_editar_template(template_id: int):
 # TABELA DE TEMPLATES
 # ──────────────────────────────────────────────────────
 
-def tabela_templates(templates: list):
+def exibir_lista_templates(templates: list):
     """
-    Exibe a tabela de templates de laudo com ações.
-
-    Args:
-        templates: lista de dicionários com os templates
+    Exibe os templates de laudo usando Expanders nativos do Streamlit.
     """
     if not templates:
         st.info("📭 Nenhum template de laudo cadastrado ainda.")
         return
 
-    # Definindo as colunas e suas larguras para melhor visualização
-    # Ordem: Código, Tipo de Exame, Template, Descrição, Status, Ações
-    col_widths = [1.2, 2, 2.5, 3, 1.2, 2.5] # Ajuste fino nas larguras
-
-    # Cabeçalho da tabela
-    col_codigo, col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(col_widths)
-    col_codigo.markdown("**Código**")
-    col_tipo.markdown("**Tipo de Exame**")
-    col_nome.markdown("**Template**")
-    col_desc.markdown("**Descrição**")
-    col_status.markdown("**Status**")
-    col_acoes.markdown("**Ações**")
-
-    st.markdown("---") # Separador após o cabeçalho
-
     for template in templates:
-        col_codigo, col_tipo, col_nome, col_desc, col_status, col_acoes = st.columns(col_widths)
-
-        with col_codigo:
-            # Usando um estilo para centralizar e destacar um pouco
-            st.markdown(
-                f"<div style='text-align: center; font-weight: bold;'>"
-                f"{template['tipo_exame_codigo']}</div>",
-                unsafe_allow_html=True
-            )
-
-        with col_tipo:
-            st.markdown(f"**{template['tipo_exame_nome']}**")
-
-        with col_nome:
-            st.markdown(f"**{template['nome']}**")
-
-        with col_desc:
-            descricao = template["descricao_exame"]
-            if descricao:
-                # Exibe uma prévia da descrição e um tooltip completo
-                st.markdown(
-                    f"<span title='{descricao}'>"
-                    f"{descricao[:50]}{'...' if len(descricao) > 50 else ''}"
-                    f"</span>",
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown("—") # Se não houver descrição
-
-        with col_status:
-            if template["ativo"]:
-                st.markdown("🟢 Ativo")
-            else:
-                st.markdown("🔴 Inativo")
-
-        with col_acoes:
-            col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
-
-            # Botão Gerenciar Seções
-            with col_btn1:
-                if st.button(
-                    "⚙️",
-                    key=f"gerenciar_secoes_{template['id']}",
-                    help="Gerenciar Seções",
-                    use_container_width=True # Ocupa todo o espaço disponível
-                ):
+        status_icon = "🟢" if template["ativo"] else "🔴"
+        label = f"{status_icon} [{template['tipo_exame_codigo']}] {template['nome']} — {template['tipo_exame_nome']}"
+        
+        with st.expander(label):
+            st.markdown(f"**Descrição:** {template['descricao_exame'] or 'Sem descrição.'}")
+            
+            st.markdown("---")
+            c1, c2, c3, c4, _ = st.columns([1.5, 1.2, 1.5, 1.2, 3])
+            
+            with c1:
+                if st.button("⚙️ Gerenciar Seções", key=f"sec_{template['id']}", use_container_width=True):
                     abrir_gerenciar_secoes(template["id"])
                     st.rerun()
-
-            # Botão Editar
-            with col_btn2:
-                if st.button(
-                    "✏️",
-                    key=f"editar_{template['id']}",
-                    help="Editar Template",
-                    use_container_width=True
-                ):
+            with c2:
+                if st.button("✏️ Editar", key=f"edit_{template['id']}", use_container_width=True):
                     abrir_editar_template(template["id"])
                     st.rerun()
-
-            # Botão Ativar/Desativar
-            with col_btn3:
-                icone_status = "🔴" if template["ativo"] else "🟢"
-                help_status  = "Desativar" if template["ativo"] else "Ativar"
-                if st.button(
-                    icone_status,
-                    key=f"status_{template['id']}",
-                    help=help_status,
-                    use_container_width=True
-                ):
+            with c3:
+                txt_status = "Desativar" if template["ativo"] else "Ativar"
+                if st.button(f"🔄 {txt_status}", key=f"stat_{template['id']}", use_container_width=True):
                     try:
-                        novo = alternar_status_template(template["id"])
-                        msg  = "ativado" if novo else "desativado"
-                        st.success(
-                            f"✅ Template **{template['nome']}** {msg} com sucesso!"
-                        )
+                        alternar_status_template(template["id"])
                         st.rerun()
-                    except ValueError as e:
-                        st.error(f"❌ {e}")
-
-            # Botão Excluir
-            with col_btn4:
-                if st.button(
-                    "🗑️",
-                    key=f"excluir_{template['id']}",
-                    help="Excluir Template",
-                    use_container_width=True
-                ):
+                    except Exception as e: st.error(f"Erro: {e}")
+            with c4:
+                if st.button("🗑️ Excluir", key=f"del_{template['id']}", use_container_width=True):
                     try:
                         excluir_template(template["id"])
-                        st.success(
-                            f"✅ Template **{template['nome']}** excluído com sucesso!"
-                        )
                         st.rerun()
-                    except ValueError as e:
-                        st.error(f"❌ {e}")
-
-        st.markdown("---") # Separador entre as linhas da tabela
+                    except Exception as e: st.error(f"Erro: {e}")
         
 # ──────────────────────────────────────────────────────
 # GERENCIAMENTO DE SEÇÕES
@@ -486,71 +399,62 @@ def gerenciar_secoes(template_id: int):
         st.rerun()
         return
 
-    st.markdown(f"### ⚙️ Gerenciar Seções do Template: {template['nome']}")
-    st.caption(f"Tipo de Exame: **{template['tipo_exame_nome']}**")
-    st.markdown("---")
-
-    # Botões de ação para seções
-    col_btn_nova_secao, col_btn_voltar, _ = st.columns([2, 2, 6])
-    with col_btn_nova_secao:
-        if st.button("➕ Nova Seção", use_container_width=True, type="primary"):
-            abrir_criar_secao()
-            st.rerun()
-    with col_btn_voltar:
+    col_tit, col_nav = st.columns([7, 3])
+    with col_tit:
+        st.subheader(f"⚙️ Gerenciar Seções: {template['nome']}")
+        st.caption(f"Tipo de Exame: {template['tipo_exame_nome']}")
+    with col_nav:
         if st.button("↩️ Voltar para Templates", use_container_width=True):
             fechar_formularios()
             st.rerun()
 
     st.markdown("---")
 
+    # Botão de nova seção destacado
+    if st.session_state["secao_modo"] is None:
+        col_btn, _ = st.columns([3, 7])
+        with col_btn:
+            if st.button("➕ Adicionar Nova Seção", use_container_width=True, type="primary"):
+                abrir_criar_secao()
+                st.rerun()
+
     # Formulários de seção (criar/editar)
     if st.session_state["secao_modo"] == "criar_secao":
         formulario_criar_secao(template_id)
-        st.markdown("---")
     elif st.session_state["secao_modo"] == "editar_secao":
         formulario_editar_secao(st.session_state["secao_id_editando"])
-        st.markdown("---")
 
-    # Listagem de seções
+    st.markdown("---")
+
+    # Listagem de seções com visual melhorado
     secoes = listar_secoes_template(template_id)
-    st.markdown("#### Seções Cadastradas")
+    st.markdown("#### Estrutura do Laudo")
+    
     if not secoes:
-        st.info("📭 Nenhuma seção cadastrada para este template ainda.")
+        st.info("📭 Nenhuma seção cadastrada. Comece adicionando uma acima.")
     else:
-        # Cabeçalho da tabela de seções
-        col_titulo, col_ordem, col_obrigatoria, col_acoes = st.columns(
-            [4, 1.5, 1.5, 2]
-        )
-        col_titulo.markdown("**Título**")
-        col_ordem.markdown("**Ordem**")
-        col_obrigatoria.markdown("**Obrigatória**")
-        col_acoes.markdown("**Ações**")
-        st.markdown("---")
-
-        for secao in secoes:
-            col_titulo, col_ordem, col_obrigatoria, col_acoes = st.columns(
-                [4, 1.5, 1.5, 2]
-            )
-            with col_titulo:
-                st.markdown(f"**{secao['titulo']}**")
-            with col_ordem:
-                st.markdown(str(secao['ordem']))
-            with col_obrigatoria:
-                st.markdown("✅ Sim" if secao['obrigatoria'] else "— Não")
-            with col_acoes:
-                col_btn1, col_btn2 = st.columns(2)
-                with col_btn1:
-                    if st.button("✏️", key=f"editar_secao_{secao['id']}", help="Editar Seção"):
-                        abrir_editar_secao(secao["id"])
-                        st.rerun()
-                with col_btn2:
-                    if st.button("🗑️", key=f"excluir_secao_{secao['id']}", help="Excluir Seção"):
-                        try:
-                            excluir_secao_template(secao["id"])
-                            st.success(f"✅ Seção **{secao['titulo']}** excluída com sucesso!")
+        for idx, secao in enumerate(secoes, 1):
+            with st.container():
+                c_idx, c_info, c_acoes = st.columns([0.5, 7, 2.5])
+                with c_idx:
+                    st.markdown(f"<h3 style='margin-top: 10px; color: #dee2e6;'>{idx:02d}</h3>", unsafe_allow_html=True)
+                with c_info:
+                    obrigatoria_badge = " <span style='color: #f03e3e; font-size: 0.7rem; vertical-align: middle;'>[OBRIGATÓRIA]</span>" if secao['obrigatoria'] else ""
+                    st.markdown(f"**{secao['titulo'].upper()}**{obrigatoria_badge}", unsafe_allow_html=True)
+                    st.caption(f"Ordem: {secao['ordem']} | ID: {secao['id']}")
+                with c_acoes:
+                    ca1, ca2 = st.columns(2)
+                    with ca1:
+                        if st.button("✏️", key=f"ed_sec_{secao['id']}", use_container_width=True):
+                            abrir_editar_secao(secao["id"])
                             st.rerun()
-                        except ValueError as e:
-                            st.error(f"❌ {e}")
+                    with ca2:
+                        if st.button("🗑️", key=f"del_sec_{secao['id']}", use_container_width=True):
+                            try:
+                                excluir_secao_template(secao["id"])
+                                st.rerun()
+                            except Exception as e: st.error(f"Erro: {e}")
+                st.markdown("<hr style='margin: 10px 0; border: 0; border-top: 1px solid #f8f9fa;'>", unsafe_allow_html=True)
 
 
 def formulario_criar_secao(template_id: int):
@@ -736,12 +640,9 @@ def main():
     """
     inicializar_estado()
 
-    # Cabeçalho
     st.title("📄 Templates de Laudo")
-    st.markdown(
-        "Gerencie os modelos de laudo e suas seções para cada tipo de exame."
-    )
-    st.markdown("---")
+    st.markdown("Gerencie os modelos de laudo e suas seções por tipo de exame.")
+    st.divider()
 
     temp_modo = st.session_state["temp_modo"]
     temp_id_editando = st.session_state["temp_id_editando"]
@@ -749,57 +650,45 @@ def main():
     # Se estiver gerenciando seções, exibe a interface de seções
     if temp_modo == "gerenciar_secoes":
         gerenciar_secoes(temp_id_editando)
-        return # Sai da função main para não exibir o restante da página principal
+        return
 
-    # ── Exibe formulário de template se estiver em modo criar/editar ─
+    # ── Formulários de Template ──────────────────────────
     if temp_modo == "criar_template":
         formulario_criar_template()
-        st.markdown("---")
-
+        st.divider()
     elif temp_modo == "editar_template":
         formulario_editar_template(temp_id_editando)
-        st.markdown("---")
+        st.divider()
 
-    # ── Barra de ações ──────────────────────────────────
-    col_btn, col_filtro_codigo, col_filtro_status, _ = st.columns([2, 2, 2, 4]) # Ajuste nas colunas
-
+    # ── Barra de Ações e Filtros ─────────────────────────
+    col_btn, col_search, col_toggle = st.columns([2.5, 4, 3.5])
+    
     with col_btn:
-        if temp_modo is None: # Só mostra o botão se não houver formulário aberto
-            if st.button(
-                "➕ Novo Template",
-                use_container_width=True,
-                type="primary"
-            ):
+        if temp_modo is None:
+            if st.button("➕ Novo Template", use_container_width=True, type="primary"):
                 abrir_criar_template()
                 st.rerun()
-
-    with col_filtro_codigo: # NOVA COLUNA PARA O FILTRO DE CÓDIGO
+    
+    with col_search:
         filtro_codigo_exame = st.text_input(
-            "Filtrar por Código do Exame",
+            "Filtrar por Código",
             placeholder="Ex: H-001",
-            help="Digite parte do código do tipo de exame para filtrar."
+            label_visibility="collapsed"
         )
-
-    with col_filtro_status: # COLUNA EXISTENTE, APENAS RENOMEADA
-        mostrar_inativos = st.toggle(
-            "Mostrar templates inativos",
-            value=False
-        )
-
-    st.markdown("---")
+    
+    with col_toggle:
+        mostrar_inativos = st.toggle("Mostrar inativos", value=False)
 
     # ── Listagem de Templates ───────────────────────────
     templates = listar_templates(
         apenas_ativos=not mostrar_inativos,
-        codigo_tipo_exame=filtro_codigo_exame # NOVO PARÂMETRO PASSADO
+        codigo_tipo_exame=filtro_codigo_exame
     )
-    # Contador
-    total = len(templates)
-    st.caption(
-        f"{total} template(s) encontrado(s)"
-    )
+    
+    st.info(f"**{len(templates)}** template(s) encontrado(s)")
+    st.markdown(" ")
 
-    tabela_templates(templates)
+    exibir_lista_templates(templates)
 
 
 main()# Gerenciar templates — será preenchido em breve
