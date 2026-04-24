@@ -59,9 +59,19 @@ def main():
     reps = reps_pendentes + reps_andamento
 
     reps_disponiveis = []
+    reps_com_laudo = []
     for rep in reps:
         if not verificar_laudo_existe(rep['id']):
             reps_disponiveis.append(rep)
+        else:
+            reps_com_laudo.append(rep)
+
+    if reps_com_laudo:
+        with st.expander("ℹ️ Por que algumas REPs não aparecem aqui?", expanded=False):
+            st.markdown("As seguintes REPs já possuem um laudo vinculado e, por isso, não podem receber um novo template:")
+            for r in reps_com_laudo:
+                st.markdown(f"- **{r['numero_rep']}** ({r.get('tipo_exame_nome') or 'Tipo não definido'})")
+            st.info("Para trocar o template, você deve primeiro excluir o laudo existente na página de **Editor de Laudo** ou **Listar REPs**.")
 
     if not reps_disponiveis:
         st.warning("⚠️ Não há REPs disponíveis para criar laudo.")

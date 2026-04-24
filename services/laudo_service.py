@@ -50,7 +50,7 @@ def listar_laudos(
             te.nome AS tipo_exame_nome
         FROM laudos l
         JOIN rep r ON l.rep_id = r.id
-        JOIN tipos_exame te ON r.tipo_exame_id = te.id
+        LEFT JOIN tipos_exame te ON r.tipo_exame_id = te.id
     """
     params = []
     conditions = []

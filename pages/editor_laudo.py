@@ -28,7 +28,7 @@ from services.laudo_service import (
     excluir_versao,
     salvar_versao_snapshot
 )
-from services.rep_service import listar_reps
+from services.rep_service import listar_reps, buscar_rep
 from services.laudo_service import buscar_laudo_por_rep
 
 
@@ -71,7 +71,6 @@ def renderizar_secoes(laudo_id: int):
         st.info("Este laudo não possui seções.")
         return
 
-    from services.rep_service import buscar_rep
     rep = buscar_rep(laudo['rep_id'])
 
     st.markdown("---")
@@ -87,6 +86,7 @@ def renderizar_secoes(laudo_id: int):
     | `{{data_solicitacao}}` | Data da solicitação |
     | `{{tipo_exame}}` | Nome do tipo de exame |
     | `{{nome_envolvido}}` | Nome do envolvido/vítima |
+    | `{{cidade}}` | Cidade do perito (lotação) |
 
     *Dados do Solicitante:*
     | Placeholder | Descrição |
@@ -94,32 +94,6 @@ def renderizar_secoes(laudo_id: int):
     | `{{solicitante}}` | Nome do órgão solicitante |
     | `{{solicitante_orgao}}` | Órgão do solicitante |
     | `{{nome_autoridade}}` | Nome da autoridade solicitante |
-
-    *Detalhes da Solicitação:*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{tipo_solicitacao}}` | Tipo de documento (BO, Ofício, etc) |
-    | `{{numero_documento}}` | Número do documento |
-    | `{{data_documento}}` | Data do documento |
-
-    *Dados do Local (se aplicável):*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{local_fato}}` | Descrição do local do fato |
-    | `{{horario_acionamento}}` | Horário de acionamento |
-    | `{{horario_chegada}}` | Horário de chegada ao local |
-    | `{{horario_saida}}` | Horário de saída do local |
-    | `{{latitude}}` | Latitude do local |
-    | `{{longitude}}` | Longitude do local |
-
-    *Dados do Perito:*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{perito_nome}}` | Nome do perito responsável |
-    | `{{perito_matricula}}` | Matrícula do perito |
-    | `{{perito_cargo}}` | Cargo do perito |
-    | `{{perito_lotacao}}` | Lotação do perito |
-    | `{{cidade}}` | Cidade do perito (lotação) |
     """
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):
@@ -139,7 +113,6 @@ def renderizar_secoes(laudo_id: int):
                     'theme': 'default',
                     'allowResizeY': True,
                     'allowResizeX': True,
-                    'enableDragAndDropFileToEditor': False,
                 }
                 conteudo = st_jodit(
                     value=secao['conteudo'] or "",
@@ -152,8 +125,7 @@ def renderizar_secoes(laudo_id: int):
                     "Conteúdo",
                     value=secao['conteudo'] or "",
                     height=200,
-                    key=f"secao_{secao['id']}",
-                    help=f"Seção: {secao['titulo']}. Use os placeholders listados no expander acima."
+                    key=f"secao_{secao['id']}"
                 )
 
             secoes_salvas[secao['id']] = {
@@ -195,15 +167,12 @@ def renderizar_secoes(laudo_id: int):
                     st.error(f"Erro: {e}")
 
     st.markdown("---")
-    col_vis, col_salvar = st.columns([1, 3])
+    col_vis, _ = st.columns([1, 3])
     with col_vis:
         try:
             from services.gerador_pdf_playwright import gerar_pdf_laudo
-            from services.rep_service import buscar_rep
-            laudo = buscar_laudo(laudo_id)
-            rep = buscar_rep(laudo['rep_id'])
-            numero_rep = rep['numero_rep'].replace('/', '_')
             pdf_bytes = gerar_pdf_laudo(laudo_id)
+            numero_rep = rep['numero_rep'].replace('/', '_')
             st.download_button(
                 label="Visualizar PDF",
                 data=pdf_bytes,
@@ -216,28 +185,19 @@ def renderizar_secoes(laudo_id: int):
 
     versoes = listar_versoes(laudo_id)
     if versoes:
-        with st.expander("Versoes Anteriores"):
-            st.caption("Apos restaurar use o botao Visualizar PDF para ver o resultado.")
+        with st.expander("Versões Anteriores"):
             for v in versoes:
                 col_v1, col_v2, col_v3 = st.columns([3, 1, 1])
                 with col_v1:
-                    st.markdown(f"**Versao {v['versao']}** - {formatar_data_br(v['criado_em'])}")
+                    st.markdown(f"**Versão {v['versao']}** - {formatar_data_br(v['criado_em'])}")
                 with col_v2:
                     if st.button("Restaurar", key=f"restaurar_{v['id']}"):
-                        try:
-                            restaurar_versao(v['id'])
-                            st.success(f"Versao {v['versao']} restaurada!")
-                            st.rerun()
-                        except ValueError as e:
-                            st.error(f"Erro: {e}")
+                        restaurar_versao(v['id'])
+                        st.rerun()
                 with col_v3:
                     if st.button("Excluir", key=f"excluir_{v['id']}"):
-                        try:
-                            excluir_versao(v['id'])
-                            st.success("Versao excluida!")
-                            st.rerun()
-                        except ValueError as e:
-                            st.error(f"Erro: {e}")
+                        excluir_versao(v['id'])
+                        st.rerun()
 
 
 def main():
@@ -245,35 +205,31 @@ def main():
     st.markdown("Editar laudos existentes.")
     st.markdown("---")
 
-    reps_em_andamento = listar_reps(
-        status='Em Andamento',
-        usuario_id=usuario_logado['id']
-    )
+    # Busca laudos vinculados ao usuário logado
+    laudos_usuario = listar_laudos(usuario_id=usuario_logado['id'])
 
-    if not reps_em_andamento:
-        st.info("Nenhuma REP em andamento encontrada.")
+    if not laudos_usuario:
+        st.info("Nenhum laudo encontrado para edição.")
         st.markdown("---")
-        st.markdown("### Como criar um novo laudo?")
         st.page_link("pages/novo_laudo.py", label="Clique aqui para vincular um laudo a uma REP", use_container_width=True)
         st.stop()
 
     opcoes_reps = {
-        f"{r['numero_rep']} — {r['tipo_exame_nome']} — ({r['status']})": r['id']
-        for r in reps_em_andamento
+        f"{l['numero_rep']} — {l.get('tipo_exame_nome') or 'Tipo não definido'} — ({l['status']})": l['rep_id']
+        for l in laudos_usuario
     }
     nomes_reps = ["Selecione uma REP"] + sorted(list(opcoes_reps.keys()))
 
     rep_selecionada = st.selectbox(
         "Selecione uma REP para Editar o Laudo",
         options=nomes_reps,
-        key="rep_selecionada"
+        key="rep_selecionada_dropdown"
     )
 
     if rep_selecionada != "Selecione uma REP":
         rep_id = opcoes_reps[rep_selecionada]
         laudo = buscar_laudo_por_rep(rep_id)
         if laudo:
-            st.session_state["laudo_id_selecionado"] = laudo['id']
             renderizar_secoes(laudo['id'])
         else:
             st.warning("Esta REP não possui laudo vinculado.")
