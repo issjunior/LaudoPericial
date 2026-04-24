@@ -566,11 +566,6 @@ def tela_dashboard():
             fazer_logout()
             st.rerun()
 
-    # ── Conteúdo principal ──────────────────────────────
-    st.title("🏠 Dashboard")
-    st.markdown(f"Bem-vindo, **{usuario['nome']}**!")
-    st.markdown("---")
-
     # Obtém as métricas atualizadas
     metricas = obter_metricas_reps(usuario["id"])
 
