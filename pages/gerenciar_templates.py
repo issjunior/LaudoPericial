@@ -435,13 +435,13 @@ def gerenciar_secoes(template_id: int):
     else:
         for idx, secao in enumerate(secoes, 1):
             with st.container():
-                c_idx, c_info, c_acoes = st.columns([0.5, 7, 2.5])
+                c_idx, c_info, c_acoes = st.columns([0.6, 7, 2.4], vertical_alignment="center")
                 with c_idx:
-                    st.markdown(f"<h3 style='margin-top: 10px; color: #dee2e6;'>{idx:02d}</h3>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size: 1.5rem; font-weight: bold; color: #dee2e6; line-height: 1;'>{idx:02d}</div>", unsafe_allow_html=True)
                 with c_info:
-                    obrigatoria_badge = " <span style='color: #f03e3e; font-size: 0.7rem; vertical-align: middle;'>[OBRIGATÓRIA]</span>" if secao['obrigatoria'] else ""
-                    st.markdown(f"**{secao['titulo'].upper()}**{obrigatoria_badge}", unsafe_allow_html=True)
-                    st.caption(f"Ordem: {secao['ordem']} | ID: {secao['id']}")
+                    obrigatoria_badge = f" <span style='color: #f03e3e; font-size: 0.8rem; font-weight: bold; margin-left: 10px;'>[OBRIGATÓRIA]</span>" if secao['obrigatoria'] else ""
+                    st.markdown(f"<div style='font-size: 1.1rem; font-weight: 600; line-height: 1; margin-top: -2px;'>{secao['titulo'].upper()}{obrigatoria_badge}</div>", unsafe_allow_html=True)
+
                 with c_acoes:
                     ca1, ca2 = st.columns(2)
                     with ca1:
@@ -496,8 +496,8 @@ def formulario_criar_secao(template_id: int):
         with col_ordem:
             ordem = st.number_input(
                 "Ordem de Exibição",
-                min_value=0,
-                value=0,
+                min_value=1,
+                value=1,
                 step=1,
                 help="Define a ordem em que as seções aparecerão no laudo."
             )
@@ -588,7 +588,7 @@ def formulario_editar_secao(secao_id: int):
         with col_ordem:
             ordem = st.number_input(
                 "Ordem de Exibição",
-                min_value=0,
+                min_value=1,
                 value=secao["ordem"],
                 step=1,
                 help="Define a ordem em que as seções aparecerão no laudo."
