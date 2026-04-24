@@ -7,6 +7,9 @@ venv/
 # Scripts de desenvolvimento e testes
 #scripts
 
+# Scripts de debug
+scratch
+
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
 *.sqlite

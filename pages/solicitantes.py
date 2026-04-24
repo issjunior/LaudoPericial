@@ -236,98 +236,50 @@ def formulario_editar(solicitante_id: int):
 
 def tabela_solicitantes(solicitantes: list):
     """
-    Exibe a tabela de solicitantes com ações.
-
-    Args:
-        solicitantes: lista de dicionários com os solicitantes
+    Exibe a listagem de solicitantes usando expanders (layout moderno).
     """
     if not solicitantes:
         st.info("📭 Nenhum solicitante cadastrado ainda.")
         return
 
-    # Cabeçalho da tabela
-    col_orgao, col_nome, col_email, col_status, col_acoes = st.columns(
-        [3, 2, 2, 1.5, 2]
-    )
-    col_orgao.markdown("**Órgão**")
-    col_nome.markdown("**Responsável**")
-    col_email.markdown("**Email**")
-    col_status.markdown("**Status**")
-    col_acoes.markdown("**Ações**")
-
-    st.markdown("---")
-
-    for solicitante in solicitantes:
-        col_orgao, col_nome, col_email, col_status, col_acoes = st.columns(
-            [3, 2, 2, 1.5, 2]
-        )
-
-        with col_orgao:
-            st.markdown(f"**{solicitante['orgao']}**")
-
-        with col_nome:
-            nome_contato = solicitante["nome"] or "—" # 'nome' no banco é 'nome do contato' aqui
-            st.markdown(nome_contato)
-
-        with col_email:
-            email_orgao = solicitante["contato"] or "—" # 'contato' no banco é 'email do órgão' aqui
-            st.markdown(email_orgao)
-
-        with col_status:
-            if solicitante["ativo"]:
-                st.markdown("🟢 Ativo")
-            else:
-                st.markdown("🔴 Inativo")
-
-        with col_acoes:
-            col_btn1, col_btn2, col_btn3 = st.columns(3)
-
-            # Botão Editar
-            with col_btn1:
-                if st.button(
-                    "✏️",
-                    key=f"editar_{solicitante['id']}",
-                    help="Editar"
-                ):
-                    abrir_editar(solicitante["id"])
+    for sol in solicitantes:
+        status_icon = "🟢" if sol['ativo'] else "🔴"
+        # Título do expander priorizando o Órgão
+        expander_title = f"{status_icon} {sol['orgao']}"
+        
+        with st.expander(expander_title):
+            col_info, col_actions = st.columns([3, 1])
+            
+            with col_info:
+                st.markdown(f"**Responsável/Contato:** {sol['nome'] or '—'}")
+                st.markdown(f"**Email:** {sol['contato'] or '—'}")
+                status_text = "Ativo" if sol['ativo'] else "Inativo"
+                st.markdown(f"**Status:** {status_icon} {status_text}")
+            
+            with col_actions:
+                st.markdown("### Ações")
+                
+                # Botão Editar
+                if st.button("✏️ Editar", key=f"edit_sol_{sol['id']}", use_container_width=True):
+                    abrir_editar(sol['id'])
                     st.rerun()
-
-            # Botão Ativar/Desativar
-            with col_btn2:
-                icone_status = "🔴" if solicitante["ativo"] else "🟢"
-                help_status  = "Desativar" if solicitante["ativo"] else "Ativar"
-                if st.button(
-                    icone_status,
-                    key=f"status_{solicitante['id']}",
-                    help=help_status
-                ):
+                
+                # Botão Ativar/Desativar
+                btn_status_label = "🔴 Desativar" if sol['ativo'] else "🟢 Ativar"
+                if st.button(btn_status_label, key=f"stat_sol_{sol['id']}", use_container_width=True):
                     try:
-                        novo = alternar_status_solicitante(solicitante["id"])
-                        msg  = "ativado" if novo else "desativado"
-                        st.success(
-                            f"✅ **{solicitante['orgao']}** {msg} com sucesso!"
-                        )
+                        alternar_status_solicitante(sol['id'])
                         st.rerun()
                     except ValueError as e:
                         st.error(f"❌ {e}")
-
-            # Botão Excluir
-            with col_btn3:
-                if st.button(
-                    "🗑️",
-                    key=f"excluir_{solicitante['id']}",
-                    help="Excluir"
-                ):
+                
+                # Botão Excluir
+                if st.button("🗑️ Excluir", key=f"del_sol_{sol['id']}", use_container_width=True, type="secondary"):
                     try:
-                        excluir_solicitante(solicitante["id"])
-                        st.success(
-                            f"✅ **{solicitante['orgao']}** excluído com sucesso!"
-                        )
+                        excluir_solicitante(sol['id'])
                         st.rerun()
                     except ValueError as e:
                         st.error(f"❌ {e}")
-
-        st.markdown("---")
 
 # ──────────────────────────────────────────────────────
 # PÁGINA PRINCIPAL

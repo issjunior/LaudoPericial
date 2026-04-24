@@ -274,103 +274,51 @@ def formulario_editar(tipo_id: int):
 
 def tabela_tipos(tipos: list):
     """
-    Exibe a tabela de tipos de exame com ações.
-
-    Args:
-        tipos: lista de dicionários com os tipos
+    Exibe a listagem de tipos de exame usando expanders (layout moderno).
     """
     if not tipos:
         st.info("📭 Nenhum tipo de exame cadastrado ainda.")
         return
 
-    # Cabeçalho da tabela
-    col_cod, col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
-        [1.5, 2.5, 3, 1.5, 1.5, 2]
-    )
-    col_cod.markdown("**Código**")
-    col_nome.markdown("**Nome**")
-    col_desc.markdown("**Descrição**")
-    col_local.markdown("**Local**")
-    col_status.markdown("**Status**")
-    col_acoes.markdown("**Ações**")
-
-    st.markdown("---")
-
     for tipo in tipos:
-        col_cod, col_nome, col_desc, col_local, col_status, col_acoes = st.columns(
-            [1.5, 2.5, 3, 1.5, 1.5, 2]
-        )
-
-        with col_cod:
-            st.markdown(f"`{tipo['codigo']}`")
-
-        with col_nome:
-            st.markdown(f"**{tipo['nome']}**")
-
-        with col_desc:
-            descricao = tipo["descricao"] or "—"
-            if len(descricao) > 50:
-                descricao = descricao[:50] + "..."
-            st.markdown(descricao)
-
-        with col_local:
-            if tipo["exame_de_local"]:
-                st.markdown("🚗 Sim")
-            else:
-                st.markdown("— Não")
-
-        with col_status:
-            if tipo["ativo"]:
-                st.markdown("🟢 Ativo")
-            else:
-                st.markdown("🔴 Inativo")
-
-        with col_acoes:
-            col_btn1, col_btn2, col_btn3 = st.columns(3)
-
-            with col_btn1:
-                if st.button(
-                    "✏️",
-                    key=f"editar_{tipo['id']}",
-                    help="Editar"
-                ):
-                    abrir_editar(tipo["id"])
+        # Define o título do expander com ícones de status
+        status_icon = "🟢" if tipo['ativo'] else "🔴"
+        local_icon = "🚗" if tipo['exame_de_local'] else "📝"
+        expander_title = f"{status_icon} {local_icon} {tipo['codigo']} — {tipo['nome']}"
+        
+        with st.expander(expander_title):
+            col_info, col_actions = st.columns([3, 1])
+            
+            with col_info:
+                st.markdown(f"**Descrição:** {tipo['descricao'] or '—'}")
+                st.markdown(f"**Exame de Local:** {'Sim 🚗' if tipo['exame_de_local'] else 'Não 📝'}")
+                status_text = "Ativo" if tipo['ativo'] else "Inativo"
+                st.markdown(f"**Status:** {status_icon} {status_text}")
+            
+            with col_actions:
+                st.markdown("### Ações")
+                
+                # Botão Editar
+                if st.button("✏️ Editar", key=f"edit_{tipo['id']}", use_container_width=True):
+                    abrir_editar(tipo['id'])
                     st.rerun()
-
-            with col_btn2:
-                icone_status = "🔴" if tipo["ativo"] else "🟢"
-                help_status  = "Desativar" if tipo["ativo"] else "Ativar"
-                if st.button(
-                    icone_status,
-                    key=f"status_{tipo['id']}",
-                    help=help_status
-                ):
+                
+                # Botão Ativar/Desativar
+                btn_status_label = "🔴 Desativar" if tipo['ativo'] else "🟢 Ativar"
+                if st.button(btn_status_label, key=f"stat_{tipo['id']}", use_container_width=True):
                     try:
-                        novo = alternar_status_tipo_exame(tipo["id"])
-                        msg  = "ativado" if novo else "desativado"
-                        st.success(
-                            f"✅ **{tipo['nome']}** {msg} com sucesso!"
-                        )
+                        alternar_status_tipo_exame(tipo['id'])
                         st.rerun()
                     except ValueError as e:
                         st.error(f"❌ {e}")
-
-            with col_btn3:
-                if st.button(
-                    "🗑️",
-                    key=f"excluir_{tipo['id']}",
-                    help="Excluir"
-                ):
+                
+                # Botão Excluir (com confirmação simples via botão de cor diferente)
+                if st.button("🗑️ Excluir", key=f"del_{tipo['id']}", use_container_width=True, type="secondary"):
                     try:
-                        excluir_tipo_exame(tipo["id"])
-                        st.success(
-                            f"✅ **{tipo['nome']}** excluído com sucesso!"
-                        )
+                        excluir_tipo_exame(tipo['id'])
                         st.rerun()
                     except ValueError as e:
                         st.error(f"❌ {e}")
-
-        st.markdown("---")
         
 # ──────────────────────────────────────────────────────
 # PÁGINA PRINCIPAL
