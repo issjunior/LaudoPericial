@@ -375,9 +375,7 @@ def obter_metricas_reps(usuario_id: int):
 
 def tela_dashboard():
     """
-    Tela principal após o login.
-    Menu lateral abre automaticamente a seção
-    correspondente à página atual.
+    Tela principal após o login com visão geral das métricas.
     """
     usuario = obter_usuario_logado()
 

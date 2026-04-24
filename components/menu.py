@@ -65,44 +65,13 @@ def renderizar_menu():
                 return True
         return False
 
-    secao_rep = [
-        "pages/nova_rep.py",
-        "pages/listar_rep.py",
-        "pages/editar_rep.py",
-    ]
-    secao_laudos = [
-        "pages/novo_laudo.py",
-        "pages/editor_laudo.py",
-        "pages/visualizar_laudo.py",
-    ]
-    secao_cadastros = [
-        "pages/tipos_exame.py",
-        "pages/solicitantes.py",
-        "pages/gerenciar_templates.py",
-        "pages/cabecalho.py",
-    ]
-    secao_sistema = [
-        "pages/busca.py",
-        "pages/historico.py",
-        "pages/backup.py",
-        "pages/perfil.py",
-    ]
+    # ── DEFINIÇÃO DAS SEÇÕES ──
+    secao_rep = ["pages/nova_rep.py", "pages/listar_rep.py", "pages/editar_rep.py"]
+    secao_laudos = ["pages/novo_laudo.py", "pages/editor_laudo.py", "pages/visualizar_laudo.py"]
+    secao_cadastros = ["pages/tipos_exame.py", "pages/solicitantes.py", "pages/gerenciar_templates.py", "pages/cabecalho.py"]
+    secao_sistema = ["pages/busca.py", "pages/historico.py", "pages/backup.py", "pages/perfil.py"]
 
-    # ── MÓDULOS DO SISTEMA ──
-    modulos_config = {
-        "📋 Requisições (REPs)": secao_rep,
-        "✍️ Laudos Periciais": secao_laudos,
-        "🗂️ Cadastros Base": secao_cadastros,
-        "🛠️ Sistema / Ferramentas": secao_sistema
-    }
-
-    # Detecta o módulo da página atual para pré-seleção
-    modulo_detectado = "📋 Requisições (REPs)"
-    for nome, paginas in modulos_config.items():
-        if pagina_ativa(paginas):
-            modulo_detectado = nome
-            break
-
+    # ── PERFIL E NAVEGAÇÃO ──
     with st.sidebar:
         # ── Perfil do Usuário (Design Moderno) ──
         st.markdown(f"""

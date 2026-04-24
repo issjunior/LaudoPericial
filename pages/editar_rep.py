@@ -98,9 +98,6 @@ def main():
     tipo_exame_atual = next((k for k, v in opcoes_tipos_exame.items() if v == rep.get('tipo_exame_id')), "— Não definido —")
     solicitante_atual = next((k for k, v in opcoes_solicitantes.items() if v == rep.get('solicitante_id')), "Selecione um Solicitante")
 
-    if "exame_de_local_selecionado" not in st.session_state:
-        st.session_state["exame_de_local_selecionado"] = bool(rep.get('exame_de_local'))
-
     # Estado para controlar a exibição dos campos de local
     if "exame_de_local_selecionado" not in st.session_state:
         st.session_state["exame_de_local_selecionado"] = bool(rep.get('exame_de_local'))

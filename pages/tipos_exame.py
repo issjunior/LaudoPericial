@@ -86,84 +86,71 @@ def formulario_criar():
     """
     st.markdown("### ➕ Novo Tipo de Exame")
 
-    with st.form("form_criar_tipo"):
-        col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2, 1])
 
-        with col1:
-            col_cod, col_nome = st.columns([1, 2])
+    with col1:
+        col_cod, col_nome = st.columns([1, 2])
 
-            with col_cod:
-                codigo = st.text_input(
-                    "Código do exame no GDL *",
-                    placeholder="Ex: H-001",
-                    max_chars=10,
-                    help="Código único do exame no GDL. Formato: X-000"
-                )
-            with col_nome:
-                nome = st.text_input(
-                    "Nome do Tipo de Exame *",
-                    placeholder="Ex: Homicídio, Roubo, Incêndio..."
-                )
-
-            descricao = st.text_area(
-                "Descrição",
-                placeholder="Descreva brevemente este tipo de exame (opcional)",
-                height=100,
+        with col_cod:
+            codigo = st.text_input(
+                "Código do exame no GDL *",
+                placeholder="Ex: H-001",
+                max_chars=10,
+                help="Código único do exame no GDL. Formato: X-000",
+                key="te_codigo_novo"
+            )
+        with col_nome:
+            nome = st.text_input(
+                "Nome do Tipo de Exame *",
+                placeholder="Ex: Homicídio, Roubo, Incêndio...",
+                key="te_nome_novo"
             )
 
-        with col2:
-            exame_de_local = st.checkbox(
-                "🚗 Exame de Local",
-                help=(
-                    "Marque se este tipo de exame exige "
-                    "deslocamento até o local do crime."
-                )
-            )
-            st.markdown(" ")
-            st.info(
-                "**Código GDL**\n\n"
-                "Use o mesmo código cadastrado "
-                "no GDL para este tipo de exame.\n\n"
-            )
+        descricao = st.text_area(
+            "Descrição",
+            placeholder="Descreva brevemente este tipo de exame (opcional)",
+            height=100,
+            key="te_desc_novo"
+        )
 
-        st.markdown("---")
-        col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
+    with col2:
+        exame_de_local = st.checkbox(
+            "🚗 Exame de Local",
+            help="Marque se este tipo de exame exige deslocamento até o local do crime.",
+            key="te_local_novo"
+        )
+        st.markdown(" ")
+        st.info("**Código GDL**\n\nUse o mesmo código cadastrado no GDL para este tipo de exame.")
 
-        with col_salvar:
-            submitted = st.form_submit_button(
-                "💾 Salvar",
-                use_container_width=True,
-                type="primary"
-            )
-        with col_cancelar:
-            cancelar = st.form_submit_button(
-                "Cancelar",
-                use_container_width=True,
-            )
+    st.markdown("---")
+    col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
 
-        if cancelar:
-            fechar_formulario()
+    submitted = col_salvar.button("💾 Salvar", use_container_width=True, type="primary")
+    if col_cancelar.button("Cancelar", use_container_width=True):
+        fechar_formulario()
+        st.rerun()
+
+    if submitted:
+        erros = []
+        if not codigo: erros.append("O **Código do GDL** é obrigatório.")
+        if not nome: erros.append("O **Nome do Tipo de Exame** é obrigatório.")
+        
+        if erros:
+            st.session_state["erros_te"] = erros
             st.rerun()
-
-        if submitted:
+        else:
             try:
-                criar_tipo_exame(
-                    codigo         = codigo,
-                    nome           = nome,
-                    descricao      = descricao,
-                    exame_de_local = exame_de_local,
-                )
-                st.success(
-                    f"✅ Tipo de exame **{nome}** "
-                    f"criado com sucesso!"
-                )
+                criar_tipo_exame(codigo=codigo, nome=nome, descricao=descricao, exame_de_local=exame_de_local)
+                st.success(f"✅ Tipo de exame **{nome}** criado!")
                 fechar_formulario()
                 st.rerun()
-
-            except ValueError as e:
-                st.error(f"❌ {e}")
             except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+                st.error(f"❌ Erro: {e}")
+
+    # Exibe erros em largura total
+    if "erros_te" in st.session_state:
+        st.error("### ⚠️ Verifique o preenchimento:\n\n" + "\n".join([f"- {e}" for e in st.session_state["erros_te"]]))
+        del st.session_state["erros_te"]
 
 # ──────────────────────────────────────────────────────
 # FORMULÁRIO — EDITAR
@@ -172,9 +159,6 @@ def formulario_criar():
 def formulario_editar(tipo_id: int):
     """
     Formulário para edição de um tipo de exame existente.
-
-    Args:
-        tipo_id: ID do tipo de exame a editar
     """
     tipo = buscar_tipo_exame(tipo_id)
 
@@ -185,88 +169,72 @@ def formulario_editar(tipo_id: int):
 
     st.markdown(f"### ✏️ Editando: {tipo['nome']}")
 
-    with st.form("form_editar_tipo"):
-        col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2, 1])
 
-        with col1:
-            col_cod, col_nome = st.columns([1, 2])
+    with col1:
+        col_cod, col_nome = st.columns([1, 2])
 
-            with col_cod:
-                codigo = st.text_input(
-                    "Código do exame no GDL *",
-                    value=tipo["codigo"],
-                    max_chars=10,
-                    help="Código único do exame no GDL. Formato: X-000"
-                )
-            with col_nome:
-                nome = st.text_input(
-                    "Nome do Tipo de Exame *",
-                    value=tipo["nome"]
-                )
-
-            descricao = st.text_area(
-                "Descrição",
-                value=tipo["descricao"] or "",
-                height=100,
+        with col_cod:
+            codigo = st.text_input(
+                "Código do exame no GDL *",
+                value=tipo["codigo"],
+                max_chars=10,
+                help="Código único do exame no GDL. Formato: X-000",
+                key="te_codigo_edit"
+            )
+        with col_nome:
+            nome = st.text_input(
+                "Nome do Tipo de Exame *",
+                value=tipo["nome"],
+                key="te_nome_edit"
             )
 
-        with col2:
-            exame_de_local = st.checkbox(
-                "🚗 Exame de Local",
-                value=bool(tipo["exame_de_local"]),
-                help=(
-                    "Marque se este tipo de exame exige "
-                    "deslocamento até o local do crime."
-                )
-            )
-            st.markdown(" ")
-            st.info(
-                "**Código GDL**\n\n"
-                "Use o mesmo código cadastrado "
-                "no GDL para este tipo de exame.\n\n"
-                "Formato: `X-000`\n\n"
-                "Ex: `H-001`, `R-002`"
-            )
+        descricao = st.text_area(
+            "Descrição",
+            value=tipo["descricao"] or "",
+            height=100,
+            key="te_desc_edit"
+        )
 
-        st.markdown("---")
-        col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
+    with col2:
+        exame_de_local = st.checkbox(
+            "🚗 Exame de Local",
+            value=bool(tipo["exame_de_local"]),
+            help="Marque se este tipo de exame exige deslocamento até o local do crime.",
+            key="te_local_edit"
+        )
+        st.markdown(" ")
+        st.info("**Código GDL**\n\nFormato: `X-000` (Ex: `H-001`)")
 
-        with col_salvar:
-            submitted = st.form_submit_button(
-                "💾 Salvar Alterações",
-                use_container_width=True,
-                type="primary"
-            )
-        with col_cancelar:
-            cancelar = st.form_submit_button(
-                "Cancelar",
-                use_container_width=True,
-            )
+    st.markdown("---")
+    col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
 
-        if cancelar:
-            fechar_formulario()
+    submitted = col_salvar.button("💾 Salvar Alterações", use_container_width=True, type="primary")
+    if col_cancelar.button("Cancelar", use_container_width=True):
+        fechar_formulario()
+        st.rerun()
+
+    if submitted:
+        erros = []
+        if not codigo: erros.append("O **Código do GDL** é obrigatório.")
+        if not nome: erros.append("O **Nome do Tipo de Exame** é obrigatório.")
+        
+        if erros:
+            st.session_state["erros_te"] = erros
             st.rerun()
-
-        if submitted:
+        else:
             try:
-                atualizar_tipo_exame(
-                    tipo_id        = tipo_id,
-                    codigo         = codigo,
-                    nome           = nome,
-                    descricao      = descricao,
-                    exame_de_local = exame_de_local,
-                )
-                st.success(
-                    f"✅ Tipo de exame **{nome}** "
-                    f"atualizado com sucesso!"
-                )
+                atualizar_tipo_exame(tipo_id=tipo_id, codigo=codigo, nome=nome, descricao=descricao, exame_de_local=exame_de_local)
+                st.success(f"✅ Tipo de exame **{nome}** atualizado!")
                 fechar_formulario()
                 st.rerun()
-
-            except ValueError as e:
-                st.error(f"❌ {e}")
             except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+                st.error(f"❌ Erro: {e}")
+
+    # Exibe erros em largura total
+    if "erros_te" in st.session_state:
+        st.error("### ⚠️ Verifique o preenchimento:\n\n" + "\n".join([f"- {e}" for e in st.session_state["erros_te"]]))
+        del st.session_state["erros_te"]
 
 # ──────────────────────────────────────────────────────
 # TABELA — LISTAGEM

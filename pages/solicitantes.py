@@ -86,65 +86,57 @@ def formulario_criar():
     """
     st.markdown("### ➕ Novo Solicitante")
 
-    with st.form("form_criar_solicitante"):
-        col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2, 1])
 
-        with col1:
-            orgao = st.text_input(
-                "Nome do Órgão Solicitante *", # Agora obrigatório
-                placeholder="Ex: 1ª Delegacia de Polícia de Curitiba"
-            )
-            nome = st.text_input(
-                "Nome do Contato (Opcional)", # Não obrigatório
-                placeholder="Ex: Delegado João da Silva"
-            )
-            email = st.text_input(
-                "Email do Órgão (Opcional)", # Novo campo, não obrigatório
-                placeholder="Ex: delegacia1@pc.pr.gov.br"
-            )
+    with col1:
+        orgao = st.text_input(
+            "Nome do Órgão Solicitante *",
+            placeholder="Ex: 1ª Delegacia de Polícia de Curitiba",
+            key="sol_orgao_novo"
+        )
+        nome = st.text_input(
+            "Nome do Contato (Opcional)",
+            placeholder="Ex: Delegado João da Silva",
+            key="sol_nome_novo"
+        )
+        email = st.text_input(
+            "Email do Órgão (Opcional)",
+            placeholder="Ex: delegacia1@pc.pr.gov.br",
+            key="sol_email_novo"
+        )
 
-        with col2:
-            st.markdown(" ")
-            st.info(
-                "**Informações do Solicitante**\n\n"
-                "Preencha os dados da instituição ou pessoa "
-                "que solicita as perícias."
-            )
+    with col2:
+        st.markdown(" ")
+        st.info("**Informações do Solicitante**\n\nPreencha os dados da instituição ou pessoa que solicita as perícias.")
 
-        st.markdown("---")
-        col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
+    st.markdown("---")
+    col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
 
-        with col_salvar:
-            submitted = st.form_submit_button(
-                "💾 Salvar",
-                use_container_width=True,
-                type="primary"
-            )
-        with col_cancelar:
-            cancelar = st.form_submit_button(
-                "Cancelar",
-                use_container_width=True,
-            )
+    submitted = col_salvar.button("💾 Salvar", use_container_width=True, type="primary")
+    if col_cancelar.button("Cancelar", use_container_width=True):
+        fechar_formulario()
+        st.rerun()
 
-        if cancelar:
-            fechar_formulario()
+    if submitted:
+        erros = []
+        if not orgao: erros.append("O **Nome do Órgão Solicitante** é obrigatório.")
+        
+        if erros:
+            st.session_state["erros_sol"] = erros
             st.rerun()
-
-        if submitted:
+        else:
             try:
-                criar_solicitante(
-                    nome    = nome,
-                    orgao   = orgao,
-                    email   = email, # Passando o novo campo
-                )
-                st.success(f"✅ Solicitante **{orgao}** criado com sucesso!")
+                criar_solicitante(nome=nome, orgao=orgao, email=email)
+                st.success(f"✅ Solicitante **{orgao}** criado!")
                 fechar_formulario()
                 st.rerun()
-
-            except ValueError as e:
-                st.error(f"❌ {e}")
             except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+                st.error(f"❌ Erro: {e}")
+
+    # Exibe erros em largura total
+    if "erros_sol" in st.session_state:
+        st.error("### ⚠️ Verifique o preenchimento:\n\n" + "\n".join([f"- {e}" for e in st.session_state["erros_sol"]]))
+        del st.session_state["erros_sol"]
 
 # ──────────────────────────────────────────────────────
 # FORMULÁRIO — EDITAR
@@ -153,9 +145,6 @@ def formulario_criar():
 def formulario_editar(solicitante_id: int):
     """
     Formulário para edição de um solicitante existente.
-
-    Args:
-        solicitante_id: ID do solicitante a editar
     """
     solicitante = buscar_solicitante(solicitante_id)
 
@@ -164,71 +153,59 @@ def formulario_editar(solicitante_id: int):
         fechar_formulario()
         return
 
-    st.markdown(f"### ✏️ Editando: {solicitante['orgao']}") # Exibe o órgão no título
+    st.markdown(f"### ✏️ Editando: {solicitante['orgao']}")
 
-    with st.form("form_editar_solicitante"):
-        col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2, 1])
 
-        with col1:
-            orgao = st.text_input(
-                "Nome do Órgão Solicitante *", # Agora obrigatório
-                value=solicitante["orgao"] or ""
-            )
-            nome = st.text_input(
-                "Nome do Contato (Opcional)", # Não obrigatório
-                value=solicitante["nome"] or ""
-            )
-            email = st.text_input(
-                "Email do Órgão (Opcional)", # Novo campo, não obrigatório
-                value=solicitante["contato"] or "" # 'contato' no banco é 'email' aqui
-            )
+    with col1:
+        orgao = st.text_input(
+            "Nome do Órgão Solicitante *",
+            value=solicitante["orgao"] or "",
+            key="sol_orgao_edit"
+        )
+        nome = st.text_input(
+            "Nome do Contato (Opcional)",
+            value=solicitante["nome"] or "",
+            key="sol_nome_edit"
+        )
+        email = st.text_input(
+            "Email do Órgão (Opcional)",
+            value=solicitante["contato"] or "",
+            key="sol_email_edit"
+        )
 
-        with col2:
-            st.markdown(" ")
-            st.info(
-                "**Informações do Solicitante**\n\n"
-                "Preencha os dados da instituição ou pessoa "
-                "que solicita as perícias."
-            )
+    with col2:
+        st.markdown(" ")
+        st.info("**Informações do Solicitante**\n\nPreencha os dados da instituição ou pessoa que solicita as perícias.")
 
-        st.markdown("---")
-        col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
+    st.markdown("---")
+    col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
 
-        with col_salvar:
-            submitted = st.form_submit_button(
-                "💾 Salvar Alterações",
-                use_container_width=True,
-                type="primary"
-            )
-        with col_cancelar:
-            cancelar = st.form_submit_button(
-                "Cancelar",
-                use_container_width=True,
-            )
+    submitted = col_salvar.button("💾 Salvar Alterações", use_container_width=True, type="primary")
+    if col_cancelar.button("Cancelar", use_container_width=True):
+        fechar_formulario()
+        st.rerun()
 
-        if cancelar:
-            fechar_formulario()
+    if submitted:
+        erros = []
+        if not orgao: erros.append("O **Nome do Órgão Solicitante** é obrigatório.")
+        
+        if erros:
+            st.session_state["erros_sol"] = erros
             st.rerun()
-
-        if submitted:
+        else:
             try:
-                atualizar_solicitante(
-                    solicitante_id = solicitante_id,
-                    nome           = nome,
-                    orgao          = orgao,
-                    email          = email, # Passando o novo campo
-                )
-                st.success(
-                    f"✅ Solicitante **{orgao}** " # Exibe o órgão na mensagem
-                    f"atualizado com sucesso!"
-                )
+                atualizar_solicitante(solicitante_id=solicitante_id, nome=nome, orgao=orgao, email=email)
+                st.success(f"✅ Solicitante **{orgao}** atualizado!")
                 fechar_formulario()
                 st.rerun()
-
-            except ValueError as e:
-                st.error(f"❌ {e}")
             except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+                st.error(f"❌ Erro: {e}")
+
+    # Exibe erros em largura total
+    if "erros_sol" in st.session_state:
+        st.error("### ⚠️ Verifique o preenchimento:\n\n" + "\n".join([f"- {e}" for e in st.session_state["erros_sol"]]))
+        del st.session_state["erros_sol"]
 
 # ──────────────────────────────────────────────────────
 # TABELA — LISTAGEM
