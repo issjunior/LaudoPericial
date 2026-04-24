@@ -7,7 +7,7 @@
 | AUTH-01 | Login | Autenticação por username + senha | ✅ Implantado |
 | AUTH-02 | Logout | Encerrar sessão + página de logout + redirecionar | ✅ Implantado |
 | AUTH-03 | Cadastro primeiro usuário | Setup inicial do sistema | ✅ Implantado |
-| AUTH-04 | Alterar senha | Usuário troca sua senha | ⏳ Pendente |
+| AUTH-04 | Alterar senha | Usuário troca sua senha | ✅ Implantado |
 
 ---
 
@@ -47,7 +47,7 @@
 | TE-02 | Listar tipos | Listar com filtros | ✅ Implantado |
 | TE-03 | Editar tipo | Alterar dados | ✅ Implantado |
 | TE-04 | Ativar/Desativar | Toggle ativo | ✅ Implantado |
-| TE-05 | Listar ativos apenas | Filter padrão | ⏳ Pendente |
+| TE-05 | Listar ativos apenas | Filter padrão | ✅ Implantado |
 
 ### Campos Tipo de Exame
 - `codigo` (formato X-000, ex: H-001, A-001)
@@ -81,11 +81,11 @@
 |----|----------------|-----------|--------|
 | TPL-01 | Criar template | Vincular a tipo de exame | ✅ Implantado |
 | TPL-02 | Listar templates | Listar por tipo | ✅ Implantado |
-| TPL-03 | Editar template | Alterar dados | ⏳ Pendente |
+| TPL-03 | Editar template | Alterar dados | ✅ Implantado |
 | TPL-04 | Ativar/Desativar | Toggle ativo | ✅ Implantado |
 | TPL-05 | Criar seção | Adicionar seção ao template | ✅ Implantado |
-| TPL-06 | Editar seção | Alterar ordem/conteúdo | ⏳ Pendente |
-| TPL-07 | Reordenar seções | Mover ordem das seções | ⏳ Pendente |
+| TPL-06 | Editar seção | Alterar ordem/conteúdo | ✅ Implantado |
+| TPL-07 | Reordenar seções | Mover ordem das seções | ✅ Implantado |
 
 ### Campos Template
 - `tipo_exame_id` (FK)
@@ -108,14 +108,15 @@
 | ID | Funcionalidade | Descrição | Status |
 |----|----------------|-----------|--------|
 | LAU-01 | Criar laudo a partir de REP | Copia seções do template para laudo + muda REP para "Em Andamento" | ✅ Implantado |
-| LAU-02 | Editar laudo | Editar seções e conteúdo | ⏳ Pendente |
-| LAU-03 | Visualizar laudo | Modo leitura | ⏳ Pendente |
-| LAU-04 | Upload fotos | Adicionar ilustraciones | ⏳ Pendente |
-| LAU-05 | Remover foto | Excluir ilustracao | ⏳ Pendente |
-| LAU-06 | Salvar versão | Snapshot do laudo | ⏳ Pendente |
-| LAU-07 | Finalizar laudo | Marcar como Finalizado + muda REP para "Concluído" | 🚧 Parcial |
-| LAU-08 | Exportar PDF | Gerar documento PDF | ⏳ Pendente |
+| LAU-02 | Editar laudo | Editar seções e conteúdo | ✅ Implantado |
+| LAU-03 | Visualizar laudo | Modo leitura | ✅ Implantado |
+| LAU-04 | Upload fotos | Adicionar ilustrações | ⏳ Pendente |
+| LAU-05 | Remover foto | Excluir ilustração | ⏳ Pendente |
+| LAU-06 | Salvar versão | Snapshot do laudo | ✅ Implantado |
+| LAU-07 | Finalizar laudo | Marcar como Finalizado + muda REP para "Concluído" | ✅ Implantado |
+| LAU-08 | Exportar PDF | Gerar documento PDF (Playwright) | ✅ Implantado |
 | LAU-09 | Exportar DOCX | Gerar documento Word | ⏳ Pendente |
+| LAU-10 | Versões | Listar/restaurar/excluir versões | ✅ Implantado |
 
 ### Campos Laudo
 - `rep_id` (FK única)
@@ -136,7 +137,7 @@
 - Se a REP mudar de tipo de exame **depois** da criação do laudo, as seções já existentes **não são atualizadas** automaticamente.
 - Isso é intencional para preservar o conteúdo digitado pelo perito.
 
-### Campos Ilustracao
+### Campos Ilustração
 - `secao_laudo_id` (FK)
 - `laudo_id` (FK)
 - `numero_figura`
@@ -152,7 +153,7 @@
 | ID | Funcionalidade | Descrição | Status |
 |----|----------------|-----------|--------|
 | DASH-01 | Métricas gerais | REPs Pendentes/Em Andamento/Concluídos | ✅ Implantado |
-| DASH-02 | Alertas de prazo | REPs com prazo vencendo | ⏳ Pendente |
+| DASH-02 | Alertas de prazo | REPs com prazo vencendo/atrasado | ✅ Implantado |
 | DASH-03 | Gráficos | Evolução temporal | ⏳ Pendente |
 
 ---
@@ -161,11 +162,17 @@
 
 | ID | Funcionalidade | Descrição | Status |
 |----|----------------|-----------|--------|
-| SIS-01 | Backup database | Exportar arquivo .db | ⏳ Pendente |
-| SIS-02 | Restore database | Importar arquivo .db | ⏳ Pendente |
-| SIS-03 | Histórico de auditoria | Ver logs de operações | ⏳ Pendente |
-| SIS-04 | Busca global | Buscar em todas as tabelas | ⏳ Pendente |
-| SIS-05 | Controle de prazos | Calcular e alerts | ⏳ Pendente |
+| SIS-01 | Backup database | Exportar arquivo .db | ✅ Implantado |
+| SIS-02 | Restore database | Importar arquivo .db | ✅ Implantado |
+| SIS-03 | Histórico de auditoria | Ver logs de operações | ✅ Implantado |
+| SIS-04 | Busca global | Buscar em todas as tabelas | ✅ Implantado |
+| SIS-05 | Controle de prazos | Calcular e alerts | ✅ Implantado |
+| SIS-06 | Perfil usuário | Alterar dados e senha | ✅ Implantado |
+
+### Campos Cabeçalho Laudo
+- `nome` (identificador)
+- `conteudo` (template com placeholders)
+- `ativo` (boolean)
 
 ---
 

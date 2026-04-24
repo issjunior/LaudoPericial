@@ -19,14 +19,14 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 │  Tech Stack: Python 3.13 + Streamlit + SQLite           │
 │                                                         │
 │  Módulos:                                               │
-│  ├── Auth (login/logout)                                │
-│  ├── REP (Requisição de Exame Pericial)                 │
+│  ├── Auth (login/logout/alterar senha)                     │
+│  ├── REP (Requisição de Exame Pericial)                   │
 │  ├── Tipos de Exame                                    │
 │  ├── Solicitantes                                      │
-│  ├── Templates                                        │
-│  ├── Laudos ⭐ (core)                                   │
-│  ├── Dashboard                                         │
-│  └── Sistema (backup, busca, etc)                       │
+│  ├── Templates (com seções)                           │
+│  ├── Laudos ⭐ (core)                                │
+│  ├── Dashboard (métricas + prazos)                      │
+│  └── Sistema (backup, busca, perfil)                    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -52,38 +52,60 @@ Documentação de especificação seguindo filosofia SDD (Spec-Driven Developmen
 - Streamlit
 - SQLite
 - bcrypt
+- streamlit-jodit (editor de texto)
+- Playwright/Chromium (geração PDF)
 - Estrutura de diretórios
 - Padrões de código
 
 ### 02 - Funcionalidades
-- Auth
-- REP
-- Tipos de Exame
-- Solicitantes
-- Templates
-- Laudos
-- Dashboard
-- Sistema
+- **Auth**: Login, Logout, Alterar senha
+- **REP**: CRUD completo, filtros, status automático
+- **Tipos de Exame**: CRUD, ativo/inativo
+- **Solicitantes**: CRUD, ativo/inativo
+- **Templates**: CRUD com seções, reordenação
+- **Laudos**: CRUD completo, versões, exportar PDF
+- **Dashboard**: Métricas, prazos
+- **Sistema**: Backup, Restore, Busca, Histórico, Perfil
 
 ### 03 - Sprints
-- Sprint 0: Fundação (já implementado)
-- Sprint 1: REP e Cadastros
-- Sprint 2: Laudos - Criação e Edição
-- Sprint 3: Laudos - Finalização e Export
-- Sprint 4: Visualização e Busca
-- Sprint 5: Prazos e Alertas
-- Sprint 6: Backup e Sistema
+- Sprint 0: Fundação (✅)
+- Sprint 1: REP e Cadastros (✅)
+- Sprint 2: Laudos - Criação e Edição (✅)
+- Sprint 3: Laudos - Export PDF (✅)
+- Sprint 4: Visualização e Busca (✅)
+- Sprint 5: Backup e Sistema (✅)
+- Sprint 6: Prazos e Alertas (🚧)
+- Sprint 7: Fotos e Ilustrações (⏳)
+- Sprint 8: Export DOCX/ODT (⏳)
 
 ---
 
-## Features Recentes (Sprint 2)
+## Features Recentes
 
 | Feature | Arquivo | Descrição |
 |--------|--------|-----------|
-| Criação automática de Laudo | `services/rep_service.py` | Ao criar REP com tipo que tem template, laudo é criado automaticamente |
-| Editor de Laudo | `pages/editor_laudo.py` | Edita seções com placeholders |
-| Quill Editor | `pages/editor_laudo.py` | Editor de texto rico em cada seção |
-| listar_laudos() | `services/laudo_service.py` | Lista laudos com filtros |
+| Editor Jodit | `pages/editor_laudo.py` | Editor de texto rico |
+| Versões | `services/laudo_service.py` | Snapshot/restaurar versões |
+| PDF Playwright | `services/gerador_pdf_playwright.py` | Geração PDF alta fidelidade |
+| Placeholders | `services/html_builder.py` | Substituição automática |
+| Busca Global | `pages/busca.py` | Buscar em todas tabelas |
+| Histórico | `pages/historico.py` | Auditoria de operações |
+| Backup/Restore | `pages/backup.py` | Import/export banco |
+| Perfil | `pages/perfil.py` | Alterar dados/senha |
+
+---
+
+## Pendente / Roadmap Futuro
+
+| Feature | Descrição | Sprint |
+|---------|-----------|--------|
+| Upload fotos | Adicionar ilustrações aos laudos | Sprint 7 |
+| Export DOCX | Gerar documento Word | Sprint 8 |
+| Export ODT | Gerar documento ODT | Sprint 8 |
+| Config alertas | Configurar alertas por usuário | Sprint 6 |
+| Notificações | Sistema de notificação | Sprint 6 |
+
+---
 
 ## Issues Conhecidos
 
