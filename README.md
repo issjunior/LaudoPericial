@@ -1,249 +1,72 @@
-# 🔍 LaudoPericial
+# Especificação SDD - LaudoPericial
 
-**Sistema de gestão e confecção de laudos periciais criminais**
+Documentação de especificação seguindo filosofia SDD (Spec-Driven Development).
 
-Desenvolvido para a Polícia Científica do Paraná, LaudoPericial é uma plataforma completa para criar, editar, gerenciar e exportar laudos periciais de forma segura e eficiente.
+## Arquivos
 
----
+| Arquivo | Descrição |
+|---------|-----------|
+| [01-tecnologias.md](./01-tecnologias.md) | Stack tecnológico e estrutura |
+| [02-funcionalidades.md](./02-funcionalidades.md) | Lista completa de funcionalidades por módulo |
+| [03-sprints.md](./03-sprints.md) | Planejamento de sprints e tasks |
 
-## 📊 Status de Desenvolvimento
-
-**Progresso geral:** 28% (Sprint 0 + Sprint 1)
-
-```
-Sprint 0 ✅ | Sprint 1 ✅ | Sprint 2 ⏳ | Sprint 3 ⏳ | Sprint 4 ⏳ | Sprint 5 ⏳ | Sprint 6 ⏳
-Fundação   | REPs      | Laudos    | Export    | Busca    | Prazos   | Sistema
-Completo   | Completo  | Iniciado  | Planejado | Planejado| Planejado| Planejado
-```
-
----
-
-## ✅ Funcionalidades Implementadas
-
-### 🔐 Autenticação e Acesso
-- ✅ Login seguro com criptografia
-- ✅ Logout e fim de sessão
-- ✅ Configuração inicial (primeiro usuário)
-- ✅ Controle de acesso por usuário
-
-### 📋 Requisições de Exame (REP)
-- ✅ Criar novas requisições de exame
-- ✅ Listar com filtros avançados
-- ✅ Editar dados das requisições
-- ✅ Excluir requisições
-- ✅ Controle automático de status
-- ✅ Detalhes completos de cada requisição
-
-### 🏢 Cadastros Base
-- ✅ Gerenciar tipos de exame
-- ✅ Cadastro de solicitantes (delegacias, varas, etc)
-- ✅ Criar e gerenciar templates de laudos
-- ✅ Estrutura de seções para templates
-
-### 📊 Dashboard
-- ✅ Métricas gerais (requisições pendentes, em andamento, concluídas)
-- ✅ Visão rápida do fluxo de trabalho
-- ✅ Resumo de atividades
-
----
-
-## 🚀 Próximas Features (Roadmap)
-
-### 📄 Sprint 2: Editor de Laudos (Em Progresso)
-- Criar laudo a partir da requisição
-- **Editor visual e intuitivo** para escrever laudos
-- Salvar versões anteriores
-- Upload de fotos e ilustrações
-- Validação automática de campos obrigatórios
-
-### 📤 Sprint 3: Exportação
-- Gerar **PDF profissional** com formatação
-- Exportar em **Word** para edição
-- Exportar em **OpenDocument** (compatibilidade)
-- Geração automática de preâmbulo
-
-### 🔍 Sprint 4: Visualização e Busca
-- Visualizar laudos em modo leitura
-- Busca global no sistema
-- Histórico de alterações
-- Detalhes completos de requisições
-
-### ⏰ Sprint 5: Prazos e Alertas
-- Cálculo automático de prazos legais
-- Alertas na dashboard
-- Notificações de urgência
-- Configuração de lembretes
-
-### 🛠️ Sprint 6: Melhorias Finais
-- Alterar senha do usuário
-- Limpeza de dados antigos
-- Relatórios e estatísticas
-- Melhorias gerais
-
----
-
-## 🛠️ Stack Técnico
-
-| Componente | Tecnologia |
-|-----------|-----------|
-| **Linguagem** | Python 3.13 |
-| **Interface** | Streamlit (web app interativo) |
-| **Banco de Dados** | SQLite com criptografia |
-| **Autenticação** | bcrypt (criptografia de senhas) |
-| **Segurança** | Variáveis de ambiente (.env) |
-
----
-
-## 🚀 Como Usar
-
-### Requisitos
-- Python 3.13+
-- pip (gerenciador de pacotes)
-
-### Instalação Rápida
-
-```bash
-# 1. Clone o repositório
-git clone https://github.com/issjunior/laudopericial.git
-cd laudopericial
-
-# 2. Crie um ambiente virtual
-python -m venv venv
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Mac/Linux
-
-# 3. Instale as dependências
-pip install -r requirements.txt
-
-# 4. Execute o aplicativo
-streamlit run app.py
-```
-
-O sistema abrirá automaticamente em `http://localhost:8501`
-
-### Instalação do Chromium (Geração de PDF)
-
-Para gerar PDFs, o sistema usa o Chromium:
-
-```bash
-# Execute no ambiente virtual
-venv\Scripts\pip install playwright
-venv\Scripts\playwright install chromium
-
-# Opcional: copiar chromium para o projeto (não precisa do playwright no servidor)
-xcopy "%LOCALAPPDATA%\ms-playwright\chromium-1208\chrome-win64\*" "chromium\" /E /I /Y
-```
-
-**Deploy:** Inclua a pasta `chromium/` no servidor ou instale o Playwright conforme acima.
-
-### Primeiro Acesso
-1. Crie sua conta administrativa (primeira vez)
-2. Faça login
-3. Configure tipos de exame, solicitantes e templates
-4. Comece a criar requisições e laudos
-
-### Criar Dados de Teste (Opcional)
-
-Para testar o sistema com dados mockados, execute o script de dados de teste:
-
-```bash
-# Execute o script
-python scripts/criar_dados_teste.py
-```
-
-O script está localizado em: `scripts/criar_dados_teste.py`
-
-**O que o script cria:**
-- 1 usuário de teste (login: `teste`, senha: `teste`) - se não existir usuário
-- 5 tipos de exame
-- 5 solicitantes
-- 5 templates de laudo
-- 5 REPs em diferentes estágios (Pendente/Em Andamento)
-- 2 laudos vinculados
-
-**Tipos de documento usados:** BO, Ofício, BO PC, BO PM, CECOMP
-
-**Tipos de exame:** Acidente, Equipamento Eletrônico, Numerações, Local de Morte, Eficiência
-
----
-
-## 📁 Estrutura do Projeto
+## Visão Geral
 
 ```
-LaudoPericial/
-├── app.py                    # Entrada principal
-├── chromium/                 # Chromium para geração de PDF
-├── pages/                    # Páginas do aplicativo
-│   ├── 00_login.py          # Autenticação
-│   ├── 01_dashboard.py      # Dashboard
-│   ├── nova_rep.py          # Criar requisição
-│   ├── listar_rep.py        # Listar requisições
-│   ├── editor_laudo.py      # Editor de laudo (em desenvolvimento)
-│   └── ...
-├── services/                # Lógica de negócio
-│   ├── rep_service.py       # Requisições
-│   ├── laudo_service.py     # Laudos
-│   ├── template_service.py  # Templates
-│   └── ...
-├── database/                # Banco de dados
-│   ├── db.py               # Conexão
-│   └── models.py           # Estrutura das tabelas
-├── scripts/                 # Scripts utilitários
-│   └── criar_dados_teste.py # Criar dados mockados
-├── generators/              # Exportação (PDF, Word, etc)
-└── spec/                    # Documentação técnica
+┌─────────────────────────────────────────────────────────┐
+│                   LaudoPericial                         │
+├─────────────────────────────────────────────────────────┤
+│  Tech Stack: Python 3.13 + Streamlit + SQLite           │
+│                                                         │
+│  Módulos:                                               │
+│  ├── Auth (login/logout/alterar senha)                     │
+│  ├── REP (Requisição de Exame Pericial)                   │
+│  ├── Tipos de Exame                                    │
+│  ├── Solicitantes                                      │
+│  ├── Templates (com seções)                           │
+│  ├── Laudos ⭐ (core)                                │
+│  ├── Dashboard (métricas + prazos)                      │
+│  └── Sistema (backup, busca, perfil)                    │
+└─────────────────────────────────────────────────────────┘
 ```
 
----
+## Legenda de Status
 
-## 🔒 Segurança
+| Símbolo | Significado |
+|---------|-------------|
+| ✅ | Implantado |
+| 🚧 | Parcial |
+| ⏳ | Pendente |
 
-- **Senhas criptografadas** com bcrypt
-- **Banco de dados criptografado** com SQLite
-- **Variáveis sensíveis** em `.env` (não versionado)
-- **Sistema privado** — uso restrito
+## Conteúdo
 
----
+### 01 - Tecnologias
+- Python 3.13
+- Streamlit
+- SQLite
+- bcrypt
+- streamlit-jodit (editor de texto)
+- Playwright/Chromium (geração PDF)
 
-## 📝 Roadmap Visual
+### 02 - Funcionalidades
+- **Auth**: Login, Logout, Alterar senha
+- **REP**: CRUD completo, filtros, status automático
+- **Tipos de Exame**: CRUD, ativo/inativo
+- **Solicitantes**: CRUD, ativo/inativo
+- **Templates**: CRUD com seções, reordenação
+- **Laudos**: CRUD completo, versões, exportar PDF
+- **Dashboard**: Métricas, prazos
+- **Sistema**: Backup, Restore, Busca, Histórico, Perfil
 
-```
-Q1 2026  →  Sprint 0 ✅ (Fundação)
-         →  Sprint 1 ✅ (Requisições)
-
-Q2 2026  →  Sprint 2 ⏳ (Editor)
-         →  Sprint 3 ⏳ (Exportação)
-
-Q3 2026  →  Sprint 4 ⏳ (Busca)
-         →  Sprint 5 ⏳ (Prazos)
-
-Q4 2026  →  Sprint 6 ⏳ (Finalizações)
-```
-
----
-
-## 🐛 Problemas Conhecidos
-
-| Problema | Status |
-|----------|--------|
-| Menu "Editar REP" aparece após clicar em outra página | ⏳ Pendente |
-
----
-
-## 📚 Documentação
-
-Para informações técnicas detalhadas, consulte:
-- [`spec/01-tecnologias.md`](spec/01-tecnologias.md) — Stack e estrutura
-- [`spec/02-funcionalidades.md`](spec/02-funcionalidades.md) — Funcionalidades por módulo
-- [`spec/03-sprints.md`](spec/03-sprints.md) — Planejamento detalhado
+### 03 - Sprints
+- Sprint 0: Fundação (✅)
+- Sprint 1: REP e Cadastros (✅)
+- Sprint 2: Laudos - Criação e Edição (✅)
+- Sprint 3: Laudos - Export PDF (✅)
+- Sprint 4: Visualização e Busca (✅)
+- Sprint 5: Backup e Sistema (✅)
+- Sprint 6: Prazos e Alertas (🚧)
+- Sprint 7: Fotos e Ilustrações (⏳)
+- Sprint 8: Export DOCX/ODT (⏳)
 
 ---
-
-## 📧 Sobre
-
-**Desenvolvido para:** Polícia Científica do Paraná  
-**Uso restrito:** Sistema privado
-
----
-
-**Última atualização:** Abril 2026
