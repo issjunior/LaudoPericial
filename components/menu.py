@@ -32,6 +32,15 @@ def renderizar_menu():
     # Bloqueia acesso se não estiver logado
     exigir_autenticacao()
 
+    # Oculta o menu padrão do Streamlit (Double Menu fix)
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarNav"] {
+                display: none;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     usuario = obter_usuario_logado()
 
     # Obtém o nome do arquivo da página atual a partir do Streamlit session state

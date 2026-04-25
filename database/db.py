@@ -21,7 +21,8 @@ load_dotenv()
 # ──────────────────────────────────────────────────────
 
 # Pasta raiz do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent
+from core.path_utils import get_permanent_root
+BASE_DIR = get_permanent_root()
 
 # Nome do banco (vem do .env)
 DATABASE_NAME = os.getenv("DATABASE_NAME", "laudopericial.db")
