@@ -32,6 +32,15 @@ def renderizar_menu():
     # Bloqueia acesso se não estiver logado
     exigir_autenticacao()
 
+    # Oculta o menu padrão do Streamlit (Double Menu fix)
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarNav"] {
+                display: none;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     usuario = obter_usuario_logado()
 
     # Obtém o nome do arquivo da página atual a partir do Streamlit session state
@@ -68,7 +77,7 @@ def renderizar_menu():
     # ── DEFINIÇÃO DAS SEÇÕES ──
     secao_rep = ["pages/nova_rep.py", "pages/listar_rep.py", "pages/editar_rep.py"]
     secao_laudos = ["pages/novo_laudo.py", "pages/editor_laudo.py", "pages/visualizar_laudo.py"]
-    secao_cadastros = ["pages/tipos_exame.py", "pages/solicitantes.py", "pages/gerenciar_templates.py", "pages/cabecalho.py"]
+    secao_cadastros = ["pages/tipos_exame.py", "pages/solicitantes.py", "pages/gerenciar_templates.py", "pages/cabecalho.py", "pages/placeholders.py"]
     secao_sistema = ["pages/busca.py", "pages/historico.py", "pages/backup.py", "pages/perfil.py"]
 
     # ── PERFIL E NAVEGAÇÃO ──
@@ -137,7 +146,7 @@ def renderizar_menu():
             st.page_link("pages/tipos_exame.py", label="Tipos de Exame", icon="🏷️")
             st.page_link("pages/solicitantes.py", label="Solicitantes", icon="🏛️")
             st.page_link("pages/gerenciar_templates.py", label="Templates de Laudo", icon="📋")
-            st.page_link("pages/cabecalho.py", label="Cabeçalho / Rodapé", icon="🖼️")
+            st.page_link("pages/placeholders.py", label="Placeholders", icon="🧩")
 
         # 4. Sistema
         with st.expander("🛠️ Sistema / Ferramentas", expanded=pagina_ativa(secao_sistema)):

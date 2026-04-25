@@ -10,9 +10,8 @@ import sys
 import os
 import streamlit as st
 
-ROOT = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))
-)
+from core.path_utils import get_root
+ROOT = str(get_root())
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 

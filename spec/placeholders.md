@@ -55,10 +55,13 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 | `perito_matricula` | `{{perito_matricula}}` | Matrícula do perito | Cadastro de usuários |
 | `perito_cargo` | `{{perito_cargo}}` | Cargo do perito | Cadastro de usuários |
 | `perito_lotacao` | `{{perito_lotacao}}` | Lotação do perito | Cadastro de usuários |
+| `cidade` | `{{cidade}}` | Cidade (alias de `perito_lotacao`) | Cadastro de usuários |
 
 ---
 
 ## 5. Dados do Laudo
+
+> **Nota:** Os placeholders abaixo estão previstos na documentação, mas ainda não são substituídos automaticamente pelo `gerador_pdf.py`. Use os placeholders das seções anteriores para dados disponíveis.
 
 | Variável | Placeholder | Descrição | Fonte |
 |----------|----------|-----------|-------|
@@ -68,10 +71,12 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 
 ---
 
-## 6. Dados do Template
+## 6. Dados do Tipo de Exame
 
 | Variável | Placeholder | Descrição | Fonte |
 |----------|----------|-----------|-------|
+| `tipo_exame` | `{{tipo_exame}}` | Nome do tipo de exame | gerador_pdf.py / cabeçalho |
+| `tipo_exame_codigo` | `{{tipo_exame_codigo}}` | Código do tipo de exame (ex: H-001) | gerador_pdf.py / cabeçalho |
 | `template_descricao` | `{{template_descricao}}` | Descrição do exame do template | gerenciar_templates.py |
 
 ---

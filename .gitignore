@@ -10,6 +10,9 @@ venv/
 # Scripts de debug
 scratch
 
+# Scripts de exportacao
+exportacao_de_projeto/
+
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
 *.sqlite
