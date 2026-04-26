@@ -56,11 +56,11 @@ PLACEHOLDERS_SISTEMA = [
         ],
     },
     {
-        "categoria": "📄 Detalhes da Solicitação",
+        "categoria": "📝 Detalhes da Solicitação",
         "descricao": "Dados do documento que originou a requisição",
         "cor": "#e67700",
         "itens": [
-            {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Ofício…)", "exemplo": "Ofício"},
+            {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Ofício...)", "exemplo": "Ofício"},
             {"placeholder": "{{numero_documento}}", "descricao": "Número do documento",            "exemplo": "12345/2024"},
             {"placeholder": "{{data_documento}}",   "descricao": "Data do documento (YYYY-MM-DD)", "exemplo": "2024-12-20"},
         ],
@@ -73,7 +73,7 @@ PLACEHOLDERS_SISTEMA = [
             {"placeholder": "{{perito_nome}}",      "descricao": "Nome completo do perito",    "exemplo": "Carlos Alberto Pereira"},
             {"placeholder": "{{perito_matricula}}", "descricao": "Matrícula funcional do perito","exemplo": "123456"},
             {"placeholder": "{{perito_cargo}}",     "descricao": "Cargo do perito",            "exemplo": "Perito Criminal"},
-            {"placeholder": "{{perito_lotacao}}",   "descricao": "Lotação / unidade do perito","exemplo": "IML — Brasília/DF"},
+            {"placeholder": "{{perito_lotacao}}",   "descricao": "Lotação / unidade do perito","exemplo": "IML – Brasília/DF"},
             {"placeholder": "{{cidade}}",           "descricao": "Cidade (igual à lotação)",   "exemplo": "Brasília/DF"},
         ],
     },
@@ -116,7 +116,7 @@ def salvar_personalizados(lista: list):
 
 CSS = """
 <style>
-/* ── Cartão de categoria ── */
+/* 🗂️ Cartão de categoria 🗂️ */
 .ph-card {
     background: var(--background-color, #ffffff08);
     border: 1px solid rgba(255,255,255,0.08);
@@ -142,7 +142,7 @@ CSS = """
     margin: 0;
 }
 
-/* ── Linha de placeholder ── */
+/* 📋 Linha de placeholder 📋 */
 .ph-row {
     display: flex;
     align-items: center;
@@ -179,7 +179,7 @@ CSS = """
     white-space: nowrap;
 }
 
-/* ── Tag personalizado ── */
+/* 🎨 Tag personalizado 🎨 */
 .ph-custom-badge {
     font-family: 'Courier New', monospace;
     font-size: 0.82rem;
@@ -191,7 +191,7 @@ CSS = """
     color: #cc5de8;
 }
 
-/* ── Seção de busca ── */
+/* 🔍 Seção de busca 🔍 */
 .search-hint {
     font-size: 0.78rem;
     opacity: 0.5;
@@ -200,57 +200,12 @@ CSS = """
 </style>
 """
 
-
-# ──────────────────────────────────────────────────────
-# COMPONENTES VISUAIS
-# ──────────────────────────────────────────────────────
-
-def _badge(texto: str) -> str:
-    return f'<span class="ph-badge">{texto}</span>'
-
-
-def _renderizar_categoria(cat: dict, filtro: str = ""):
-    """Renderiza um bloco de categoria com seus itens filtrados."""
-    itens = cat["itens"]
-
-    # Deduplicar por placeholder dentro da mesma categoria
-    vistos = set()
-    itens_unicos = []
-    for item in itens:
-        if item["placeholder"] not in vistos:
-            vistos.add(item["placeholder"])
-            itens_unicos.append(item)
-
-    # Filtrar
-    if filtro:
-        itens_unicos = [
-            i for i in itens_unicos
-            if filtro in i["placeholder"].lower()
-            or filtro in i["descricao"].lower()
-        ]
-
-    if not itens_unicos:
-        return  # Não exibe a categoria se não há itens
-
-    with st.expander(f"{cat['categoria']}  ·  {len(itens_unicos)} placeholder(s)", expanded=not bool(filtro)):
-        st.caption(cat["descricao"])
-        linhas_html = ""
-        for item in itens_unicos:
-            linhas_html += f"""
-            <div class="ph-row">
-                <span class="ph-badge">{item['placeholder']}</span>
-                <span class="ph-desc">{item['descricao']}</span>
-                <span class="ph-exemplo">ex: {item['exemplo']}</span>
-            </div>"""
-        st.markdown(linhas_html, unsafe_allow_html=True)
-
-
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
 # ──────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="Placeholders — LaudoPericial",
+    page_title="Placeholders – LaudoPericial",
     page_icon="🧩",
     layout="wide",
 )
@@ -265,7 +220,7 @@ st.markdown(CSS, unsafe_allow_html=True)
 st.title("🧩 Placeholders")
 st.markdown(
     "Referência de todos os **placeholders** disponíveis para uso nos Templates de Laudo. "
-    "Copie o código e cole diretamente no conteúdo de uma seção — os valores serão substituídos "
+    "Copie o código e cole diretamente no conteúdo de uma seção – os valores serão substituídos "
     "automaticamente ao gerar o PDF."
 )
 st.divider()
@@ -274,75 +229,49 @@ st.divider()
 # ABAS PRINCIPAIS
 # ──────────────────────────────────────────────────────
 
-tab_sistema, tab_personalizados = st.tabs(["🔧 Placeholders do Sistema", "✨ Placeholders Personalizados"])
-
-# ──────────────────────────────────────────────────────
-# ABA 1 — SISTEMA
-# ──────────────────────────────────────────────────────
+tab_sistema, tab_personalizados = st.tabs(["🏛️ Placeholders do Sistema", "🎨 Placeholders Personalizados"])
 
 with tab_sistema:
-    # Contagem total única
-    todos_ph = set()
+    st.markdown(
+        "Estes placeholders são preenchidos automaticamente pelo sistema com base nos dados da "
+        "REP e do perfil do perito. Eles **não podem** ser editados."
+    )
+    st.markdown(" ")
+
     for cat in PLACEHOLDERS_SISTEMA:
+        # Card de categoria
+        st.markdown(
+            f'<div class="ph-card" style="--cat-color: {cat["cor"]};">'
+            f'<div class="ph-card-header">'
+            f'<p class="ph-cat-title">{cat["categoria"]}</p>'
+            f'</div>'
+            f'<p class="ph-cat-desc">{cat["descricao"]}</p>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+
+        # Listagem dos itens
         for item in cat["itens"]:
-            todos_ph.add(item["placeholder"])
-    total = len(todos_ph)
-
-    col_info, col_busca = st.columns([3, 5])
-    with col_info:
-        st.markdown(
-            f"**{total}** placeholders únicos em **{len(PLACEHOLDERS_SISTEMA)}** categorias."
-        )
-        st.markdown(
-            '<p class="search-hint">Clique em um expander para ver os detalhes da categoria.</p>',
-            unsafe_allow_html=True,
-        )
-    with col_busca:
-        filtro = st.text_input(
-            "🔍 Filtrar placeholder",
-            placeholder="Digite parte do nome ou descrição…",
-            label_visibility="collapsed",
-        ).strip().lower()
-
-    st.markdown(" ")
-
-    # Categorias — A última (Cabeçalho) é colapsada por padrão pois repete itens
-    for cat in PLACEHOLDERS_SISTEMA:
-        _renderizar_categoria(cat, filtro)
-
-    # Dica de uso
-    st.markdown(" ")
-    with st.expander("💡 Como usar os placeholders"):
-        st.markdown("""
-**1. Copie** o código do placeholder desejado, por exemplo `{{perito_nome}}`.
-
-**2. Cole** no campo de conteúdo de uma seção ao editar um **Template de Laudo**.
-
-**3. Gere o PDF** — todos os `{{placeholders}}` são substituídos automaticamente pelos
-valores reais da REP, do perito logado e do laudo em questão.
-
----
-**Exemplo prático:**
-
-> *"No dia `{{data_solicitacao}}`, através do `{{tipo_solicitacao}}` nº `{{numero_documento}}`,
-> fui requisitado para realizar exame pericial do tipo `{{tipo_exame}}`."*
-
-Resulta em:
-
-> *"No dia 2024-12-25, através do Ofício nº 12345/2024, fui requisitado para realizar
-> exame pericial do tipo Necropsia."*
-        """)
-
-# ──────────────────────────────────────────────────────
-# ABA 2 — PERSONALIZADOS
-# ──────────────────────────────────────────────────────
+            col_badge, col_desc, col_ex = st.columns([3, 5, 3])
+            with col_badge:
+                st.markdown(f'<span class="ph-badge">{item["placeholder"]}</span>', unsafe_allow_html=True)
+            with col_desc:
+                st.markdown(f'<span class="ph-desc">{item["descricao"]}</span>', unsafe_allow_html=True)
+            with col_ex:
+                st.markdown(f'<span class="ph-exemplo">ex: {item["exemplo"]}</span>', unsafe_allow_html=True)
+        
+        st.markdown('<div style="margin-bottom: 2rem;"></div>', unsafe_allow_html=True)
 
 with tab_personalizados:
     personalizados = carregar_personalizados()
 
+    # 💡 Estado de edição 💡
+    if "ph_editando_idx" not in st.session_state:
+        st.session_state["ph_editando_idx"] = None
+
     st.markdown(
         "Crie seus próprios placeholders para uso em textos recorrentes. "
-        "Eles funcionam da **mesma forma** que os do sistema — basta usar `{{nome_do_placeholder}}`."
+        "Eles funcionam da **mesma forma** que os do sistema – basta usar `{{nome_do_placeholder}}`."
     )
     st.info(
         "⚠️ **Atenção:** placeholders personalizados ainda não são substituídos automaticamente "
@@ -351,68 +280,131 @@ with tab_personalizados:
     )
     st.markdown(" ")
 
-    # Listagem dos personalizados
+    # 📋 Listagem dos personalizados 📋
     if personalizados:
         st.markdown(f"**{len(personalizados)}** placeholder(s) cadastrado(s):")
         for idx, ph in enumerate(personalizados):
-            col_badge, col_desc, col_ex, col_del = st.columns([3, 4, 3, 1])
-            with col_badge:
-                st.markdown(
-                    f'<span class="ph-custom-badge">{{{{{ph.get("nome", "")}}}}}' 
-                    f'</span>',
-                    unsafe_allow_html=True,
-                )
-            with col_desc:
-                st.markdown(f"**{ph.get('descricao', '—')}**")
-            with col_ex:
-                st.caption(f"ex: {ph.get('exemplo', '—')}")
-            with col_del:
-                if st.button("🗑️", key=f"del_custom_{idx}", help="Remover este placeholder"):
-                    personalizados.pop(idx)
-                    salvar_personalizados(personalizados)
-                    st.rerun()
+
+            # Modo edição inline
+            if st.session_state["ph_editando_idx"] == idx:
+                with st.form(f"form_edit_ph_{idx}"):
+                    st.markdown(f"**📝 Editando** `{{{{{ph.get('nome', '')}}}}}` :")
+                    col_e1, col_e2, col_e3 = st.columns([2, 3, 3])
+                    with col_e1:
+                        edit_nome = st.text_input(
+                            "Nome *",
+                            value=ph.get("nome", ""),
+                            help="Digite apenas o nome interno, sem chaves.",
+                        )
+                    with col_e2:
+                        edit_desc = st.text_input(
+                            "Descrição *",
+                            value=ph.get("descricao", ""),
+                        )
+                    with col_e3:
+                        edit_ex = st.text_input(
+                            "Exemplo de valor",
+                            value=ph.get("exemplo", ""),
+                        )
+                    
+                    col_salvar, col_cancelar, _ = st.columns([1, 1, 5])
+                    with col_salvar:
+                        salvar = st.form_submit_button("💾 Salvar", type="primary", use_container_width=True)
+                    with col_cancelar:
+                        cancelar = st.form_submit_button("Cancelar", use_container_width=True)
+
+                    if cancelar:
+                        st.session_state["ph_editando_idx"] = None
+                        st.rerun()
+
+                    if salvar:
+                        nome_clean = edit_nome.strip().lower().replace(" ", "_")
+                        if not nome_clean:
+                            st.error("🚫 O nome do placeholder é obrigatório.")
+                        elif not edit_desc.strip():
+                            st.error("🚫 A descrição é obrigatória.")
+                        # Verifica se o nome já existe em OUTRO placeholder
+                        elif nome_clean != ph.get("nome") and any(p.get("nome") == nome_clean for i, p in enumerate(personalizados) if i != idx):
+                            st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
+                        else:
+                            personalizados[idx] = {
+                                "nome": nome_clean,
+                                "descricao": edit_desc.strip(),
+                                "exemplo": edit_ex.strip(),
+                            }
+                            salvar_personalizados(personalizados)
+                            st.session_state["ph_editando_idx"] = None
+                            st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` atualizado!")
+                            st.rerun()
+
+            # Modo visualização normal
+            else:
+                col_badge, col_desc, col_ex, col_edit, col_del = st.columns([3, 4, 3, 0.6, 0.6])
+                with col_badge:
+                    st.markdown(
+                        f'<span class="ph-custom-badge">{{{{{ph.get("nome", "")}}}}}</span>',
+                        unsafe_allow_html=True,
+                    )
+                with col_desc:
+                    st.markdown(f"**{ph.get('descricao', '—')}**")
+                with col_ex:
+                    st.caption(f"ex: {ph.get('exemplo', '—')}")
+                with col_edit:
+                    if st.button("✏️", key=f"edit_custom_{idx}", help="Editar este placeholder"):
+                        st.session_state["ph_editando_idx"] = idx
+                        st.rerun()
+                with col_del:
+                    if st.button("🗑️", key=f"del_custom_{idx}", help="Remover este placeholder"):
+                        personalizados.pop(idx)
+                        salvar_personalizados(personalizados)
+                        if st.session_state["ph_editando_idx"] == idx:
+                            st.session_state["ph_editando_idx"] = None
+                        st.rerun()
+
         st.divider()
     else:
-        st.info("📭 Nenhum placeholder personalizado cadastrado ainda.")
+        st.info("💡 Nenhum placeholder personalizado cadastrado ainda.")
         st.markdown(" ")
 
-    # Formulário para adicionar
-    st.markdown("#### ➕ Adicionar Novo Placeholder")
-    with st.form("form_add_placeholder", clear_on_submit=True):
-        col_nome, col_desc, col_ex = st.columns([2, 3, 3])
-        with col_nome:
-            nome = st.text_input(
-                "Nome *",
-                placeholder="ex: nome_comarca",
-                help="Será usado como `{{nome_comarca}}` no texto.",
-            )
-        with col_desc:
-            descricao = st.text_input(
-                "Descrição *",
-                placeholder="ex: Nome da comarca do perito",
-            )
-        with col_ex:
-            exemplo = st.text_input(
-                "Exemplo de valor",
-                placeholder="ex: Comarca de Brasília",
-            )
+    # ➕ Formulário para adicionar ➕
+    # Só exibe se não estiver editando nenhum item
+    if st.session_state["ph_editando_idx"] is None:
+        st.markdown("#### ✨ Adicionar Novo Placeholder")
+        with st.form("form_add_placeholder", clear_on_submit=True):
+            col_nome, col_desc, col_ex = st.columns([2, 3, 3])
+            with col_nome:
+                nome = st.text_input(
+                    "Nome *",
+                    placeholder="nome_perito_adjunto",
+                    help="Digite apenas o nome interno, sem chaves. O sistema adicionará {{ }} automaticamente.",
+                )
+            with col_desc:
+                descricao = st.text_input(
+                    "Descrição *",
+                    placeholder="Explicação do que se refere o placeholder",
+                )
+            with col_ex:
+                exemplo = st.text_input(
+                    "Exemplo de valor",
+                    placeholder="Fulano de tal",
+                )
 
-        submitted = st.form_submit_button("💾 Adicionar", type="primary", use_container_width=False)
+            submitted = st.form_submit_button("➕ Adicionar", type="primary", use_container_width=False)
 
-        if submitted:
-            nome_clean = nome.strip().lower().replace(" ", "_")
-            if not nome_clean:
-                st.error("❌ O nome do placeholder é obrigatório.")
-            elif not descricao.strip():
-                st.error("❌ A descrição é obrigatória.")
-            elif any(p.get("nome") == nome_clean for p in personalizados):
-                st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
-            else:
-                personalizados.append({
-                    "nome": nome_clean,
-                    "descricao": descricao.strip(),
-                    "exemplo": exemplo.strip(),
-                })
-                salvar_personalizados(personalizados)
-                st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` adicionado com sucesso!")
-                st.rerun()
+            if submitted:
+                nome_clean = nome.strip().lower().replace(" ", "_")
+                if not nome_clean:
+                    st.error("🚫 O nome do placeholder é obrigatório.")
+                elif not descricao.strip():
+                    st.error("🚫 A descrição é obrigatória.")
+                elif any(p.get("nome") == nome_clean for p in personalizados):
+                    st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
+                else:
+                    personalizados.append({
+                        "nome": nome_clean,
+                        "descricao": descricao.strip(),
+                        "exemplo": exemplo.strip(),
+                    })
+                    salvar_personalizados(personalizados)
+                    st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` adicionado com sucesso!")
+                    st.rerun()

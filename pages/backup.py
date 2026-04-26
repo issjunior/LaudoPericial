@@ -10,18 +10,19 @@ do banco de dados.
 import sys
 import os
 import streamlit as st
-import shutil # Para copiar arquivos
-from datetime import datetime # Importar datetime
+import shutil
+from datetime import datetime
+from pathlib import Path
 
 # Garante que a raiz do projeto está no sys.path
-ROOT = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))
-)
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.dirname(_script_dir)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
 from components.menu import renderizar_menu
 from core.auth import obter_usuario_logado, exigir_autenticacao
+from core.path_utils import get_permanent_root
 
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -45,7 +46,11 @@ if not usuario_logado:
     st.stop()
 
 # Caminho para o arquivo do banco de dados
-DB_PATH = os.path.join(ROOT, "laudopericial.db")
+# get_permanent_root() retorna a pasta do .exe (em modo empacotado)
+# ou a raiz do projeto (em modo dev) — igual ao que database/db.py usa.
+PERMANENT_ROOT = get_permanent_root()
+DB_NAME = os.getenv("DATABASE_NAME", "laudopericial.db")
+DB_PATH = str(PERMANENT_ROOT / DB_NAME)
 
 # ──────────────────────────────────────────────────────
 # FUNÇÕES AUXILIARES
@@ -126,14 +131,14 @@ def importar_banco_dados():
 
         if st.button("Confirmar Importação", type="secondary", use_container_width=True):
             try:
-                # Salva o arquivo temporariamente
-                temp_db_path = os.path.join(ROOT, "temp_laudopericial.db")
+                # Salva o arquivo temporariamente na pasta permanente (não em _MEIPASS)
+                temp_db_path = str(PERMANENT_ROOT / "temp_laudopericial.db")
                 with open(temp_db_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # Sobrescreve o banco de dados original
-                shutil.copy(temp_db_path, DB_PATH)
-                os.remove(temp_db_path) # Remove o arquivo temporário
+                # Usa a função do db.py para fechar a conexão, trocar o arquivo e reabrir
+                from database.db import importar_banco_de_dados
+                importar_banco_de_dados(temp_db_path)
 
                 st.success(
                     "✅ Banco de dados importado com sucesso! "
