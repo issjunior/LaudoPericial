@@ -23,6 +23,8 @@ from components.menu import renderizar_menu
 from core.auth import obter_usuario_logado
 from services.cadastro_service import listar_tipos_exame, listar_solicitantes
 from services.rep_service import criar_rep
+from services.template_service import listar_templates
+from services.laudo_service import criar_laudo
 
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
@@ -112,6 +114,47 @@ def main():
                 st.session_state["exame_de_local_selecionado"] = False
         else:
             st.session_state["exame_de_local_selecionado"] = False
+
+    # Integração direta com o fluxo da REP: vínculo opcional de template do laudo
+    st.markdown("##### Laudo (Opcional)")
+    opcoes_templates_laudo = {}
+    template_laudo_selecionado = ""
+    tipo_exame_definido = tipo_exame_selecionado != "— Não definido —"
+
+    if not tipo_exame_definido:
+        st.selectbox(
+            "Template de Laudo",
+            options=["Selecione um Tipo de Exame primeiro"],
+            index=0,
+            disabled=True,
+            help="Escolha o Tipo de Exame para listar apenas templates compatíveis."
+        )
+    else:
+        tipo_exame_id_para_template = opcoes_tipos_exame[tipo_exame_selecionado]
+        templates_filtrados = listar_templates(
+            apenas_ativos=True,
+            tipo_exame_id=tipo_exame_id_para_template
+        )
+
+        if not templates_filtrados:
+            st.selectbox(
+                "Template de Laudo",
+                options=["Nenhum template ativo para este Tipo de Exame"],
+                index=0,
+                disabled=True
+            )
+        else:
+            opcoes_templates_laudo = {
+                f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
+                for t in templates_filtrados
+            }
+            nomes_templates_laudo = ["Selecione um Template"] + list(opcoes_templates_laudo.keys())
+            template_laudo_selecionado = st.selectbox(
+                "Template de Laudo *",
+                options=nomes_templates_laudo,
+                index=0,
+                help="Mostra somente templates do Tipo de Exame selecionado."
+            )
 
     # NOVO CAMPO: Nome do Envolvido/Vítima
     nome_envolvido = st.text_input(
@@ -269,6 +312,12 @@ def main():
             data_doc_str = data_documento.strftime('%d/%m/%Y')
             erros_validacao.append(f"A **Data de recebimento** ({data_rec_str}) não pode ser anterior à **Data do Documento** ({data_doc_str}).")
 
+        if tipo_exame_definido:
+            if not opcoes_templates_laudo:
+                erros_validacao.append("Não existe template ativo para o Tipo de Exame selecionado.")
+            elif template_laudo_selecionado == "Selecione um Template":
+                erros_validacao.append("Selecione um **Template de Laudo**.")
+
         if erros_validacao:
             st.session_state["erros_temp"] = erros_validacao
             st.rerun()
@@ -304,7 +353,19 @@ def main():
                 observacoes         = observacoes,
                 usuario_id          = usuario_logado['id']
             )
-            st.success(f"✅ REP **{numero_rep}** registrada com sucesso!")
+            if tipo_exame_definido and template_laudo_selecionado in opcoes_templates_laudo:
+                try:
+                    template_laudo_id = opcoes_templates_laudo[template_laudo_selecionado]
+                    laudo_id = criar_laudo(nova_rep_id, template_laudo_id)
+                    st.success(f"✅ REP **{numero_rep}** registrada e Laudo **#{laudo_id}** criado com sucesso!")
+                    st.info("Você já pode continuar na página de edição do laudo.")
+                except Exception as e_laudo:
+                    st.warning(
+                        f"⚠️ REP **{numero_rep}** registrada com sucesso, mas houve erro ao criar o laudo automaticamente: {e_laudo}"
+                    )
+                    st.info("Você pode criar o laudo depois na página **Vincular Laudo a REP**.")
+            else:
+                st.success(f"✅ REP **{numero_rep}** registrada com sucesso!")
             st.balloons()
         except Exception as e:
             st.error(f"❌ Erro ao registrar REP: {e}")
