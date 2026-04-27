@@ -127,6 +127,11 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
     if not template:
         raise ValueError("Template não encontrado.")
 
+    # Regra de consistência: quando a REP tem tipo de exame definido,
+    # o template precisa ser do mesmo tipo.
+    if rep.get("tipo_exame_id") and template.get("tipo_exame_id") != rep.get("tipo_exame_id"):
+        raise ValueError("Template incompatível com o Tipo de Exame da REP.")
+
     if verificar_laudo_existe(rep_id):
         raise ValueError(f"Já existe laudo para esta REP.")
 

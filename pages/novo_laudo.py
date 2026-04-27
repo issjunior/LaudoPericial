@@ -90,9 +90,9 @@ def main():
     else:
         nomes_reps = []
 
-    templates = listar_templates(apenas_ativos=True)
+    templates_ativos = listar_templates(apenas_ativos=True)
 
-    if not templates:
+    if not templates_ativos:
         st.warning("⚠️ Não há templates de laudo cadastrados.")
         st.info("Cadastre um template antes de criar laudos.")
         st.markdown("---")
@@ -100,58 +100,73 @@ def main():
         st.page_link("pages/gerenciar_templates.py", label="Clique aqui para gerenciar templates", use_container_width=True)
         st.stop()
 
+    st.markdown("### Seleções")
+
+    rep_selecionado = st.selectbox(
+        "REP *",
+        options=nomes_reps,
+        index=0,
+        help="Selecione a Requisição de Exame Pericial para a qual deseja criar o laudo."
+    )
+
+    rep_obj = None
+    templates_filtrados = []
+    if rep_selecionado != "Selecione uma REP":
+        rep_id_selecionado = opcoes_reps[rep_selecionado]
+        rep_obj = next((r for r in reps_disponiveis if r["id"] == rep_id_selecionado), None)
+
+        if rep_obj and rep_obj.get("tipo_exame_id"):
+            templates_filtrados = listar_templates(
+                apenas_ativos=True,
+                tipo_exame_id=rep_obj["tipo_exame_id"]
+            )
+        else:
+            st.warning("⚠️ Esta REP está sem Tipo de Exame definido. Defina o tipo na REP para filtrar templates automaticamente.")
+            templates_filtrados = templates_ativos
+
     opcoes_templates = {
         f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
-        for t in templates
+        for t in templates_filtrados
     }
     nomes_templates = ["Selecione um Template"] + list(opcoes_templates.keys())
 
-    with st.form("form_novo_laudo", clear_on_submit=True):
-        st.markdown("### Seleções")
+    if rep_selecionado != "Selecione uma REP" and rep_obj and rep_obj.get("tipo_exame_id") and not templates_filtrados:
+        st.error("❌ Não há template ativo para o Tipo de Exame desta REP.")
+        st.info("Cadastre ou ative um template para este tipo antes de criar o laudo.")
 
-        rep_selecionado = st.selectbox(
-            "REP *",
-            options=nomes_reps,
-            index=0,
-            help="Selecione a Requisição de Exame Pericial para a qual deseja criar o laudo."
-        )
+    template_selecionado = st.selectbox(
+        "Template de Laudo *",
+        options=nomes_templates,
+        index=0,
+        help="São exibidos templates compatíveis com o Tipo de Exame da REP selecionada."
+    )
 
-        template_selecionado = st.selectbox(
-            "Template de Laudo *",
-            options=nomes_templates,
-            index=0,
-            help="Selecione o modelo de laudo que será usado."
-        )
+    st.markdown("---")
+    submitted = st.button("➕ Criar Laudo", type="primary")
 
-        st.markdown("---")
-        submitted = st.form_submit_button(
-            "➕ Criar Laudo",
-            type="primary"
-        )
+    if submitted:
+        if rep_selecionado == "Selecione uma REP":
+            st.error("❌ Por favor, selecione uma REP.")
+            st.stop()
+        if template_selecionado == "Selecione um Template":
+            st.error("❌ Por favor, selecione um Template de Laudo.")
+            st.stop()
 
-        if submitted:
-            if rep_selecionado == "Selecione uma REP":
-                st.error("❌ Por favor, selecione uma REP.")
-                st.stop()
-            if template_selecionado == "Selecione um Template":
-                st.error("❌ Por favor, selecione um Template de Laudo.")
-                st.stop()
+        rep_id = opcoes_reps[rep_selecionado]
+        template_id = opcoes_templates[template_selecionado]
 
-            rep_id = opcoes_reps[rep_selecionado]
-            template_id = opcoes_templates[template_selecionado]
+        try:
+            laudo_id = criar_laudo(rep_id, template_id)
+            st.success(f"✅ Laudo criado com sucesso! ID: {laudo_id}")
+            st.balloons()
+            st.markdown("---")
+            st.markdown("### Próximos passos")
+            st.info("O laudo foi criado. Para editá-lo, vá até a página Editor de Laudo.")
 
-            try:
-                laudo_id = criar_laudo(rep_id, template_id)
-                st.success(f"✅ Laudo criado com sucesso! ID: {laudo_id}")
-                st.balloons()
-                st.markdown("---")
-                st.markdown("### Próximos passos")
-                st.info("O laudo foi criado. Para editá-lo, vá até a página Editor de Laudo.")
-
-            except ValueError as e:
-                st.error(f"❌ Erro ao criar laudo: {e}")
-            except Exception as e:
-                st.error(f"❌ Erro inesperado: {e}")
+        except ValueError as e:
+            st.error(f"❌ Erro ao criar laudo: {e}")
+        except Exception as e:
+            st.error(f"❌ Erro inesperado: {e}")
 
 
 main()
