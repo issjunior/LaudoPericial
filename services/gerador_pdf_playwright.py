@@ -26,6 +26,7 @@ from services.html_builder import (
 from services.laudo_service import buscar_laudo, listar_secoes_laudo
 from services.rep_service import buscar_rep
 from database.db import executar_query
+from services.placeholders_custom_service import obter_mapeamento_placeholders_custom
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +146,11 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'perito_lotacao': perito.get('lotacao', ''),
             'cidade': perito.get('lotacao', ''),
         }
+
+        # Acrescenta placeholders personalizados sem sobrescrever os placeholders nativos.
+        for nome, valor in obter_mapeamento_placeholders_custom(com_chaves=False).items():
+            if nome not in placeholders:
+                placeholders[nome] = valor
         
         return placeholders
         

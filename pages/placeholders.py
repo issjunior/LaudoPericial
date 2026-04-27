@@ -9,8 +9,6 @@ permite ao usuário criar/remover placeholders personalizados.
 
 import sys
 import os
-import json
-from pathlib import Path
 import streamlit as st
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,12 +16,14 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from components.menu import renderizar_menu
+from services.placeholders_custom_service import (
+    listar_placeholders_custom,
+    salvar_placeholders_custom,
+)
 
 # ──────────────────────────────────────────────────────
 # CONSTANTES E DADOS DOS PLACEHOLDERS DO SISTEMA
 # ──────────────────────────────────────────────────────
-
-PLACEHOLDERS_FILE = Path(ROOT) / "data" / "custom_placeholders.json"
 
 # Definição centralizada de todos os placeholders do sistema, agrupados por categoria
 PLACEHOLDERS_SISTEMA = [
@@ -88,26 +88,6 @@ PLACEHOLDERS_SISTEMA = [
         ],
     },
 ]
-
-# ──────────────────────────────────────────────────────
-# FUNÇÕES DE PERSISTÊNCIA (PLACEHOLDERS PERSONALIZADOS)
-# ──────────────────────────────────────────────────────
-
-def carregar_personalizados() -> list:
-    if PLACEHOLDERS_FILE.exists():
-        try:
-            with open(PLACEHOLDERS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
-
-
-def salvar_personalizados(lista: list):
-    PLACEHOLDERS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(PLACEHOLDERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(lista, f, ensure_ascii=False, indent=2)
-
 
 # ──────────────────────────────────────────────────────
 # CSS CUSTOMIZADO
@@ -253,7 +233,12 @@ for aba, cat in zip(abas_categoria, PLACEHOLDERS_SISTEMA):
                 st.markdown(f'<span class="ph-exemplo">ex: {item["exemplo"]}</span>', unsafe_allow_html=True)
 
 with abas_categoria[-1]:
-    personalizados = carregar_personalizados()
+    personalizados = listar_placeholders_custom()
+    placeholders_sistema_nomes = {
+        item["placeholder"].replace("{{", "").replace("}}", "")
+        for cat in PLACEHOLDERS_SISTEMA
+        for item in cat["itens"]
+    }
 
     if "ph_editando_idx" not in st.session_state:
         st.session_state["ph_editando_idx"] = None
@@ -263,8 +248,7 @@ with abas_categoria[-1]:
         "Eles funcionam da **mesma forma** que os do sistema – basta usar `{{nome_do_placeholder}}`."
     )
     st.info(
-        "⚠️ **Atenção:** placeholders personalizados ainda não são substituídos automaticamente "
-        "pelo gerador de PDF. Esta seção serve como **catálogo de referência** para a equipe.",
+        "✅ Placeholders personalizados são substituídos automaticamente na geração do PDF.",
         icon="ℹ️",
     )
     st.markdown(" ")
@@ -284,8 +268,8 @@ with abas_categoria[-1]:
                         )
                     with col_e2:
                         edit_desc = st.text_input(
-                            "Descrição *",
-                            value=ph.get("descricao", ""),
+                            "Valor *",
+                            value=ph.get("valor", ""),
                         )
                     with col_e3:
                         edit_ex = st.text_input(
@@ -308,16 +292,18 @@ with abas_categoria[-1]:
                         if not nome_clean:
                             st.error("🚫 O nome do placeholder é obrigatório.")
                         elif not edit_desc.strip():
-                            st.error("🚫 A descrição é obrigatória.")
+                            st.error("🚫 O valor é obrigatório.")
+                        elif nome_clean in placeholders_sistema_nomes:
+                            st.error(f"🚫 `{nome_clean}` é reservado para placeholders do sistema.")
                         elif nome_clean != ph.get("nome") and any(p.get("nome") == nome_clean for i, p in enumerate(personalizados) if i != idx):
                             st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
                         else:
                             personalizados[idx] = {
                                 "nome": nome_clean,
-                                "descricao": edit_desc.strip(),
+                                "valor": edit_desc.strip(),
                                 "exemplo": edit_ex.strip(),
                             }
-                            salvar_personalizados(personalizados)
+                            salvar_placeholders_custom(personalizados)
                             st.session_state["ph_editando_idx"] = None
                             st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` atualizado!")
                             st.rerun()
@@ -329,7 +315,7 @@ with abas_categoria[-1]:
                         unsafe_allow_html=True,
                     )
                 with col_desc:
-                    st.markdown(f"**{ph.get('descricao', '—')}**")
+                    st.markdown(f"**Valor:** {ph.get('valor', '—')}")
                 with col_ex:
                     st.caption(f"ex: {ph.get('exemplo', '—')}")
                 with col_edit:
@@ -339,7 +325,7 @@ with abas_categoria[-1]:
                 with col_del:
                     if st.button("🗑️", key=f"del_custom_{idx}", help="Remover este placeholder"):
                         personalizados.pop(idx)
-                        salvar_personalizados(personalizados)
+                        salvar_placeholders_custom(personalizados)
                         if st.session_state["ph_editando_idx"] == idx:
                             st.session_state["ph_editando_idx"] = None
                         st.rerun()
@@ -361,8 +347,8 @@ with abas_categoria[-1]:
                 )
             with col_desc:
                 descricao = st.text_input(
-                    "Descrição *",
-                    placeholder="Explicação do que se refere o placeholder",
+                    "Valor *",
+                    placeholder="Ex: TESTE, CONFIDENCIAL, etc.",
                 )
             with col_ex:
                 exemplo = st.text_input(
@@ -377,15 +363,17 @@ with abas_categoria[-1]:
                 if not nome_clean:
                     st.error("🚫 O nome do placeholder é obrigatório.")
                 elif not descricao.strip():
-                    st.error("🚫 A descrição é obrigatória.")
+                    st.error("🚫 O valor é obrigatório.")
+                elif nome_clean in placeholders_sistema_nomes:
+                    st.error(f"🚫 `{nome_clean}` é reservado para placeholders do sistema.")
                 elif any(p.get("nome") == nome_clean for p in personalizados):
                     st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
                 else:
                     personalizados.append({
                         "nome": nome_clean,
-                        "descricao": descricao.strip(),
+                        "valor": descricao.strip(),
                         "exemplo": exemplo.strip(),
                     })
-                    salvar_personalizados(personalizados)
+                    salvar_placeholders_custom(personalizados)
                     st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` adicionado com sucesso!")
                     st.rerun()

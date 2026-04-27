@@ -30,6 +30,7 @@ from services.laudo_service import (
 )
 from services.rep_service import listar_reps, buscar_rep
 from services.laudo_service import buscar_laudo_por_rep
+from services.placeholders_custom_service import listar_placeholders_custom
 
 
 def formatar_data_br(data_iso: str) -> str:
@@ -102,6 +103,12 @@ def renderizar_secoes(laudo_id: int):
     | `{{template_nome}}` | Nome do template de laudo vinculado |
     | `{{template_descricao}}` | Descrição do template de laudo vinculado |
     """
+
+    placeholders_custom = listar_placeholders_custom()
+    if placeholders_custom:
+        placeholders_disponiveis += "\n\n*Placeholders Personalizados:*\n| Placeholder | Valor |\n|-------------|-------|\n"
+        for ph in placeholders_custom:
+            placeholders_disponiveis += f"| `{{{{{ph.get('nome', '')}}}}}` | {ph.get('valor', '') or '—'} |\n"
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):
         st.markdown(placeholders_disponiveis)

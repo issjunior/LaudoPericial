@@ -19,6 +19,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib import colors
 from database.db import executar_query
+from services.placeholders_custom_service import obter_mapeamento_placeholders_custom
 
 
 def formatar_data_br(data_iso: str) -> str:
@@ -141,6 +142,11 @@ def substituir_placeholders(texto: str, rep: dict, perito: dict) -> str:
         '{{perito_lotacao}}': perito.get('lotacao', ''),
         '{{cidade}}': perito.get('lotacao', ''),
     }
+
+    # Acrescenta placeholders personalizados sem sobrescrever os placeholders nativos.
+    for placeholder, valor in obter_mapeamento_placeholders_custom(com_chaves=True).items():
+        if placeholder not in substituicoes:
+            substituicoes[placeholder] = valor
     
     resultado = texto
     for placeholder, valor in substituicoes.items():
