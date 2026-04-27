@@ -82,7 +82,7 @@ def renderizar_secoes(laudo_id: int):
     | Placeholder | Descrição |
     |-------------|-----------|
     | `{{numero_rep}}` | Número da REP |
-    | `{{data_solicitacao}}` | Data da solicitação |
+    | `{{data_solicitacao}}` | Data da solicitação (DD/MM/AAAA) |
     | `{{tipo_exame}}` | Nome do tipo de exame |
     | `{{nome_envolvido}}` | Nome do envolvido/vítima |
     | `{{cidade}}` | Cidade do perito (lotação) |

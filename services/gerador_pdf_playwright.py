@@ -30,6 +30,31 @@ from database.db import executar_query
 logger = logging.getLogger(__name__)
 
 
+def formatar_data_br(data_valor) -> str:
+    """
+    Converte datas ISO (YYYY-MM-DD ou YYYY-MM-DD HH:MM:SS) para DD/MM/AAAA.
+    Se não conseguir converter, devolve o valor original como string.
+    """
+    if not data_valor:
+        return ""
+
+    texto = str(data_valor).strip()
+    if not texto:
+        return ""
+
+    try:
+        dt = datetime.fromisoformat(texto.replace(" ", "T"))
+        return dt.strftime("%d/%m/%Y")
+    except Exception:
+        pass
+
+    try:
+        dt = datetime.strptime(texto.split(" ")[0], "%Y-%m-%d")
+        return dt.strftime("%d/%m/%Y")
+    except Exception:
+        return texto
+
+
 def colher_dados_contexto(laudo_id: int) -> dict:
     """
     Colhe todos os dados de contexto necessários para preencher placeholders.
@@ -77,7 +102,7 @@ def colher_dados_contexto(laudo_id: int) -> dict:
         placeholders = {
             # Dados da REP
             'numero_rep': rep.get('numero_rep', ''),
-            'data_solicitacao': rep.get('data_solicitacao', '').split(' ')[0] if rep.get('data_solicitacao') else '',
+            'data_solicitacao': formatar_data_br(rep.get('data_solicitacao', '')),
             'tipo_exame': tipo_exame.get('nome', ''),
             'tipo_exame_codigo': tipo_exame.get('codigo', ''),
             'nome_envolvido': rep.get('nome_envolvido', ''),
@@ -90,7 +115,7 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             # Detalhes da solicitação
             'tipo_solicitacao': rep.get('tipo_solicitacao', ''),
             'numero_documento': rep.get('numero_documento', ''),
-            'data_documento': rep.get('data_documento', '').split(' ')[0] if rep.get('data_documento') else '',
+            'data_documento': formatar_data_br(rep.get('data_documento', '')),
             
             # Dados do local
             'local_fato': rep.get('local_fato', ''),

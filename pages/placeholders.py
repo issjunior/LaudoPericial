@@ -33,7 +33,7 @@ PLACEHOLDERS_SISTEMA = [
         "cor": "#1971c2",
         "itens": [
             {"placeholder": "{{numero_rep}}",      "descricao": "Número da REP",                   "exemplo": "REP-2024-001"},
-            {"placeholder": "{{data_solicitacao}}", "descricao": "Data da solicitação (YYYY-MM-DD)", "exemplo": "2024-12-25"},
+            {"placeholder": "{{data_solicitacao}}", "descricao": "Data da solicitação (DD/MM/AAAA)", "exemplo": "25/12/2024"},
             {"placeholder": "{{tipo_exame}}",       "descricao": "Nome do tipo de exame",           "exemplo": "Necropsia"},
             {"placeholder": "{{tipo_exame_codigo}}","descricao": "Código do tipo de exame",         "exemplo": "H-001"},
             {"placeholder": "{{nome_envolvido}}",   "descricao": "Nome do envolvido / vítima",      "exemplo": "João da Silva"},
@@ -62,7 +62,7 @@ PLACEHOLDERS_SISTEMA = [
         "itens": [
             {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Ofício...)", "exemplo": "Ofício"},
             {"placeholder": "{{numero_documento}}", "descricao": "Número do documento",            "exemplo": "12345/2024"},
-            {"placeholder": "{{data_documento}}",   "descricao": "Data do documento (YYYY-MM-DD)", "exemplo": "2024-12-20"},
+            {"placeholder": "{{data_documento}}",   "descricao": "Data do documento (DD/MM/AAAA)", "exemplo": "20/12/2024"},
         ],
     },
     {
@@ -83,7 +83,7 @@ PLACEHOLDERS_SISTEMA = [
         "cor": "#c92a2a",
         "itens": [
             {"placeholder": "{{numero_rep}}",       "descricao": "Número da REP",              "exemplo": "REP-2024-001"},
-            {"placeholder": "{{data_solicitacao}}", "descricao": "Data da solicitação",         "exemplo": "2024-12-25"},
+            {"placeholder": "{{data_solicitacao}}", "descricao": "Data da solicitação (DD/MM/AAAA)", "exemplo": "25/12/2024"},
             {"placeholder": "{{tipo_exame}}",       "descricao": "Nome do tipo de exame",      "exemplo": "Necropsia"},
             {"placeholder": "{{tipo_exame_codigo}}","descricao": "Código do tipo de exame",    "exemplo": "H-001"},
         ],

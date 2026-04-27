@@ -119,9 +119,9 @@ def substituir_placeholders(texto: str, rep: dict, perito: dict) -> str:
     
     substituicoes = {
         '{{numero_rep}}': rep.get('numero_rep', ''),
-        '{{data_solicitacao}}': rep.get('data_solicitacao', ''),
+        '{{data_solicitacao}}': formatar_data_br(rep.get('data_solicitacao', '')),
         '{{numero_documento}}': rep.get('numero_documento', ''),
-        '{{data_documento}}': rep.get('data_documento', ''),
+        '{{data_documento}}': formatar_data_br(rep.get('data_documento', '')),
         '{{tipo_solicitacao}}': rep.get('tipo_solicitacao', ''),
         '{{tipo_exame}}': rep.get('tipo_exame_nome', ''),
         '{{nome_autoridade}}': rep.get('nome_autoridade', ''),
@@ -220,7 +220,7 @@ def gerar_pdf_laudo(laudo_id: int) -> bytes:
             texto = texto.replace('{{tipo_exame}}', rep.get('tipo_exame_nome', ''))
             texto = texto.replace('{{tipo_exame_codigo}}', rep.get('tipo_exame_codigo', ''))
             texto = texto.replace('{{numero_rep}}', rep.get('numero_rep', ''))
-            texto = texto.replace('{{data_solicitacao}}', rep.get('data_solicitacao', ''))
+            texto = texto.replace('{{data_solicitacao}}', formatar_data_br(rep.get('data_solicitacao', '')))
             if texto.strip():
                 estilo_par = ParagraphStyle(
                     'Cabecalho',

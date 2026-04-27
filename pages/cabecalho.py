@@ -78,7 +78,7 @@ def main():
         | `{{tipo_exame}}` | Nome do tipo de exame |
         | `{{tipo_exame_codigo}}` | Código do tipo de exame |
         | `{{numero_rep}}` | Número da REP |
-        | `{{data_solicitacao}}` | Data da solicitação |
+        | `{{data_solicitacao}}` | Data da solicitação (DD/MM/AAAA) |
         """)
 
     st.markdown("### Editar Cabeçalho")
@@ -123,7 +123,7 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
         preview = conteudo_cabecalho.replace('{{tipo_exame}}', 'Exame de equipamento Eletrônico')
         preview = preview.replace('{{tipo_exame_codigo}}', 'E-381')
         preview = preview.replace('{{numero_rep}}', '00.000-2024')
-        preview = preview.replace('{{data_solicitacao}}', '2024-01-01')
+        preview = preview.replace('{{data_solicitacao}}', '01/01/2024')
         st.markdown(f'<div style="background-color:white;padding:15px;border-radius:5px;">{preview}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
