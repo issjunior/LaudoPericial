@@ -150,9 +150,9 @@ def main():
                     f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
                     for t in templates_filtrados
                 }
-                nomes_templates_laudo = ["Selecione um Template"] + list(opcoes_templates_laudo.keys())
+                nomes_templates_laudo = ["— Não vincular agora —"] + list(opcoes_templates_laudo.keys())
                 template_laudo_selecionado = st.selectbox(
-                    "Template de Laudo *",
+                    "Template de Laudo",
                     options=nomes_templates_laudo,
                     index=0,
                     help="Somente templates compatíveis com o Tipo de Exame selecionado."
@@ -291,7 +291,8 @@ def main():
     col_submit, _ = st.columns([2, 4])
 
     with col_submit:
-        label_botao = "💾 Registrar REP e Criar Laudo" if tipo_exame_definido else "💾 Registrar REP"
+        criar_laudo_no_fluxo = tipo_exame_definido and template_laudo_selecionado in opcoes_templates_laudo
+        label_botao = "💾 Registrar REP e Criar Laudo" if criar_laudo_no_fluxo else "💾 Registrar REP"
         submitted = st.button(
             label_botao,
             use_container_width=True,
@@ -319,12 +320,6 @@ def main():
             data_rec_str = data_solicitacao.strftime('%d/%m/%Y')
             data_doc_str = data_documento.strftime('%d/%m/%Y')
             erros_validacao.append(f"A **Data de recebimento** ({data_rec_str}) não pode ser anterior à **Data do Documento** ({data_doc_str}).")
-
-        if tipo_exame_definido:
-            if not opcoes_templates_laudo:
-                erros_validacao.append("Não existe template ativo para o Tipo de Exame selecionado.")
-            elif template_laudo_selecionado == "Selecione um Template":
-                erros_validacao.append("Selecione um **Template de Laudo**.")
 
         if erros_validacao:
             st.session_state["erros_temp"] = erros_validacao
