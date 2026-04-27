@@ -10,14 +10,16 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 
 ---
 
-## 1. Dados da REP (Requisição de Exame Pericial)
+## 1. Dados REP/Laudo
 
 | Variável | Placeholder | Descrição | Fonte |
 |----------|----------|-----------|-------|
 | `numero_rep` | `{{numero_rep}}` | Número da REP | nova_rep.py |
 | `data_solicitacao` | `{{data_solicitacao}}` | Data da solicitação (YYYY-MM-DD) | nova_rep.py |
 | `tipo_exame` | `{{tipo_exame}}` | Nome do tipo de exame | nova_rep.py |
+| `tipo_exame_codigo` | `{{tipo_exame_codigo}}` | Código do tipo de exame (ex: H-001) | gerador_pdf.py / cabeçalho |
 | `nome_envolvido` | `{{nome_envolvido}}` | Nome do envolvido/vítima | nova_rep.py |
+| `observacoes` | `{{observacoes}}` | Observações adicionais da REP | nova_rep.py |
 | `local_fato` | `{{local_fato}}` | Descrição do local do fato | nova_rep.py |
 | `horario_acionamento` | `{{horario_acionamento}}` | Horário de acionamento (HH:MM) | nova_rep.py |
 | `horario_chegada` | `{{horario_chegada}}` | Horário de chegada ao local (HH:MM) | nova_rep.py |
@@ -71,13 +73,12 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 
 ---
 
-## 6. Dados do Tipo de Exame
+## 6. Dados do Template
 
 | Variável | Placeholder | Descrição | Fonte |
 |----------|----------|-----------|-------|
-| `tipo_exame` | `{{tipo_exame}}` | Nome do tipo de exame | gerador_pdf.py / cabeçalho |
-| `tipo_exame_codigo` | `{{tipo_exame_codigo}}` | Código do tipo de exame (ex: H-001) | gerador_pdf.py / cabeçalho |
-| `template_descricao` | `{{template_descricao}}` | Descrição do exame do template | gerenciar_templates.py |
+| `template_nome` | `{{template_nome}}` | Nome do template de laudo vinculado | novo_laudo.py / nova_rep.py |
+| `template_descricao` | `{{template_descricao}}` | Descrição do template de laudo vinculado | novo_laudo.py / nova_rep.py |
 
 ---
 
@@ -95,8 +96,9 @@ Resultado no PDF:
 
 ## Implementação
 
-Os placeholders são substituídos na função `substituir_placeholders()` em:
-- `services/gerador_pdf.py`
+Os placeholders são substituídos em:
+- `services/gerador_pdf.py` (`substituir_placeholders`)
+- `services/gerador_pdf_playwright.py` + `services/html_builder.py` (`processar_placeholders`)
 
 Os dados são buscados em:
 - `services/rep_service.py` (dados da REP)

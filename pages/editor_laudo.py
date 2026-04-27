@@ -86,6 +86,7 @@ def renderizar_secoes(laudo_id: int):
     | `{{data_solicitacao}}` | Data da solicitação (DD/MM/AAAA) |
     | `{{tipo_exame}}` | Nome do tipo de exame |
     | `{{nome_envolvido}}` | Nome do envolvido/vítima |
+    | `{{observacoes}}` | Observações adicionais da REP |
     | `{{cidade}}` | Cidade do perito (lotação) |
 
     *Dados do Solicitante:*
@@ -94,6 +95,12 @@ def renderizar_secoes(laudo_id: int):
     | `{{solicitante}}` | Nome do órgão solicitante |
     | `{{solicitante_orgao}}` | Órgão do solicitante |
     | `{{nome_autoridade}}` | Nome da autoridade solicitante |
+
+    *Dados do Template:*
+    | Placeholder | Descrição |
+    |-------------|-----------|
+    | `{{template_nome}}` | Nome do template de laudo vinculado |
+    | `{{template_descricao}}` | Descrição do template de laudo vinculado |
     """
 
     with st.expander("Ver Placeholders Disponíveis", expanded=False):

@@ -26,6 +26,39 @@ from services.rep_service import criar_rep
 from services.template_service import listar_templates
 from services.laudo_service import criar_laudo
 
+SECTION_CSS = """
+<style>
+.rep-section-card {
+    background: var(--background-color, #ffffff08);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 4px solid var(--section-color, #1971c2);
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    margin: 1rem 0 0.75rem 0;
+}
+.rep-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+.rep-section-desc {
+    font-size: 0.82rem;
+    opacity: 0.72;
+    margin: 0.2rem 0 0 0;
+}
+</style>
+"""
+
+def render_section_card(titulo: str, cor: str, descricao: str = ""):
+    descricao_html = f'<p class="rep-section-desc">{descricao}</p>' if descricao else ""
+    st.markdown(
+        f'<div class="rep-section-card" style="--section-color: {cor};">'
+        f'<p class="rep-section-title">{titulo}</p>'
+        f"{descricao_html}"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
 # ──────────────────────────────────────────────────────
 # CONFIGURAÇÃO DA PÁGINA
 # ──────────────────────────────────────────────────────
@@ -40,6 +73,7 @@ st.session_state["_active_page"] = __file__
 
 # Renderiza o menu lateral (já exige autenticação)
 renderizar_menu()
+st.markdown(SECTION_CSS, unsafe_allow_html=True)
 
 # Obtém o usuário logado para vincular a REP
 usuario_logado = obter_usuario_logado()
@@ -80,7 +114,11 @@ def main():
             if sol_data and sol_data.get('nome'):
                 st.session_state["nome_autoridade_key"] = sol_data['nome']
 
-    st.markdown("### 1) Identificação e Enquadramento")
+    render_section_card(
+        "1) 📋 Dados da REP",
+        "#1971c2",
+        "Informações da requisição e dados essenciais para abertura."
+    )
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -162,15 +200,6 @@ def main():
                     None
                 )
 
-    if tipo_exame_definido:
-        if st.session_state.get("exame_de_local_selecionado"):
-            st.info("📍 Este Tipo de Exame exige dados do local.")
-        else:
-            st.caption("Este Tipo de Exame não exige dados do local.")
-
-        if template_laudo_obj and template_laudo_obj.get("descricao_exame"):
-            st.caption(f"Template selecionado: {template_laudo_obj['descricao_exame']}")
-
     # NOVO CAMPO: Nome do Envolvido/Vítima
     nome_envolvido = st.text_input(
         "Nome do Envolvido / Vítima (Opcional)",
@@ -178,7 +207,11 @@ def main():
         help="Nome da pessoa envolvida ou vítima principal da ocorrência."
     )
 
-    st.markdown("### 2) Solicitante")
+    render_section_card(
+        "2) 🏛️ Dados do Solicitante",
+        "#2f9e44",
+        "Informações sobre o órgão e a autoridade solicitante."
+    )
     col4, col5 = st.columns(2)
 
     with col4:
@@ -198,7 +231,11 @@ def main():
             key="nome_autoridade_key"
         )
 
-    st.markdown("### 3) Documento da Solicitação")
+    render_section_card(
+        "3) 📝 Detalhes da Solicitação",
+        "#e67700",
+        "Dados do documento que originou a requisição."
+    )
     col6, col7, col8 = st.columns(3)
 
     with col6:
@@ -222,58 +259,76 @@ def main():
             help="Data de emissão do documento de solicitação."
         )
 
-    st.markdown("### 4) Local do Fato (quando aplicável)")
-    if st.session_state["exame_de_local_selecionado"]:
-        local_fato_descricao = st.text_area(
-            "Descrição do Local do Fato",
-            placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
-            help="Descrição objetiva do local onde ocorreu o fato.",
-            height=80
-        )
-        col_horario1, col_horario2, col_horario3 = st.columns(3)
-        with col_horario1:
-            horario_acionamento = st.time_input(
-                "Horário de Acionamento",
-                value=None
-            )
-        with col_horario2:
-            horario_chegada = st.time_input(
-                "Horário de Chegada",
-                value=None
-            )
-        with col_horario3:
-            horario_saida = st.time_input(
-                "Horário de Saída",
-                value=None
-            )
-
-        col_coords1, col_coords2 = st.columns(2)
-        with col_coords1:
-            latitude = st.text_input(
-                "Latitude",
-                placeholder="Ex: -25.4284"
-            )
-        with col_coords2:
-            longitude = st.text_input(
-                "Longitude",
-                placeholder="Ex: -49.2733"
-            )
-    else:
-        local_fato_descricao = None
-        horario_acionamento = None
-        horario_chegada = None
-        horario_saida = None
-        latitude = None
-        longitude = None
-        st.caption("Campos de local desativados para este tipo de exame.")
-
-    st.markdown("### 5) Observações")
+    render_section_card(
+        "4) 📍 Dados da REP (Complementares)",
+        "#1971c2",
+        "Observações e dados de local, quando o tipo de exame exigir."
+    )
     with st.expander("📝 Observações Adicionais", expanded=False):
         observacoes = st.text_area(
             "Observações Gerais (Opcional)",
             height=100,
             help="Qualquer informação extra relevante para a REP."
         )
+
+    aba_geral, aba_local = st.tabs(["Dados Gerais", "Dados do Local"])
+
+    with aba_geral:
+        st.caption("Dados gerais complementares preenchidos acima.")
+
+    with aba_local:
+        exame_eh_de_local = st.session_state["exame_de_local_selecionado"]
+        if not exame_eh_de_local:
+            st.warning("📍 Os dados referentes ao local somente estarão disponíveis quando o tipo de exame for de local.")
+        if exame_eh_de_local:
+            local_fato_descricao_input = st.text_area(
+                "Descrição do Local do Fato",
+                placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
+                help="Descrição objetiva do local onde ocorreu o fato.",
+                height=80
+            )
+            col_horario1, col_horario2, col_horario3 = st.columns(3)
+            with col_horario1:
+                horario_acionamento_input = st.time_input(
+                    "Horário de Acionamento",
+                    value=None
+                )
+            with col_horario2:
+                horario_chegada_input = st.time_input(
+                    "Horário de Chegada",
+                    value=None
+                )
+            with col_horario3:
+                horario_saida_input = st.time_input(
+                    "Horário de Saída",
+                    value=None
+                )
+
+            col_coords1, col_coords2 = st.columns(2)
+            with col_coords1:
+                latitude_input = st.text_input(
+                    "Latitude",
+                    placeholder="Ex: -25.4284"
+                )
+            with col_coords2:
+                longitude_input = st.text_input(
+                    "Longitude",
+                    placeholder="Ex: -49.2733"
+                )
+
+            local_fato_descricao = local_fato_descricao_input
+            horario_acionamento = horario_acionamento_input
+            horario_chegada = horario_chegada_input
+            horario_saida = horario_saida_input
+            latitude = latitude_input
+            longitude = longitude_input
+        else:
+            local_fato_descricao = None
+            horario_acionamento = None
+            horario_chegada = None
+            horario_saida = None
+            latitude = None
+            longitude = None
 
     st.markdown("### Resumo")
     with st.container(border=True):

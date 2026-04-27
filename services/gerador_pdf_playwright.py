@@ -82,14 +82,14 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             if rows:
                 solicitante = dict(rows[0])
         
-        # Buscar dados do perito (usuário que criou o laudo)
+        # Buscar dados do perito (usuário vinculado à REP do laudo)
         perito = {}
-        if laudo.get('criado_por'):
+        if laudo.get('usuario_id'):
             sql = "SELECT id, nome, matricula, cargo, lotacao FROM usuarios WHERE id = ?"
-            rows = executar_query(sql, (laudo['criado_por'],))
+            rows = executar_query(sql, (laudo['usuario_id'],))
             if rows:
                 perito = dict(rows[0])
-        
+
         # Buscar tipo de exame
         tipo_exame = {}
         if rep.get('tipo_exame_id'):
@@ -97,6 +97,14 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             rows = executar_query(sql, (rep['tipo_exame_id'],))
             if rows:
                 tipo_exame = dict(rows[0])
+
+        # Buscar dados do template vinculado ao laudo
+        template_laudo = {}
+        if laudo.get('template_id'):
+            sql = "SELECT id, nome, descricao_exame FROM templates WHERE id = ?"
+            rows = executar_query(sql, (laudo['template_id'],))
+            if rows:
+                template_laudo = dict(rows[0])
         
         # Montar dicionário de placeholders
         placeholders = {
@@ -106,11 +114,12 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'tipo_exame': tipo_exame.get('nome', ''),
             'tipo_exame_codigo': tipo_exame.get('codigo', ''),
             'nome_envolvido': rep.get('nome_envolvido', ''),
-            
+            'observacoes': rep.get('observacoes', ''),
+
             # Dados do solicitante
-            'solicitante': solicitante.get('nome_orgao', ''),
-            'solicitante_orgao': solicitante.get('nome_orgao', ''),
-            'nome_autoridade': solicitante.get('nome_autoridade', ''),
+            'solicitante': rep.get('solicitante_nome', ''),
+            'solicitante_orgao': rep.get('solicitante_orgao', ''),
+            'nome_autoridade': rep.get('nome_autoridade', ''),
             
             # Detalhes da solicitação
             'tipo_solicitacao': rep.get('tipo_solicitacao', ''),
@@ -118,12 +127,16 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'data_documento': formatar_data_br(rep.get('data_documento', '')),
             
             # Dados do local
-            'local_fato': rep.get('local_fato', ''),
+            'local_fato': rep.get('local_fato_descricao', ''),
             'horario_acionamento': rep.get('horario_acionamento', ''),
             'horario_chegada': rep.get('horario_chegada', ''),
             'horario_saida': rep.get('horario_saida', ''),
             'latitude': rep.get('latitude', ''),
             'longitude': rep.get('longitude', ''),
+
+            # Dados do template
+            'template_nome': template_laudo.get('nome', ''),
+            'template_descricao': template_laudo.get('descricao_exame', ''),
             
             # Dados do perito
             'perito_nome': perito.get('nome', ''),

@@ -1,4 +1,4 @@
-"""
+﻿"""
 pages/placeholders.py
 ──────────────────────────────────────────────────────
 Página de referência e gerenciamento de Placeholders.
@@ -28,8 +28,8 @@ PLACEHOLDERS_FILE = Path(ROOT) / "data" / "custom_placeholders.json"
 # Definição centralizada de todos os placeholders do sistema, agrupados por categoria
 PLACEHOLDERS_SISTEMA = [
     {
-        "categoria": "📋 Dados da REP",
-        "descricao": "Informações da Requisição de Exame Pericial",
+        "categoria": "📋 Dados REP/Laudo",
+        "descricao": "Informações da REP e do cabeçalho do laudo",
         "cor": "#1971c2",
         "itens": [
             {"placeholder": "{{numero_rep}}",      "descricao": "Número da REP",                   "exemplo": "REP-2024-001"},
@@ -37,12 +37,22 @@ PLACEHOLDERS_SISTEMA = [
             {"placeholder": "{{tipo_exame}}",       "descricao": "Nome do tipo de exame",           "exemplo": "Necropsia"},
             {"placeholder": "{{tipo_exame_codigo}}","descricao": "Código do tipo de exame",         "exemplo": "H-001"},
             {"placeholder": "{{nome_envolvido}}",   "descricao": "Nome do envolvido / vítima",      "exemplo": "João da Silva"},
+            {"placeholder": "{{observacoes}}",      "descricao": "Observações adicionais da REP",    "exemplo": "Sem alterações relevantes no local."},
             {"placeholder": "{{local_fato}}",       "descricao": "Descrição do local do fato",      "exemplo": "Rua das Flores, 123"},
             {"placeholder": "{{horario_acionamento}}","descricao": "Horário de acionamento (HH:MM)", "exemplo": "14:30"},
             {"placeholder": "{{horario_chegada}}",  "descricao": "Horário de chegada ao local",     "exemplo": "15:00"},
             {"placeholder": "{{horario_saida}}",    "descricao": "Horário de saída do local",       "exemplo": "17:45"},
             {"placeholder": "{{latitude}}",         "descricao": "Latitude do local",               "exemplo": "-15.7801"},
             {"placeholder": "{{longitude}}",        "descricao": "Longitude do local",              "exemplo": "-47.9292"},
+        ],
+    },
+    {
+        "categoria": "📄 Dados do Template",
+        "descricao": "Informações do template de laudo vinculado",
+        "cor": "#5f3dc4",
+        "itens": [
+            {"placeholder": "{{template_nome}}",      "descricao": "Nome do template de laudo",         "exemplo": "Local de Morte"},
+            {"placeholder": "{{template_descricao}}", "descricao": "Descrição do template de laudo",    "exemplo": "Exame em local de morte violenta"},
         ],
     },
     {
@@ -75,17 +85,6 @@ PLACEHOLDERS_SISTEMA = [
             {"placeholder": "{{perito_cargo}}",     "descricao": "Cargo do perito",            "exemplo": "Perito Criminal"},
             {"placeholder": "{{perito_lotacao}}",   "descricao": "Lotação / unidade do perito","exemplo": "IML – Brasília/DF"},
             {"placeholder": "{{cidade}}",           "descricao": "Cidade (igual à lotação)",   "exemplo": "Brasília/DF"},
-        ],
-    },
-    {
-        "categoria": "📑 Cabeçalho do Laudo",
-        "descricao": "Placeholders disponíveis especificamente no cabeçalho do documento",
-        "cor": "#c92a2a",
-        "itens": [
-            {"placeholder": "{{numero_rep}}",       "descricao": "Número da REP",              "exemplo": "REP-2024-001"},
-            {"placeholder": "{{data_solicitacao}}", "descricao": "Data da solicitação (DD/MM/AAAA)", "exemplo": "25/12/2024"},
-            {"placeholder": "{{tipo_exame}}",       "descricao": "Nome do tipo de exame",      "exemplo": "Necropsia"},
-            {"placeholder": "{{tipo_exame_codigo}}","descricao": "Código do tipo de exame",    "exemplo": "H-001"},
         ],
     },
 ]
@@ -225,21 +224,15 @@ st.markdown(
 )
 st.divider()
 
-# ──────────────────────────────────────────────────────
-# ABAS PRINCIPAIS
-# ──────────────────────────────────────────────────────
+st.markdown(
+    "Estes placeholders são preenchidos automaticamente pelo sistema com base nos dados da "
+    "REP e do perfil do perito. Eles **não podem** ser editados."
+)
+st.markdown(" ")
+abas_categoria = st.tabs([cat["categoria"] for cat in PLACEHOLDERS_SISTEMA] + ["🎨 Placeholders Personalizados"])
 
-tab_sistema, tab_personalizados = st.tabs(["🏛️ Placeholders do Sistema", "🎨 Placeholders Personalizados"])
-
-with tab_sistema:
-    st.markdown(
-        "Estes placeholders são preenchidos automaticamente pelo sistema com base nos dados da "
-        "REP e do perfil do perito. Eles **não podem** ser editados."
-    )
-    st.markdown(" ")
-
-    for cat in PLACEHOLDERS_SISTEMA:
-        # Card de categoria
+for aba, cat in zip(abas_categoria, PLACEHOLDERS_SISTEMA):
+    with aba:
         st.markdown(
             f'<div class="ph-card" style="--cat-color: {cat["cor"]};">'
             f'<div class="ph-card-header">'
@@ -250,7 +243,6 @@ with tab_sistema:
             unsafe_allow_html=True
         )
 
-        # Listagem dos itens
         for item in cat["itens"]:
             col_badge, col_desc, col_ex = st.columns([3, 5, 3])
             with col_badge:
@@ -259,13 +251,10 @@ with tab_sistema:
                 st.markdown(f'<span class="ph-desc">{item["descricao"]}</span>', unsafe_allow_html=True)
             with col_ex:
                 st.markdown(f'<span class="ph-exemplo">ex: {item["exemplo"]}</span>', unsafe_allow_html=True)
-        
-        st.markdown('<div style="margin-bottom: 2rem;"></div>', unsafe_allow_html=True)
 
-with tab_personalizados:
+with abas_categoria[-1]:
     personalizados = carregar_personalizados()
 
-    # 💡 Estado de edição 💡
     if "ph_editando_idx" not in st.session_state:
         st.session_state["ph_editando_idx"] = None
 
@@ -280,12 +269,9 @@ with tab_personalizados:
     )
     st.markdown(" ")
 
-    # 📋 Listagem dos personalizados 📋
     if personalizados:
         st.markdown(f"**{len(personalizados)}** placeholder(s) cadastrado(s):")
         for idx, ph in enumerate(personalizados):
-
-            # Modo edição inline
             if st.session_state["ph_editando_idx"] == idx:
                 with st.form(f"form_edit_ph_{idx}"):
                     st.markdown(f"**📝 Editando** `{{{{{ph.get('nome', '')}}}}}` :")
@@ -306,7 +292,7 @@ with tab_personalizados:
                             "Exemplo de valor",
                             value=ph.get("exemplo", ""),
                         )
-                    
+
                     col_salvar, col_cancelar, _ = st.columns([1, 1, 5])
                     with col_salvar:
                         salvar = st.form_submit_button("💾 Salvar", type="primary", use_container_width=True)
@@ -323,7 +309,6 @@ with tab_personalizados:
                             st.error("🚫 O nome do placeholder é obrigatório.")
                         elif not edit_desc.strip():
                             st.error("🚫 A descrição é obrigatória.")
-                        # Verifica se o nome já existe em OUTRO placeholder
                         elif nome_clean != ph.get("nome") and any(p.get("nome") == nome_clean for i, p in enumerate(personalizados) if i != idx):
                             st.warning(f"⚠️ Já existe um placeholder com o nome `{nome_clean}`.")
                         else:
@@ -336,8 +321,6 @@ with tab_personalizados:
                             st.session_state["ph_editando_idx"] = None
                             st.success(f"✅ Placeholder `{{{{{nome_clean}}}}}` atualizado!")
                             st.rerun()
-
-            # Modo visualização normal
             else:
                 col_badge, col_desc, col_ex, col_edit, col_del = st.columns([3, 4, 3, 0.6, 0.6])
                 with col_badge:
@@ -366,8 +349,6 @@ with tab_personalizados:
         st.info("💡 Nenhum placeholder personalizado cadastrado ainda.")
         st.markdown(" ")
 
-    # ➕ Formulário para adicionar ➕
-    # Só exibe se não estiver editando nenhum item
     if st.session_state["ph_editando_idx"] is None:
         st.markdown("#### ✨ Adicionar Novo Placeholder")
         with st.form("form_add_placeholder", clear_on_submit=True):

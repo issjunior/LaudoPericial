@@ -50,6 +50,7 @@ PLACEHOLDERS = """
 | `{{data_solicitacao}}` | Data da solicitação (DD/MM/AAAA) |
 | `{{tipo_exame}}` | Nome do tipo de exame |
 | `{{nome_envolvido}}` | Nome do envolvido/vítima |
+| `{{observacoes}}` | Observações adicionais da REP |
 
 *Dados do Solicitante:*
 | Placeholder | Descrição |
@@ -74,6 +75,12 @@ PLACEHOLDERS = """
 | `{{horario_saida}}` | Horário de saída do local |
 | `{{latitude}}` | Latitude do local |
 | `{{longitude}}` | Longitude do local |
+
+*Dados do Template:*
+| Placeholder | Descrição |
+|-------------|-----------|
+| `{{template_nome}}` | Nome do template de laudo vinculado |
+| `{{template_descricao}}` | Descrição do template de laudo vinculado |
 
 *Dados do Perito:*
 | Placeholder | Descrição |
