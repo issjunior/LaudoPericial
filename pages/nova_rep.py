@@ -80,8 +80,8 @@ def main():
             if sol_data and sol_data.get('nome'):
                 st.session_state["nome_autoridade_key"] = sol_data['nome']
 
-    st.markdown("### Dados Gerais da REP")
-    col1, col2, col3 = st.columns(3)
+    st.markdown("### 1) Identificação e Enquadramento")
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         numero_rep = st.text_input(
@@ -115,46 +115,61 @@ def main():
         else:
             st.session_state["exame_de_local_selecionado"] = False
 
-    # Integração direta com o fluxo da REP: vínculo opcional de template do laudo
-    st.markdown("##### Laudo (Opcional)")
+    # Template de laudo integrado ao bloco principal
     opcoes_templates_laudo = {}
+    templates_filtrados = []
     template_laudo_selecionado = ""
+    template_laudo_obj = None
     tipo_exame_definido = tipo_exame_selecionado != "— Não definido —"
 
-    if not tipo_exame_definido:
-        st.selectbox(
-            "Template de Laudo",
-            options=["Selecione um Tipo de Exame primeiro"],
-            index=0,
-            disabled=True,
-            help="Escolha o Tipo de Exame para listar apenas templates compatíveis."
-        )
-    else:
-        tipo_exame_id_para_template = opcoes_tipos_exame[tipo_exame_selecionado]
-        templates_filtrados = listar_templates(
-            apenas_ativos=True,
-            tipo_exame_id=tipo_exame_id_para_template
-        )
-
-        if not templates_filtrados:
+    with col4:
+        if not tipo_exame_definido:
             st.selectbox(
                 "Template de Laudo",
-                options=["Nenhum template ativo para este Tipo de Exame"],
+                options=["Selecione um Tipo de Exame"],
                 index=0,
-                disabled=True
+                disabled=True,
+                help="Com Tipo de Exame não definido, a REP fica Pendente e não cria laudo."
             )
         else:
-            opcoes_templates_laudo = {
-                f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
-                for t in templates_filtrados
-            }
-            nomes_templates_laudo = ["Selecione um Template"] + list(opcoes_templates_laudo.keys())
-            template_laudo_selecionado = st.selectbox(
-                "Template de Laudo *",
-                options=nomes_templates_laudo,
-                index=0,
-                help="Mostra somente templates do Tipo de Exame selecionado."
+            tipo_exame_id_para_template = opcoes_tipos_exame[tipo_exame_selecionado]
+            templates_filtrados = listar_templates(
+                apenas_ativos=True,
+                tipo_exame_id=tipo_exame_id_para_template
             )
+
+            if not templates_filtrados:
+                st.selectbox(
+                    "Template de Laudo",
+                    options=["Nenhum template ativo para este tipo"],
+                    index=0,
+                    disabled=True
+                )
+            else:
+                opcoes_templates_laudo = {
+                    f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
+                    for t in templates_filtrados
+                }
+                nomes_templates_laudo = ["Selecione um Template"] + list(opcoes_templates_laudo.keys())
+                template_laudo_selecionado = st.selectbox(
+                    "Template de Laudo *",
+                    options=nomes_templates_laudo,
+                    index=0,
+                    help="Somente templates compatíveis com o Tipo de Exame selecionado."
+                )
+                template_laudo_obj = next(
+                    (t for t in templates_filtrados if f"{t['tipo_exame_codigo']} — {t['nome']}" == template_laudo_selecionado),
+                    None
+                )
+
+    if tipo_exame_definido:
+        if st.session_state.get("exame_de_local_selecionado"):
+            st.info("📍 Este Tipo de Exame exige dados do local.")
+        else:
+            st.caption("Este Tipo de Exame não exige dados do local.")
+
+        if template_laudo_obj and template_laudo_obj.get("descricao_exame"):
+            st.caption(f"Template selecionado: {template_laudo_obj['descricao_exame']}")
 
     # NOVO CAMPO: Nome do Envolvido/Vítima
     nome_envolvido = st.text_input(
@@ -163,7 +178,7 @@ def main():
         help="Nome da pessoa envolvida ou vítima principal da ocorrência."
     )
 
-    st.markdown("### Dados do Solicitante")
+    st.markdown("### 2) Solicitante")
     col4, col5 = st.columns(2)
 
     with col4:
@@ -183,7 +198,7 @@ def main():
             key="nome_autoridade_key"
         )
 
-    st.markdown("### Detalhes da Solicitação")
+    st.markdown("### 3) Documento da Solicitação")
     col6, col7, col8 = st.columns(3)
 
     with col6:
@@ -207,70 +222,52 @@ def main():
             help="Data de emissão do documento de solicitação."
         )
 
-    # Abas: Dados Gerais e Dados do Local
-    st.markdown("### 📝 Dados da REP")
-    st.markdown("**Selecione uma aba abaixo:**")
-    if st.session_state.get("exame_de_local_selecionado"):
-        st.warning("⚠️ IMPORTANTE: Este tipo de exame requer dados do local. Clique na aba **'Dados do Local'** para preencher!")
-
-    tab1, tab2 = st.tabs(["📋 Dados Gerais", "🌍 Dados do Local"])
-
-    with tab1:
-        if st.session_state.get("exame_de_local_selecionado"):
-            st.info("Dados básicos para este tipo de exame.")
-        else:
-            st.info("Dados básicos para todos os tipos de exame.")
-
-    with tab2:
-        if st.session_state["exame_de_local_selecionado"]:
-            local_fato_descricao = st.text_area(
-                "Descrição do Local do Fato",
-                placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
-                help="Descrição detalhada do local onde ocorreu o fato.",
-                height=80
+    st.markdown("### 4) Local do Fato (quando aplicável)")
+    if st.session_state["exame_de_local_selecionado"]:
+        local_fato_descricao = st.text_area(
+            "Descrição do Local do Fato",
+            placeholder="Ex: Residência na Rua X, nº Y, Bairro Z. Próximo ao mercado K.",
+            help="Descrição objetiva do local onde ocorreu o fato.",
+            height=80
+        )
+        col_horario1, col_horario2, col_horario3 = st.columns(3)
+        with col_horario1:
+            horario_acionamento = st.time_input(
+                "Horário de Acionamento",
+                value=None
             )
-            col_horario1, col_horario2, col_horario3 = st.columns(3)
-            with col_horario1:
-                horario_acionamento = st.time_input(
-                    "Horário de Acionamento",
-                    value=None,
-                    help="Horário em que a equipe pericial foi acionada."
-                )
-            with col_horario2:
-                horario_chegada = st.time_input(
-                    "Horário de Chegada",
-                    value=None,
-                    help="Horário de chegada da equipe pericial ao local."
-                )
-            with col_horario3:
-                horario_saida = st.time_input(
-                    "Horário de Saída",
-                    value=None,
-                    help="Horário de saída da equipe pericial do local."
-                )
+        with col_horario2:
+            horario_chegada = st.time_input(
+                "Horário de Chegada",
+                value=None
+            )
+        with col_horario3:
+            horario_saida = st.time_input(
+                "Horário de Saída",
+                value=None
+            )
 
-            col_coords1, col_coords2 = st.columns(2)
-            with col_coords1:
-                latitude = st.text_input(
-                    "Latitude",
-                    placeholder="Ex: -25.4284",
-                    help="Coordenada de latitude do local do exame."
-                )
-            with col_coords2:
-                longitude = st.text_input(
-                    "Longitude",
-                    placeholder="Ex: -49.2733",
-                    help="Coordenada de longitude do local do exame."
-                )
-        else:
-            local_fato_descricao = None
-            horario_acionamento = None
-            horario_chegada = None
-            horario_saida = None
-            latitude = None
-            longitude = None
-            st.info("Este tipo de exame não requer deslocamento ao local do fato.")
+        col_coords1, col_coords2 = st.columns(2)
+        with col_coords1:
+            latitude = st.text_input(
+                "Latitude",
+                placeholder="Ex: -25.4284"
+            )
+        with col_coords2:
+            longitude = st.text_input(
+                "Longitude",
+                placeholder="Ex: -49.2733"
+            )
+    else:
+        local_fato_descricao = None
+        horario_acionamento = None
+        horario_chegada = None
+        horario_saida = None
+        latitude = None
+        longitude = None
+        st.caption("Campos de local desativados para este tipo de exame.")
 
+    st.markdown("### 5) Observações")
     with st.expander("📝 Observações Adicionais", expanded=False):
         observacoes = st.text_area(
             "Observações Gerais (Opcional)",
@@ -278,12 +275,23 @@ def main():
             help="Qualquer informação extra relevante para a REP."
         )
 
+    st.markdown("### Resumo")
+    with st.container(border=True):
+        st.markdown(f"**REP:** {numero_rep or '—'}")
+        st.markdown(f"**Tipo de Exame:** {tipo_exame_selecionado}")
+        if tipo_exame_definido:
+            st.markdown(f"**Template de Laudo:** {template_laudo_selecionado or 'Selecione um Template'}")
+        else:
+            st.markdown("**Template de Laudo:** desabilitado (Tipo de Exame não definido)")
+        st.markdown(f"**Solicitante:** {solicitante_selecionado}")
+        st.markdown(f"**Documento:** {tipo_documento} - {numero_documento or '—'}")
+
     st.markdown("---")
 
-    col_submit, col_cancel = st.columns([1, 5])
+    col_submit, _ = st.columns([2, 4])
 
     with col_submit:
-        label_botao = "💾 Atualizar REP" if st.session_state.get("exame_de_local_selecionado") else "💾 Registrar REP"
+        label_botao = "💾 Registrar REP e Criar Laudo" if tipo_exame_definido else "💾 Registrar REP"
         submitted = st.button(
             label_botao,
             use_container_width=True,
@@ -358,14 +366,18 @@ def main():
                     template_laudo_id = opcoes_templates_laudo[template_laudo_selecionado]
                     laudo_id = criar_laudo(nova_rep_id, template_laudo_id)
                     st.success(f"✅ REP **{numero_rep}** registrada e Laudo **#{laudo_id}** criado com sucesso!")
-                    st.info("Você já pode continuar na página de edição do laudo.")
+                    st.info("Próximo passo:")
+                    st.page_link("pages/editor_laudo.py", label="Ir para Editor de Laudo", use_container_width=True)
+                    st.page_link("pages/nova_rep.py", label="Registrar outra REP", use_container_width=True)
                 except Exception as e_laudo:
                     st.warning(
                         f"⚠️ REP **{numero_rep}** registrada com sucesso, mas houve erro ao criar o laudo automaticamente: {e_laudo}"
                     )
                     st.info("Você pode criar o laudo depois na página **Vincular Laudo a REP**.")
+                    st.page_link("pages/novo_laudo.py", label="Ir para Vincular Laudo a REP", use_container_width=True)
             else:
                 st.success(f"✅ REP **{numero_rep}** registrada com sucesso!")
+                st.page_link("pages/nova_rep.py", label="Registrar outra REP", use_container_width=True)
             st.balloons()
         except Exception as e:
             st.error(f"❌ Erro ao registrar REP: {e}")
