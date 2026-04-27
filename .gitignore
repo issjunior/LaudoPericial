@@ -13,6 +13,9 @@ scratch
 # Scripts de exportacao
 exportacao_de_projeto/
 
+# Planejamento de Migração
+migracao/
+
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
 *.sqlite
