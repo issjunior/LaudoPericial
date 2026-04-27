@@ -157,8 +157,12 @@ def main():
     st.markdown("Exporte ou importe o arquivo do banco de dados para backup e restauração.")
     st.markdown("---")
 
-    exportar_banco_dados()
-    st.markdown("---")
-    importar_banco_dados()
+    tab_exportar, tab_importar = st.tabs(["📥 Exportar", "📤 Importar"])
+
+    with tab_exportar:
+        exportar_banco_dados()
+
+    with tab_importar:
+        importar_banco_dados()
 
 main()
