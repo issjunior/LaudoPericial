@@ -289,7 +289,7 @@ def tela_login():
 
         st.markdown("---")
         st.caption(
-            "🔒 Sistema de uso restrito — "
+            "🔒 Sistema para automatização de laudos periciais — "
             "Polícia Científica do Paraná"
         )
 
