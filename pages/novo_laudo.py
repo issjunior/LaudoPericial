@@ -158,7 +158,7 @@ def main():
         try:
             laudo_id = criar_laudo(rep_id, template_id)
             st.success(f"✅ Laudo criado com sucesso! ID: {laudo_id}")
-            st.balloons()
+            st.toast(f"Laudo #{laudo_id} criado para a REP selecionada.", icon="✅")
             st.markdown("---")
             st.markdown("### Próximos passos")
             st.info("O laudo foi criado. Para editá-lo, vá até a página Editor de Laudo.")

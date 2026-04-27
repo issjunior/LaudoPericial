@@ -361,6 +361,7 @@ def main():
                     template_laudo_id = opcoes_templates_laudo[template_laudo_selecionado]
                     laudo_id = criar_laudo(nova_rep_id, template_laudo_id)
                     st.success(f"✅ REP **{numero_rep}** registrada e Laudo **#{laudo_id}** criado com sucesso!")
+                    st.toast(f"REP {numero_rep} registrada e laudo #{laudo_id} criado.", icon="✅")
                     st.info("Próximo passo:")
                     st.page_link("pages/editor_laudo.py", label="Ir para Editor de Laudo", use_container_width=True)
                     st.page_link("pages/nova_rep.py", label="Registrar outra REP", use_container_width=True)
@@ -368,12 +369,13 @@ def main():
                     st.warning(
                         f"⚠️ REP **{numero_rep}** registrada com sucesso, mas houve erro ao criar o laudo automaticamente: {e_laudo}"
                     )
+                    st.toast(f"REP {numero_rep} registrada; houve falha ao criar o laudo automático.", icon="⚠️")
                     st.info("Você pode criar o laudo depois na página **Vincular Laudo a REP**.")
                     st.page_link("pages/novo_laudo.py", label="Ir para Vincular Laudo a REP", use_container_width=True)
             else:
                 st.success(f"✅ REP **{numero_rep}** registrada com sucesso!")
+                st.toast(f"REP {numero_rep} registrada com status Pendente.", icon="✅")
                 st.page_link("pages/nova_rep.py", label="Registrar outra REP", use_container_width=True)
-            st.balloons()
         except Exception as e:
             st.error(f"❌ Erro ao registrar REP: {e}")
 
