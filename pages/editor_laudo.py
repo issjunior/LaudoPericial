@@ -22,6 +22,7 @@ from services.laudo_service import (
     buscar_laudo,
     listar_secoes_laudo,
     atualizar_secao_laudo,
+    finalizar_laudo,
     listar_versoes,
     restaurar_versao,
     excluir_versao,
@@ -157,10 +158,9 @@ def renderizar_secoes(laudo_id: int):
         col_btn_finalizar, _ = st.columns([1, 3])
         with col_btn_finalizar:
             if st.button("✅ Marcar como Finalizado", type="primary", use_container_width=True):
-                from services.laudo_service import atualizar_status_laudo
                 try:
-                    atualizar_status_laudo(laudo_id, 'Finalizado')
-                    st.success("Laudo marcado como Finalizado!")
+                    finalizar_laudo(laudo_id)
+                    st.success("Laudo marcado como Finalizado e REP vinculada marcada como Concluído!")
                     st.rerun()
                 except ValueError as e:
                     st.error(f"Erro: {e}")
