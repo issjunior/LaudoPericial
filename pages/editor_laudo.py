@@ -149,6 +149,9 @@ def renderizar_secoes(laudo_id: int):
                     'theme': 'default',
                     'allowResizeY': True,
                     'allowResizeX': True,
+                    'uploader': {
+                        'insertImageAsBase64URI': True
+                    }
                 }
                 conteudo = st_jodit(
                     value=secao['conteudo'] or "",
