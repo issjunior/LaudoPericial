@@ -77,41 +77,62 @@ def renderizar_secoes(laudo_id: int):
     st.markdown("---")
     st.markdown(f"### Editando: REP {rep['numero_rep']} - {rep.get('tipo_exame_nome') or 'Tipo não definido'}")
 
-    placeholders_disponiveis = """
-    **Placeholders disponíveis (copie e cole no texto):**
+    with st.expander("💡 Explorar Placeholders Disponíveis", expanded=False):
+        st.markdown("<small>Clique no ícone de copiar 📋 ao lado do placeholder para utilizá-lo facilmente no texto.</small>", unsafe_allow_html=True)
+        
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "📝 Dados Gerais", "🏢 Solicitante", "📄 Template", "✨ Personalizados"
+        ])
+        
+        with tab1:
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.caption("Número da REP")
+                st.code("{{numero_rep}}", language="plaintext")
+                st.caption("Tipo de Exame")
+                st.code("{{tipo_exame}}", language="plaintext")
+            with c2:
+                st.caption("Data da Solicitação")
+                st.code("{{data_solicitacao}}", language="plaintext")
+                st.caption("Nome do Envolvido")
+                st.code("{{nome_envolvido}}", language="plaintext")
+            with c3:
+                st.caption("Cidade do Perito")
+                st.code("{{cidade}}", language="plaintext")
+                st.caption("Observações")
+                st.code("{{observacoes}}", language="plaintext")
+                
+        with tab2:
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.caption("Órgão Solicitante")
+                st.code("{{solicitante}}", language="plaintext")
+            with c2:
+                st.caption("Nome da Autoridade")
+                st.code("{{nome_autoridade}}", language="plaintext")
+            with c3:
+                st.caption("Órgão da Autoridade")
+                st.code("{{solicitante_orgao}}", language="plaintext")
 
-    *Dados Gerais da REP:*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{numero_rep}}` | Número da REP |
-    | `{{data_solicitacao}}` | Data da solicitação (DD/MM/AAAA) |
-    | `{{tipo_exame}}` | Nome do tipo de exame |
-    | `{{nome_envolvido}}` | Nome do envolvido/vítima |
-    | `{{observacoes}}` | Observações adicionais da REP |
-    | `{{cidade}}` | Cidade do perito (lotação) |
+        with tab3:
+            c1, c2 = st.columns(2)
+            with c1:
+                st.caption("Nome do Template")
+                st.code("{{template_nome}}", language="plaintext")
+            with c2:
+                st.caption("Descrição do Template")
+                st.code("{{template_descricao}}", language="plaintext")
 
-    *Dados do Solicitante:*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{solicitante}}` | Nome do órgão solicitante |
-    | `{{solicitante_orgao}}` | Órgão do solicitante |
-    | `{{nome_autoridade}}` | Nome da autoridade solicitante |
-
-    *Dados do Template:*
-    | Placeholder | Descrição |
-    |-------------|-----------|
-    | `{{template_nome}}` | Nome do template de laudo vinculado |
-    | `{{template_descricao}}` | Descrição do template de laudo vinculado |
-    """
-
-    placeholders_custom = listar_placeholders_custom()
-    if placeholders_custom:
-        placeholders_disponiveis += "\n\n*Placeholders Personalizados:*\n| Placeholder | Valor |\n|-------------|-------|\n"
-        for ph in placeholders_custom:
-            placeholders_disponiveis += f"| `{{{{{ph.get('nome', '')}}}}}` | {ph.get('valor', '') or '—'} |\n"
-
-    with st.expander("Ver Placeholders Disponíveis", expanded=False):
-        st.markdown(placeholders_disponiveis)
+        with tab4:
+            placeholders_custom = listar_placeholders_custom()
+            if placeholders_custom:
+                cols = st.columns(3)
+                for i, ph in enumerate(placeholders_custom):
+                    with cols[i % 3]:
+                        st.caption(f"Valor atual: {ph.get('valor', '') or '—'}")
+                        st.code(f"{{{{{ph.get('nome', '')}}}}}", language="plaintext")
+            else:
+                st.info("Nenhum placeholder personalizado cadastrado.")
 
     secoes_salvas = {}
 
