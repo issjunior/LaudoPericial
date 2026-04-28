@@ -31,6 +31,7 @@ from services.laudo_service import (
 from services.rep_service import listar_reps, buscar_rep
 from services.laudo_service import buscar_laudo_por_rep
 from services.placeholders_custom_service import listar_placeholders_custom
+from services.ai_service import gerar_texto_com_ia
 
 
 def formatar_data_br(data_iso: str) -> str:
@@ -162,6 +163,37 @@ def renderizar_secoes(laudo_id: int):
                     height=200,
                     key=f"secao_{secao['id']}"
                 )
+
+            mostrar_ia = st.checkbox("✨ Abrir Assistente de IA (Groq)", key=f"chk_ia_{secao['id']}")
+            if mostrar_ia:
+                with st.container(border=True):
+                    st.markdown(f"<small>A IA analisará o texto atual desta seção (**{secao['titulo']}**) para gerar a sugestão.</small>", unsafe_allow_html=True)
+                    
+                    c_btn1, c_btn2, c_btn3 = st.columns(3)
+                    
+                    acao_ia = None
+                    if c_btn1.button("Revisar a ortografia", key=f"btn_rev_{secao['id']}", use_container_width=True):
+                        acao_ia = 'revisar_ortografia'
+                    if c_btn2.button("Adequar texto", key=f"btn_ade_{secao['id']}", use_container_width=True):
+                        acao_ia = 'adequar_texto'
+                    if c_btn3.button("Descrição de imagem", key=f"btn_desc_{secao['id']}", use_container_width=True):
+                        acao_ia = 'descricao_imagem'
+                    
+                    state_key = f"ia_res_{secao['id']}"
+                    if acao_ia:
+                        with st.spinner("A IA está gerando a sugestão..."):
+                            resultado = gerar_texto_com_ia(acao_ia, secao['titulo'], conteudo)
+                            st.session_state[state_key] = resultado
+                    
+                    if state_key in st.session_state:
+                        st.success("Sugestão gerada com sucesso! Copie o texto abaixo e cole no editor.")
+                        
+                        st.markdown("**Visualização (Preview):**")
+                        st.code(st.session_state[state_key], language="markdown", wrap_lines=True)
+                        
+                        if st.button("Limpar Sugestão", key=f"btn_limp_{secao['id']}"):
+                            del st.session_state[state_key]
+                            st.rerun()
 
             secoes_salvas[secao['id']] = {
                 'titulo': secao['titulo'],

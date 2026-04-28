@@ -49,3 +49,6 @@ chromium/
 
 # Documentos gerados (laudos exportados)
 /exports/
+
+# Serviço de IA (contém API Key temporária)
+services/ai_service.py
