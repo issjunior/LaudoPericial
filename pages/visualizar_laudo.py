@@ -72,17 +72,19 @@ def renderizar_laudo(laudo_id: int):
     with col_st2:
         st.markdown(f"**Status da REP:** {rep['status']}")
     with col_pdf:
+        usuario = obter_usuario_logado()
+        pasta_exp = usuario.get('pasta_exportacao', '') if usuario else ''
         try:
-            from services.gerador_pdf_playwright import gerar_pdf_laudo
-            numero_rep = rep['numero_rep'].replace('/', '_')
-            pdf_bytes = gerar_pdf_laudo(laudo_id)
-            st.download_button(
-                label="📄 Gerar PDF",
-                data=pdf_bytes,
-                file_name=f"{numero_rep}.pdf",
-                mime="application/pdf",
-                use_container_width=True
-            )
+            if pasta_exp and st.button("Visualizar PDF", use_container_width=True):
+                from services.gerador_pdf_playwright import salvar_pdf_laudo
+                import webbrowser
+                caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
+                webbrowser.open(f'file:///{caminho_pdf}')
+                st.success(f"PDF aberto: {caminho_pdf}")
+            elif not pasta_exp:
+                st.info("Configure a pasta de exportação nas configurações do perfil.")
+            else:
+                pass
         except Exception as e:
             st.error(f"Erro ao gerar PDF: {e}")
 

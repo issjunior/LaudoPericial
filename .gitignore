@@ -52,3 +52,6 @@ chromium/
 
 # Serviço de IA (contém API Key temporária)
 services/ai_service.py
+
+# Arquivos de configuração do opencode (MCP)
+node_modules/*

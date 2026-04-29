@@ -275,3 +275,31 @@ def gerar_pdf_laudo(laudo_id: int) -> bytes:
     Usa o novo gerador com Playwright.
     """
     return gerar_pdf_laudo_playwright(laudo_id)
+
+
+def salvar_pdf_laudo(laudo_id: int, pasta_destino: str) -> str:
+    """
+    Gera e salva o PDF do laudo na pasta especificada.
+
+    Args:
+        laudo_id: ID do laudo
+        pasta_destino: Caminho da pasta onde o PDF será salvo
+
+    Returns:
+        str: Caminho completo do arquivo PDF salvo
+    """
+    pdf_bytes = gerar_pdf_laudo_playwright(laudo_id)
+
+    laudo = buscar_laudo(laudo_id)
+    rep = buscar_rep(laudo['rep_id'])
+    numero_rep = rep['numero_rep'].replace('/', '_')
+
+    nome_arquivo = f"{numero_rep}.pdf"
+    caminho_completo = os.path.join(pasta_destino, nome_arquivo)
+
+    os.makedirs(pasta_destino, exist_ok=True)
+    with open(caminho_completo, 'wb') as f:
+        f.write(pdf_bytes)
+
+    logger.info(f"PDF salvo em: {caminho_completo}")
+    return caminho_completo

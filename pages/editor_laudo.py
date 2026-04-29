@@ -227,53 +227,64 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 'obrigatoria': secao['obrigatoria']
             }
 
-    if st.button("Salvar Laudo", type="primary"):
-        erros = []
-        for secao_id, dados in secoes_salvas.items():
-            if dados['obrigatoria'] and not dados['conteudo'].strip():
-                erros.append(dados['titulo'])
+    usuario = obter_usuario_logado()
+    pasta_exp = usuario.get('pasta_exportacao', '') if usuario else ''
 
-        if erros:
-            st.error(f"Preencha as seções obrigatórias: {', '.join(erros)}")
-        else:
+    col_salvar, col_vis = st.columns(2)
+    with col_salvar:
+        if st.button("Salvar Laudo", type="primary", use_container_width=True):
+            erros = []
             for secao_id, dados in secoes_salvas.items():
-                atualizar_secao_laudo(secao_id, dados['conteudo'])
-            
+                if dados['obrigatoria'] and not dados['conteudo'].strip():
+                    erros.append(dados['titulo'])
+
+            if erros:
+                st.error(f"Preencha as seções obrigatórias: {', '.join(erros)}")
+            else:
+                for secao_id, dados in secoes_salvas.items():
+                    atualizar_secao_laudo(secao_id, dados['conteudo'])
+
+                try:
+                    versao = salvar_versao_snapshot(laudo_id)
+                    st.success(f"Laudo salvo! Versao {versao} criada (max. 3 versoes)")
+                except ValueError:
+                    st.success("Laudo salvo com sucesso!")
+
+                if pasta_exp:
+                    try:
+                        from services.gerador_pdf_playwright import salvar_pdf_laudo
+                        import webbrowser
+                        caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
+                        webbrowser.open(f'file:///{caminho_pdf}')
+                        st.success(f"PDF gerado e aberto: {caminho_pdf}")
+                    except Exception as e:
+                        st.error(f"Erro ao gerar PDF: {e}")
+                st.rerun()
+
+    with col_vis:
+        if pasta_exp and st.button("Visualizar PDF", type="primary", use_container_width=True):
             try:
-                versao = salvar_versao_snapshot(laudo_id)
-                st.success(f"Laudo salvo! Versao {versao} criada (max. 3 versoes)")
-            except ValueError:
-                st.success("Laudo salvo com sucesso!")
-            st.rerun()
+                from services.gerador_pdf_playwright import salvar_pdf_laudo
+                import webbrowser
+                caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
+                webbrowser.open(f'file:///{caminho_pdf}')
+                st.success(f"PDF aberto: {caminho_pdf}")
+            except Exception as e:
+                st.error(f"Erro ao gerar PDF: {e}")
+        elif not pasta_exp:
+            st.info("Configure a pasta de exportação nas configurações do perfil.")
 
     if laudo['status'] == 'Em Andamento':
         st.markdown("---")
         col_btn_finalizar, _ = st.columns([1, 3])
         with col_btn_finalizar:
-            if st.button("✅ Marcar como Finalizado", type="primary", use_container_width=True):
+            if st.button("Marcar como Finalizado", type="primary", use_container_width=True):
                 try:
                     finalizar_laudo(laudo_id)
                     st.success("Laudo marcado como Finalizado e REP vinculada marcada como Concluído!")
                     st.rerun()
                 except ValueError as e:
                     st.error(f"Erro: {e}")
-
-    st.markdown("---")
-    col_vis, _ = st.columns([1, 3])
-    with col_vis:
-        try:
-            from services.gerador_pdf_playwright import gerar_pdf_laudo
-            pdf_bytes = gerar_pdf_laudo(laudo_id)
-            numero_rep = rep['numero_rep'].replace('/', '_')
-            st.download_button(
-                label="Visualizar PDF",
-                data=pdf_bytes,
-                file_name=f"{numero_rep}.pdf",
-                mime="application/pdf",
-                icon="👁️"
-            )
-        except Exception as e:
-            st.error(f"Erro ao gerar PDF: {e}")
 
     versoes = listar_versoes(laudo_id)
     if versoes:
