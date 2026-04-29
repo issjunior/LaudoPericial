@@ -253,6 +253,14 @@ def atualizar_secao_laudo(secao_laudo_id: int, conteudo: str) -> None:
     )
 
 
+def excluir_laudo(laudo_id: int) -> None:
+    """
+    Exclui permanentemente um laudo e todos os seus vínculos (seções, ilustrações, versões).
+    """
+    from database.db import executar_comando
+    # A deleção em cascata (ON DELETE CASCADE) no banco cuidará das seções, ilustrações e versões
+    executar_comando("DELETE FROM laudos WHERE id = ?", (laudo_id,))
+
 def finalizar_laudo(laudo_id: int) -> None:
     """
     Finaliza um laudo (muda status para Finalizado).

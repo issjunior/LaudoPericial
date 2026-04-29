@@ -121,13 +121,17 @@ def seed():
     
     envolvidos = ["Carlos Eduardo Magalhaes", "Mariana Santos Ferreira", "Desconhecido", "Empresa Alimentos S.A.", "Joao Pedro da Silva", "Beatriz Oliveira"]
     locais = ["Rua Sergipe, 450, Centro", "Av. Higienopolis, 1200", "Rua Paranagua, 89", "Rodovia Celso Garcia Cid, Km 390", "Rua Minas Gerais, 12"]
-    tipos_sol = ["BO", "Oficio", "BO PM", "BO PC", "CECOMP"]
+    tipos_sol = ["BO", "Ofício", "BO PM", "BO PC", "CECOMP"]
     
     data_hoje = date.today()
     
     for i in range(15):
         # Gera dados ficticios mas coerentes
-        num_rep = f"2026-{i+1:04d}" # Formato fake
+        # Padrão solicitado: xxx.xxx-2026 (05 a 06 números)
+        parte1 = random.randint(10, 999)
+        parte2 = random.randint(100, 999)
+        num_rep = f"{parte1:02d}.{parte2:03d}-2026"
+        
         if i < 5:
             # Primeiras 5: Pendentes, sem laudo
             status_rep = "Pendente"

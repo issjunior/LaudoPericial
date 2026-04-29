@@ -92,7 +92,7 @@ def main():
     opcoes_solicitantes = {s['orgao']: s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
 
-    TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Oficio", "CECOMP", "Outro"]
+    TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"]
     STATUS_REP = ["Pendente", "Em Andamento", "Concluido"]
 
     tipo_exame_atual = next((k for k, v in opcoes_tipos_exame.items() if v == rep.get('tipo_exame_id')), "— Não definido —")
@@ -202,6 +202,13 @@ def main():
             key="data_documento_key"
         )
 
+    local_fato_descricao = rep.get('local_fato_descricao')
+    horario_acionamento = None
+    horario_chegada = None
+    horario_saida = None
+    latitude = rep.get('latitude')
+    longitude = rep.get('longitude')
+
     if st.session_state["exame_de_local_selecionado"]:
         with st.expander("🌍 Dados do Local de Exame", expanded=True):
             local_fato_descricao = st.text_area(
@@ -264,13 +271,15 @@ def main():
                     value=rep.get('longitude') or '',
                     key="longitude_key"
                 )
-    else:
-        local_fato_descricao = rep.get('local_fato_descricao')
-        horario_acionamento = None
-        horario_chegada = None
-        horario_saida = None
-        latitude = rep.get('latitude')
-        longitude = rep.get('longitude')
+
+    # --- NOVA LÓGICA DE AVISO DE EXCLUSÃO DE LAUDO ---
+    laudo_vinculado = verificar_laudo_vinculado(rep_id)
+    confirmar_exclusao_laudo = False
+    
+    if laudo_vinculado and tipo_exame_selecionado == "— Não definido —":
+        st.warning(f"⚠️ **Atenção:** Ao definir o Tipo de Exame como 'Não definido', o **Laudo #{laudo_vinculado['id']}** vinculado a esta REP será **excluído permanentemente** (incluindo textos e fotos).")
+        confirmar_exclusao_laudo = st.checkbox("Estou ciente e confirmo a exclusão do laudo para prosseguir.")
+    # ------------------------------------------------
 
     st.markdown("### Observações")
     observacoes = st.text_area(
@@ -285,21 +294,23 @@ def main():
     col_submit = st.columns([1])
 
     with col_submit[0]:
+        botao_bloqueado = laudo_vinculado and tipo_exame_selecionado == "— Não definido —" and not confirmar_exclusao_laudo
         submitted = st.button(
             "💾 Salvar Alterações",
             use_container_width=True,
-            type="primary"
+            type="primary",
+            disabled=botao_bloqueado
         )
 
-    # ── VALIDAÇÃO E EXECUÇÃO (Fora das colunas para usar largura total) ──
+    # ── VALIDAÇÃO E EXECUÇÃO ──
     if submitted:
         erros_validacao = []
+        
+        if laudo_vinculado and tipo_exame_selecionado == "— Não definido —" and not confirmar_exclusao_laudo:
+             erros_validacao.append("Você deve confirmar a exclusão do laudo para definir o Tipo de Exame como 'Não definido'.")
 
         if not numero_rep:
             erros_validacao.append("O campo **Número da REP** é obrigatório.")
-
-        if tipo_exame_selecionado == "Selecione um Tipo de Exame":
-            erros_validacao.append("Por favor, selecione um **Tipo de Exame** válido.")
 
         if tipo_documento not in TIPO_SOLICITACAO:
             erros_validacao.append("O **Tipo de Documento** deve ser selecionado.")
@@ -328,6 +339,12 @@ def main():
         horario_saida_str = horario_saida.strftime("%H:%M") if horario_saida else None
 
         try:
+            # NOVO: Excluir laudo se o tipo foi removido e confirmado
+            if laudo_vinculado and tipo_exame_id is None and confirmar_exclusao_laudo:
+                from services.laudo_service import excluir_laudo
+                excluir_laudo(laudo_vinculado['id'])
+                st.toast(f"Laudo #{laudo_vinculado['id']} excluído.", icon="🗑️")
+
             atualizar_rep(
                 rep_id              = rep_id,
                 numero_rep          = numero_rep,
@@ -371,7 +388,7 @@ def main():
 
             col_confirma, _ = st.columns([1, 2])
             with col_confirma:
-                confirmar = st.checkbox("Entendo o risco, quero excluir mesmo assim")
+                confirmar = st.checkbox("Entendo o risco, quero excluir mesmo assim", key="del_rep_confirm")
 
             if confirmar and st.button("🗑️ Confirmar Exclusão", type="primary"):
                 try:
@@ -391,4 +408,5 @@ def main():
                 except Exception as e:
                     st.error(f"❌ Erro ao excluir: {e}")
 
-main()
+if __name__ == "__main__":
+    main()
