@@ -149,6 +149,7 @@ def renderizar_secoes(laudo_id: int):
                     'theme': 'default',
                     'allowResizeY': True,
                     'allowResizeX': True,
+                    'colorPickerDefaultTab': 'text',
                     'uploader': {
                         'insertImageAsBase64URI': True
                     }
@@ -191,7 +192,7 @@ def renderizar_secoes(laudo_id: int):
                     if state_key in st.session_state:
                         st.success("Sugestão gerada com sucesso! Copie o texto abaixo e cole no editor.")
                         
-                        st.markdown("**Visualização (Preview):**")
+                        st.markdown("**Sugestão da IA:**")
                         st.code(st.session_state[state_key], language="markdown", wrap_lines=True)
                         
                         if st.button("Limpar Sugestão", key=f"btn_limp_{secao['id']}"):
