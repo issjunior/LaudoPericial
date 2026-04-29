@@ -182,8 +182,10 @@ with tab_preferencias:
         st.write("Defina a pasta padrão onde os laudos (Word/PDF) serão salvos.")
         
         # Inicializa o valor no session_state se ainda não existir
+        # Pasta padrão: Documentos/Laudos dentro da pasta do usuário se não especificada
+        pasta_padrao = os.path.join(os.path.expanduser("~"), "Documents", "Laudos")
         if "perfil_caminho_exportacao" not in st.session_state:
-            st.session_state["perfil_caminho_exportacao"] = usuario['pasta_exportacao'] or ""
+            st.session_state["perfil_caminho_exportacao"] = usuario['pasta_exportacao'] or pasta_padrao
             
         # Colunas: Botão primeiro, depois o Input (mantendo a ordem solicitada)
         col_btn, col_path = st.columns([1, 4])

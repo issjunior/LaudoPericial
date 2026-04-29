@@ -228,11 +228,14 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
             }
 
     usuario = obter_usuario_logado()
-    pasta_exp = usuario.get('pasta_exportacao', '') if usuario else ''
+    # Pasta padrão se não configurada
+    pasta_padrao = os.path.join(os.path.expanduser("~"), "Documents", "Laudos")
+    pasta_exp = usuario.get('pasta_exportacao') or pasta_padrao
 
     col_salvar, col_vis = st.columns(2)
     with col_salvar:
         if st.button("Salvar Laudo", type="primary", use_container_width=True):
+            # ... (validação e salvamento)
             erros = []
             for secao_id, dados in secoes_salvas.items():
                 if dados['obrigatoria'] and not dados['conteudo'].strip():
@@ -250,19 +253,26 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 except ValueError:
                     st.success("Laudo salvo com sucesso!")
 
-                if pasta_exp:
-                    try:
-                        from services.gerador_pdf_playwright import salvar_pdf_laudo
-                        import webbrowser
-                        caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
-                        webbrowser.open(f'file:///{caminho_pdf}')
-                        st.success(f"PDF gerado e aberto: {caminho_pdf}")
-                    except Exception as e:
-                        st.error(f"Erro ao gerar PDF: {e}")
+                # Garante que a pasta existe antes de tentar salvar
+                if not os.path.exists(pasta_exp):
+                    os.makedirs(pasta_exp, exist_ok=True)
+
+                try:
+                    from services.gerador_pdf_playwright import salvar_pdf_laudo
+                    import webbrowser
+                    caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
+                    webbrowser.open(f'file:///{caminho_pdf}')
+                    st.success(f"PDF gerado e aberto: {caminho_pdf}")
+                except Exception as e:
+                    st.error(f"Erro ao gerar PDF: {e}")
                 st.rerun()
 
     with col_vis:
-        if pasta_exp and st.button("Visualizar PDF", type="primary", use_container_width=True):
+        if st.button("Visualizar PDF", type="primary", use_container_width=True):
+            # Garante que a pasta existe antes de tentar salvar
+            if not os.path.exists(pasta_exp):
+                os.makedirs(pasta_exp, exist_ok=True)
+                
             try:
                 from services.gerador_pdf_playwright import salvar_pdf_laudo
                 import webbrowser
@@ -271,8 +281,6 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 st.success(f"PDF aberto: {caminho_pdf}")
             except Exception as e:
                 st.error(f"Erro ao gerar PDF: {e}")
-        elif not pasta_exp:
-            st.info("Configure a pasta de exportação nas configurações do perfil.")
 
     if laudo['status'] == 'Em Andamento':
         st.markdown("---")

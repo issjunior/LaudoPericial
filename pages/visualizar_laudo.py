@@ -73,18 +73,20 @@ def renderizar_laudo(laudo_id: int):
         st.markdown(f"**Status da REP:** {rep['status']}")
     with col_pdf:
         usuario = obter_usuario_logado()
-        pasta_exp = usuario.get('pasta_exportacao', '') if usuario else ''
+        pasta_padrao = os.path.join(os.path.expanduser("~"), "Documents", "Laudos")
+        pasta_exp = usuario.get('pasta_exportacao') or pasta_padrao
+        
         try:
-            if pasta_exp and st.button("Visualizar PDF", use_container_width=True):
+            if st.button("Visualizar PDF", use_container_width=True):
+                # Garante que a pasta existe antes de tentar salvar
+                if not os.path.exists(pasta_exp):
+                    os.makedirs(pasta_exp, exist_ok=True)
+                    
                 from services.gerador_pdf_playwright import salvar_pdf_laudo
                 import webbrowser
                 caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
                 webbrowser.open(f'file:///{caminho_pdf}')
                 st.success(f"PDF aberto: {caminho_pdf}")
-            elif not pasta_exp:
-                st.info("Configure a pasta de exportação nas configurações do perfil.")
-            else:
-                pass
         except Exception as e:
             st.error(f"Erro ao gerar PDF: {e}")
 
