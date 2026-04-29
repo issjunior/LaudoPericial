@@ -185,7 +185,7 @@ def main():
                 )
             else:
                 opcoes_templates_laudo = {
-                    f"{t['tipo_exame_codigo']} — {t['nome']}": t['id']
+                    f"{t['nome']}": t['id']
                     for t in templates_filtrados
                 }
                 nomes_templates_laudo = ["— Não vincular agora —"] + list(opcoes_templates_laudo.keys())
@@ -196,7 +196,7 @@ def main():
                     help="Somente templates compatíveis com o Tipo de Exame selecionado."
                 )
                 template_laudo_obj = next(
-                    (t for t in templates_filtrados if f"{t['tipo_exame_codigo']} — {t['nome']}" == template_laudo_selecionado),
+                    (t for t in templates_filtrados if t['nome'] == template_laudo_selecionado),
                     None
                 )
 

@@ -269,6 +269,11 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
 
     with col_vis:
         if st.button("Visualizar PDF", type="primary", use_container_width=True):
+            # NOVO: Garante que as seções atuais sejam salvas antes de visualizar
+            # para que os placeholders reflitam as edições mais recentes no PDF
+            for secao_id, dados in secoes_salvas.items():
+                atualizar_secao_laudo(secao_id, dados['conteudo'])
+            
             # Garante que a pasta existe antes de tentar salvar
             if not os.path.exists(pasta_exp):
                 os.makedirs(pasta_exp, exist_ok=True)
@@ -278,6 +283,7 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 import webbrowser
                 caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
                 webbrowser.open(f'file:///{caminho_pdf}')
+                st.toast("PDF atualizado com o conteúdo atual.", icon="👁️")
                 st.success(f"PDF aberto: {caminho_pdf}")
             except Exception as e:
                 st.error(f"Erro ao gerar PDF: {e}")
