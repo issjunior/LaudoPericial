@@ -27,16 +27,14 @@ st.set_page_config(
 # ──────────────────────────────────────────────────────
 
 def buscar_reps(
-    filtro_numero_rep: str = None,
-    filtro_orgao_solicitante: str = None,
-    filtro_tipo_exame_id: int = None,
+    filtro_busca: str = None,
     filtro_status: str = None,
     filtro_data_inicio: date = None,
-    filtro_data_fim: date = None
+    filtro_data_fim: date = None,
+    usuario_id: int = None
 ):
     """
     Busca Requisições de Exame Pericial (REPs) no banco de dados com filtros.
-    Converte os resultados de sqlite3.Row para dicionários.
     """
     query = """
         SELECT
@@ -46,34 +44,27 @@ def buscar_reps(
             r.tipo_solicitacao,
             r.numero_documento,
             s.orgao AS orgao_solicitante,
+            r.nome_envolvido,
+            r.local_fato_descricao,
             COALESCE(te.codigo || ' - ' || te.nome, 'Não definido') AS tipo_exame_nome,
-            r.status,
-            SUBSTR(u.nome, 1, INSTR(u.nome || ' ', ' ') - 1) AS perito_primeiro_nome
+            r.status
         FROM
             rep r
         LEFT JOIN
             solicitantes s ON r.solicitante_id = s.id
         LEFT JOIN
             tipos_exame te ON r.tipo_exame_id = te.id
-        LEFT JOIN
-            usuarios u ON r.usuario_id = u.id
-        WHERE 1=1
+        WHERE
+            r.usuario_id = ?
     """
-    params = []
+    params = [usuario_id]
 
-    if filtro_numero_rep:
-        query += " AND r.numero_rep LIKE ?"
-        params.append(f"%{filtro_numero_rep}%")
+    if filtro_busca:
+        query += " AND (r.numero_rep LIKE ? OR r.nome_envolvido LIKE ? OR r.local_fato_descricao LIKE ?)"
+        term = f"%{filtro_busca}%"
+        params.extend([term, term, term])
 
-    if filtro_orgao_solicitante:
-        query += " AND s.orgao = ?"
-        params.append(filtro_orgao_solicitante)
-
-    if filtro_tipo_exame_id:
-        query += " AND r.tipo_exame_id = ?"
-        params.append(filtro_tipo_exame_id)
-
-    if filtro_status:
+    if filtro_status and filtro_status != "Todos":
         query += " AND r.status = ?"
         params.append(filtro_status)
 
@@ -88,134 +79,57 @@ def buscar_reps(
     query += " ORDER BY r.data_solicitacao DESC, r.numero_rep DESC"
 
     reps_raw = executar_query(query, tuple(params))
-    reps = [dict(row) for row in reps_raw]
-    return reps
+    return [dict(row) for row in reps_raw]
 
-
-def alterar_status_rep(rep_id: int, novo_status: str) -> None:
-    """
-    Altera o status de uma REP.
-
-    Args:
-        rep_id: ID da REP.
-        novo_status: Novo status (Pendente, Em Andamento, Concluído).
-
-    Raises:
-        ValueError: Se o status for inválido.
-    """
-    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído"]
-    if novo_status not in STATUS_VALIDOS:
-        raise ValueError(f"Status inválido: {novo_status}")
-
-    executar_comando(
-        "UPDATE rep SET status = ?, atualizado_em = datetime('now','localtime') WHERE id = ?",
-        (novo_status, rep_id)
-    )
-
-def obter_tipos_exame():
-    """
-    Retorna uma lista de dicionários com id, nome e codigo dos tipos de exame.
-    """
-    return executar_query("SELECT id, codigo, nome FROM tipos_exame ORDER BY nome")
-
-def obter_orgaos_solicitantes():
-    """Retorna uma lista de nomes de órgãos solicitantes únicos do banco de dados."""
-    orgaos_raw = executar_query("SELECT DISTINCT orgao FROM solicitantes WHERE orgao IS NOT NULL AND orgao != '' ORDER BY orgao")
-    return [row["orgao"] for row in orgaos_raw]
-
-# ──────────────────────────────────────────────────────
-# RENDERIZAÇÃO DA PÁGINA
-# ──────────────────────────────────────────────────────
 
 def main():
     renderizar_menu()
-
+    
     usuario = obter_usuario_logado()
     if not usuario:
+        st.error("Usuário não logado.")
         st.stop()
 
-    st.title("📄 Listar Requisições de Exame Pericial (REPs)")
-    st.markdown("---")
+    st.header("📋 Requisições de Exame (REP)")
 
-    # ----------------------------------------------------
-    # FILTROS
-    # ----------------------------------------------------
-    st.subheader("Filtros de Busca")
-    with st.expander("Expandir/Recolher Filtros", expanded=False):
-        # Primeira linha de filtros
-        col1_a, col1_b, col1_c = st.columns(3)
-        with col1_a:
-            filtro_numero_rep = st.text_input("Número da REP", placeholder="Ex: REP-2024-001")
-        with col1_b:
-            orgaos_solicitantes = obter_orgaos_solicitantes()
-            orgaos_solicitantes_opcoes = ["Todos"] + orgaos_solicitantes
-            filtro_orgao_solicitante = st.selectbox("Órgão Solicitante", orgaos_solicitantes_opcoes)
-            if filtro_orgao_solicitante == "Todos":
-                filtro_orgao_solicitante = None
-        with col1_c:
-            tipos_exame = obter_tipos_exame()
-            tipo_exame_opcoes_display = ["Todos"] + [f"{te['codigo']} - {te['nome']}" for te in tipos_exame]
-            tipo_exame_selecionado_display = st.selectbox("Tipo de Exame", tipo_exame_opcoes_display)
+    # 1. Filtros
+    with st.expander("🔍 Filtros", expanded=True):
+        col1, col2 = st.columns([2, 1])
+        busca = col1.text_input("Busca rápida (Número, Envolvido, Local)")
+        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluido"]
+        filtro_status = col2.selectbox("Status", status_opcoes)
 
-            filtro_tipo_exame_id = None
-            if tipo_exame_selecionado_display != "Todos":
-                for te in tipos_exame:
-                    if f"{te['codigo']} - {te['nome']}" == tipo_exame_selecionado_display:
-                        filtro_tipo_exame_id = te["id"]
-                        break
+        col_d1, col_d2, col_d3 = st.columns(3)
+        data_inicio = col_d1.date_input("Data Início", value=None, format="DD/MM/YYYY")
+        data_fim = col_d2.date_input("Data Fim", value=None, format="DD/MM/YYYY")
+        
+        if st.button("Limpar Filtros"):
+            st.rerun()
 
-        # Segunda linha de filtros (Status e Data da Solicitação)
-        col2_a, col2_b = st.columns([1, 2]) # Proporção para a data ocupar mais espaço
-        with col2_a:
-            status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído"]
-            filtro_status = st.selectbox("Status", status_opcoes)
-            if filtro_status == "Todos":
-                filtro_status = None
-        with col2_b:
-            with st.container(border=True):
-                st.markdown("Data de recebimento de REP")
-                col_data_inicio, col_data_fim = st.columns(2)
-                with col_data_inicio:
-                    filtro_data_inicio = st.date_input("De", value=None, format="DD/MM/YYYY", key="data_inicio_filtro", label_visibility="collapsed")
-                with col_data_fim:
-                    filtro_data_fim = st.date_input("Até", value=None, format="DD/MM/YYYY", key="data_fim_filtro", label_visibility="collapsed")
-
-        st.markdown("---")
-        if st.button("Limpar Filtros", key="limpar_filtros_btn", on_click=lambda: st.rerun()):
-            pass
-
-    st.markdown("---")
-
+    # 2. Busca de dados
     reps = buscar_reps(
-        filtro_numero_rep=filtro_numero_rep,
-        filtro_orgao_solicitante=filtro_orgao_solicitante,
-        filtro_tipo_exame_id=filtro_tipo_exame_id,
+        filtro_busca=busca,
         filtro_status=filtro_status,
-        filtro_data_inicio=filtro_data_inicio,
-        filtro_data_fim=filtro_data_fim
+        filtro_data_inicio=data_inicio,
+        filtro_data_fim=data_fim,
+        usuario_id=usuario['id']
     )
 
+    # 3. Exibição
     if reps:
-        col_leg1, col_leg2, col_leg3, col_leg4 = st.columns(4)
-        with col_leg1:
-            with st.container(border=True):
-                st.markdown("**🟡 Pendente**")
-                st.caption("REP criada, mas não vinculada.")
-        with col_leg2:
-            with st.container(border=True):
-                st.markdown("**🔵 Em Andamento**")
-                st.caption("Laudo está sendo elaborado.")
-        with col_leg3:
-            with st.container(border=True):
-                st.markdown("**🟢 Concluído**")
-                st.caption("Laudo finalizedo, pronto para entrega.")
-        with col_leg4:
-            with st.container(border=True):
-                st.markdown("**✅ Entregue**")
-                st.caption("Laudo enviado (GDL).")
+        # Legendas
+        col_leg1, col_leg2, col_leg3 = st.columns(3)
+        col_leg1.info("🟡 **Pendente**: REP aguardando início.")
+        col_leg2.warning("🔵 **Em Andamento**: Laudo em elaboração.")
+        col_leg3.success("🟢 **Concluído**: Laudo finalizado.")
 
+        df = DataFrame(reps)
+        
+        # Ajusta a exibição do status para o usuário (com acento se preferir, mas o valor interno é sem)
+        # Para simplificar mantemos como vem do banco
+        
         st.dataframe(
-            reps,
+            df,
             use_container_width=True,
             hide_index=True,
             column_order=[
@@ -224,24 +138,27 @@ def main():
                 "tipo_solicitacao",
                 "numero_documento",
                 "orgao_solicitante",
+                "nome_envolvido",
                 "tipo_exame_nome",
                 "status"
             ],
             column_config={
-                "numero_rep": st.column_config.TextColumn("Número da REP"),
-                "data_solicitacao": st.column_config.DateColumn("Data de recebimento", format="DD/MM/YYYY"),
-                "tipo_solicitacao": st.column_config.TextColumn("Tipo de Documento"),
-                "numero_documento": st.column_config.TextColumn("Número do Documento"),
-                "orgao_solicitante": st.column_config.TextColumn("Órgão Solicitante"),
+                "numero_rep": st.column_config.TextColumn("REP"),
+                "data_solicitacao": st.column_config.DateColumn("Data", format="DD/MM/YYYY"),
+                "tipo_solicitacao": st.column_config.TextColumn("Doc."),
+                "numero_documento": st.column_config.TextColumn("Nº Doc."),
+                "orgao_solicitante": st.column_config.TextColumn("Solicitante"),
+                "nome_envolvido": st.column_config.TextColumn("Envolvido"),
                 "tipo_exame_nome": st.column_config.TextColumn("Tipo de Exame"),
                 "status": st.column_config.TextColumn("Status"),
             }
         )
+        
+        st.info(f"Total de {len(reps)} requisições encontradas.")
     else:
-        st.info("Nenhuma Requisição de Exame Pericial (REP) encontrada com os filtros aplicados.")
-        st.markdown("---")
-        st.button("➕ Criar Nova REP", on_click=lambda: st.switch_page("pages/nova_rep.py"))
-
+        st.info("Nenhuma REP encontrada com os filtros aplicados.")
+        if st.button("➕ Criar Nova REP"):
+            st.switch_page("pages/nova_rep.py")
 
 if __name__ == "__main__":
     main()

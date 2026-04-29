@@ -70,7 +70,7 @@ PLACEHOLDERS_SISTEMA = [
         "descricao": "Dados do documento que originou a requisição",
         "cor": "#e67700",
         "itens": [
-            {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Ofício...)", "exemplo": "Ofício"},
+            {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Oficio...)", "exemplo": "Oficio"},
             {"placeholder": "{{numero_documento}}", "descricao": "Número do documento",            "exemplo": "12345/2024"},
             {"placeholder": "{{data_documento}}",   "descricao": "Data do documento (DD/MM/AAAA)", "exemplo": "20/12/2024"},
         ],

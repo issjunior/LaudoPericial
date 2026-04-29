@@ -319,7 +319,7 @@ def obter_metricas_reps(usuario_id: int):
     # REPs Concluídas (laudos finalizados)
     query_concluidos = """
         SELECT COUNT(id) FROM rep
-        WHERE usuario_id = ? AND status = 'Concluído'
+        WHERE usuario_id = ? AND status = 'Concluido'
     """
     concluidos = executar_query(query_concluidos, (usuario_id,))[0][0]
 

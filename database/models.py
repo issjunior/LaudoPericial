@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS rep (
     horario_chegada     TEXT,
     horario_saida       TEXT,
     tipo_solicitacao    TEXT    NOT NULL
-                            CHECK(tipo_solicitacao IN ('BO','Ofício', 'BO PM', 'BO PC', 'CECOMP', 'Outro')), -- ATUALIZADO: Adicionado 'BO PM', 'BO PC', 'CECOMP', 'Outro'
+                            CHECK(tipo_solicitacao IN ('BO','Oficio', 'BO PM', 'BO PC', 'CECOMP', 'Outro')), -- ATUALIZADO: Adicionado 'BO PM', 'BO PC', 'CECOMP', 'Outro'
     numero_documento    TEXT    NOT NULL,
     data_documento      TEXT,
     solicitante_id      INTEGER REFERENCES solicitantes(id),
@@ -146,7 +146,7 @@ CREATE TABLE IF NOT EXISTS rep (
                             CHECK(status IN (
                                 'Pendente',
                                 'Em Andamento',
-                                'Concluído'
+                                'Concluido'
                             )),
     observacoes         TEXT,
     usuario_id          INTEGER NOT NULL REFERENCES usuarios(id),

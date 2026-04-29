@@ -281,7 +281,7 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
             if st.button("Marcar como Finalizado", type="primary", use_container_width=True):
                 try:
                     finalizar_laudo(laudo_id)
-                    st.success("Laudo marcado como Finalizado e REP vinculada marcada como Concluído!")
+                    st.success("Laudo marcado como Finalizado e REP vinculada marcada como Concluido!")
                     st.rerun()
                 except ValueError as e:
                     st.error(f"Erro: {e}")

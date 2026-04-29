@@ -225,7 +225,7 @@ def excluir_rep(rep_id: int, forcar_exclusao: bool = False) -> str:
 
 
 def alterar_status_rep_simples(rep_id: int, novo_status: str) -> None:
-    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluído"]
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluido"]
     if novo_status not in STATUS_VALIDOS:
         raise ValueError(f"Status inválido: {novo_status}")
 

@@ -277,7 +277,7 @@ def finalizar_laudo(laudo_id: int) -> None:
     from services.rep_service import alterar_status_rep_simples
     rep = buscar_rep(laudo['rep_id'])
     if rep:
-        alterar_status_rep_simples(rep['id'], "Concluído")
+        alterar_status_rep_simples(rep['id'], "Concluido")
 
 
 def salvar_versao_snapshot(laudo_id: int) -> int:

@@ -92,8 +92,8 @@ def main():
     opcoes_solicitantes = {s['orgao']: s['id'] for s in solicitantes}
     nomes_solicitantes = ["Selecione um Solicitante"] + sorted(list(opcoes_solicitantes.keys()))
 
-    TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"]
-    STATUS_REP = ["Pendente", "Em Andamento", "Concluído"]
+    TIPO_SOLICITACAO = ["BO", "BO PM", "BO PC", "Oficio", "CECOMP", "Outro"]
+    STATUS_REP = ["Pendente", "Em Andamento", "Concluido"]
 
     tipo_exame_atual = next((k for k, v in opcoes_tipos_exame.items() if v == rep.get('tipo_exame_id')), "— Não definido —")
     solicitante_atual = next((k for k, v in opcoes_solicitantes.items() if v == rep.get('solicitante_id')), "Selecione um Solicitante")

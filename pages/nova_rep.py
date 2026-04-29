@@ -241,9 +241,9 @@ def main():
     with col6:
         tipo_documento = st.selectbox(
             "Tipo de Documento *",
-            options=["Selecione", "BO", "BO PM", "BO PC", "Ofício", "CECOMP", "Outro"],
+            options=["Selecione", "BO", "BO PM", "BO PC", "Oficio", "CECOMP", "Outro"],
             index=0,
-            help="Tipo de documento que formaliza a solicitação (Boletim de Ocorrência, Ofício, etc.)."
+            help="Tipo de documento que formaliza a solicitação (Boletim de Ocorrência, Oficio, etc.)."
         )
     with col7:
         numero_documento = st.text_input(
@@ -365,7 +365,7 @@ def main():
             erros_validacao.append("Você precisa selecionar um **Órgão Solicitante**.")
 
         if tipo_documento == "Selecione":
-            erros_validacao.append("O **Tipo de Documento** (ex: BO, Ofício) deve ser informado.")
+            erros_validacao.append("O **Tipo de Documento** (ex: BO, Oficio) deve ser informado.")
 
         if not numero_documento:
             erros_validacao.append("O **Número do Documento** é obrigatório para o registro.")
