@@ -9,6 +9,8 @@ Página para editar Laudos existentes.
 import sys
 import os
 import streamlit as st
+from datetime import datetime
+import logging
 
 from core.path_utils import get_root
 ROOT = str(get_root())
@@ -33,13 +35,29 @@ from services.laudo_service import buscar_laudo_por_rep
 from services.placeholders_custom_service import listar_placeholders_custom
 from services.ai_service import gerar_texto_com_ia
 
+logger = logging.getLogger(__name__)
+
+# Jodit config cache - criado uma única vez
+JODIT_CONFIG = {
+    'minHeight': 350,
+    'height': 400,
+    'theme': 'default',
+    'allowResizeY': True,
+    'allowResizeX': True,
+    'colorPickerDefaultTab': 'text',
+    'uploader': {
+        'insertImageAsBase64URI': True
+    }
+}
+
 
 def formatar_data_br(data_iso: str) -> str:
-    from datetime import datetime
+    """Formata data ISO para padrão brasileiro."""
     try:
         dt = datetime.fromisoformat(data_iso.replace(' ', 'T'))
         return dt.strftime("%d/%m/%Y - %H:%M:%S")
-    except:
+    except ValueError as e:
+        logger.warning(f"Erro ao formatar data {data_iso}: {e}")
         return data_iso
 
 
@@ -65,15 +83,30 @@ if not usuario_logado:
     st.stop()
 
 
-def renderizar_secoes(laudo_id: int):
+@st.cache_data(ttl=300)
+def _cache_placeholders():
+    """Cache placeholders personalizados por 5 minutos."""
+    return listar_placeholders_custom()
+
+
+@st.cache_data(ttl=300)
+def _cache_rep(rep_id):
+    """Cache REP por 5 minutos."""
+    return buscar_rep(rep_id)
+
+
+def renderizar_secoes(laudo_id: int, laudo: dict):
+    """
+    Renderiza seções de edição do laudo.
+    Recebe laudo como parâmetro para evitar nova query.
+    """
     secoes = listar_secoes_laudo(laudo_id)
-    laudo = buscar_laudo(laudo_id)
 
     if not secoes:
         st.info("Este laudo não possui seções.")
         return
 
-    rep = buscar_rep(laudo['rep_id'])
+    rep = _cache_rep(laudo['rep_id'])
 
     st.markdown("---")
     st.markdown(f"### Editando: REP {rep['numero_rep']} - {rep.get('tipo_exame_nome') or 'Tipo não definido'}")
@@ -125,7 +158,7 @@ def renderizar_secoes(laudo_id: int):
                 st.code("{{template_descricao}}", language="plaintext")
 
         with tab4:
-            placeholders_custom = listar_placeholders_custom()
+            placeholders_custom = _cache_placeholders()
             if placeholders_custom:
                 cols = st.columns(3)
                 for i, ph in enumerate(placeholders_custom):
@@ -143,21 +176,10 @@ def renderizar_secoes(laudo_id: int):
                 st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
 
             if st_jodit:
-                config = {
-                    'minHeight': 350,
-                    'height': 400,
-                    'theme': 'default',
-                    'allowResizeY': True,
-                    'allowResizeX': True,
-                    'colorPickerDefaultTab': 'text',
-                    'uploader': {
-                        'insertImageAsBase64URI': True
-                    }
-                }
                 conteudo = st_jodit(
                     value=secao['conteudo'] or "",
                     key=f"secao_{secao['id']}",
-                    config=config
+                    config=JODIT_CONFIG
                 )
             else:
                 st.warning("Editor Jodit não disponível. Usando campo de texto padrão.")
@@ -255,7 +277,7 @@ def renderizar_secoes(laudo_id: int):
 
     versoes = listar_versoes(laudo_id)
     if versoes:
-        with st.expander("Versões Anteriores"):
+        with st.expander("Versões Anteriores", expanded=False):
             for v in versoes:
                 col_v1, col_v2, col_v3 = st.columns([3, 1, 1])
                 with col_v1:
@@ -284,8 +306,9 @@ def main():
         st.page_link("pages/novo_laudo.py", label="Clique aqui para vincular um laudo a uma REP", use_container_width=True)
         st.stop()
 
+    # Cria o dicionário de opções apenas uma vez
     opcoes_reps = {
-        f"{l['numero_rep']} — {l.get('tipo_exame_nome') or 'Tipo não definido'} — ({l['status']})": l['rep_id']
+        f"{l['numero_rep']} — {l.get('tipo_exame_nome') or 'Tipo não definido'} — ({l['status']})": l['id']
         for l in laudos_usuario
     }
     nomes_reps = ["Selecione uma REP"] + sorted(list(opcoes_reps.keys()))
@@ -297,12 +320,12 @@ def main():
     )
 
     if rep_selecionada != "Selecione uma REP":
-        rep_id = opcoes_reps[rep_selecionada]
-        laudo = buscar_laudo_por_rep(rep_id)
+        laudo_id = opcoes_reps[rep_selecionada]
+        laudo = buscar_laudo(laudo_id)
         if laudo:
-            renderizar_secoes(laudo['id'])
+            renderizar_secoes(laudo_id, laudo)
         else:
-            st.warning("Esta REP não possui laudo vinculado.")
+            st.warning("Este laudo não possui conteúdo vinculado.")
 
 
 main()
