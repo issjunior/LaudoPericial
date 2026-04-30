@@ -482,8 +482,12 @@ def formulario_criar_secao(template_id: int):
             config = {
                 'minHeight': 300,
                 'height': 500,
-                'theme': 'default',
+                'theme': 'default', # Volta para o tema claro
                 'allowResizeY': True,
+                'style': {
+                    'color': '#000000',      # Texto preto
+                    'background': '#ffffff'  # Fundo branco
+                }
             }
             conteudo_base = st_jodit(
                 value="",
@@ -570,8 +574,12 @@ def formulario_editar_secao(secao_id: int):
             config = {
                 'minHeight': 300,
                 'height': 500,
-                'theme': 'default',
+                'theme': 'default', # Volta para o tema claro
                 'allowResizeY': True,
+                'style': {
+                    'color': '#000000',      # Texto preto
+                    'background': '#ffffff'  # Fundo branco
+                }
             }
             conteudo_base = st_jodit(
                 value=secao["conteudo_base"] or "",

@@ -41,12 +41,16 @@ logger = logging.getLogger(__name__)
 JODIT_CONFIG = {
     'minHeight': 350,
     'height': 400,
-    'theme': 'default',
+    'theme': 'default', # Volta para o tema claro
     'allowResizeY': True,
     'allowResizeX': True,
     'colorPickerDefaultTab': 'text',
     'uploader': {
         'insertImageAsBase64URI': True
+    },
+    'style': {
+        'color': '#000000',      # Força o texto a ser preto
+        'background': '#ffffff'  # Força o fundo a ser branco
     }
 }
 

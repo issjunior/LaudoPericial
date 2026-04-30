@@ -90,13 +90,25 @@ def renderizar_laudo(laudo_id: int):
         except Exception as e:
             st.error(f"Erro ao gerar PDF: {e}")
 
+    # 1. Colher placeholders e contexto para processar antes de exibir
+    from services.gerador_pdf_playwright import colher_dados_contexto
+    from services.html_builder import processar_placeholders
+    
+    try:
+        placeholders = colher_dados_contexto(laudo_id)
+    except:
+        placeholders = {}
+
     for idx, secao in enumerate(secoes, 1):
         with st.expander(f"{idx} - {secao['titulo'].upper()}", expanded=True):
             if secao['obrigatoria']:
                 st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
             
-            conteudo = secao['conteudo'] or "<i>Seção vazia</i>"
-            st.markdown(conteudo, unsafe_allow_html=True)
+            conteudo_original = secao['conteudo'] or "<i>Seção vazia</i>"
+            # Processar placeholders para visualização
+            conteudo_processado = processar_placeholders(conteudo_original, placeholders)
+            
+            st.markdown(conteudo_processado, unsafe_allow_html=True)
 
 
 def main():
