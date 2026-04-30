@@ -101,6 +101,10 @@ REP: {{numero_rep}} | Data: {{data_solicitacao}}"""
             'allowResizeY': True,
             'allowResizeX': True,
             'enableDragAndDropFileToEditor': False,
+            'style': {
+                'color': '#000000',      # Força o texto a ser preto
+                'background': '#ffffff'  # Força o fundo a ser branco
+            }
         }
         st_jodit(
             value=cabecalho_atual.get('conteudo', valor_padrao) if cabecalho_atual else valor_padrao,

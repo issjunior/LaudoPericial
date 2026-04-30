@@ -27,7 +27,7 @@ def registrar(
         registro_id:      ID do registro afetado
         operacao:         tipo da operação realizada
                           ('CRIAR','EDITAR','EXCLUIR',
-                           'FINALIZAR','ARQUIVAR','CANCELAR')
+                           'FINALIZAR','LOGIN','LOGOUT')
         descricao:        texto descrevendo o que foi feito
         dados_anteriores: dados antes da alteração (para EDITAR)
                           será salvo como JSON
@@ -170,9 +170,7 @@ def formatar_operacao(operacao: str) -> str:
         "EDITAR":    "🔵 Editado",
         "EXCLUIR":   "🔴 Excluído",
         "FINALIZAR": "✅ Finalizado",
-        "ARQUIVAR":  "📦 Arquivado",
-        "CANCELAR":  "⛔ Cancelado",
         "LOGIN":     "🔑 Login",
         "LOGOUT":    "🚪 Logout",
     }
-    return mapa.get(operacao, operacao)# Auditoria — será preenchido no próximo passo
+    return mapa.get(operacao, operacao)

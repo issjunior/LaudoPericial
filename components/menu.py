@@ -146,6 +146,7 @@ def renderizar_menu():
             st.page_link("pages/tipos_exame.py", label="Tipos de Exame", icon="🏷️")
             st.page_link("pages/solicitantes.py", label="Solicitantes", icon="🏛️")
             st.page_link("pages/gerenciar_templates.py", label="Templates de Laudo", icon="📋")
+            st.page_link("pages/cabecalho.py", label="Cabeçalho do Laudo", icon="📄")
             st.page_link("pages/placeholders.py", label="Placeholders", icon="🧩")
 
         # 4. Sistema

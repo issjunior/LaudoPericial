@@ -277,8 +277,6 @@ CREATE TABLE IF NOT EXISTS historico (
                                 'EDITAR',
                                 'EXCLUIR',
                                 'FINALIZAR',
-                                'ARQUIVAR',
-                                'CANCELAR',
                                 'LOGIN',
                                 'LOGOUT'
                             )),
