@@ -139,6 +139,15 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 st.code("{{cidade}}", language="plaintext")
                 st.caption("Observações")
                 st.code("{{observacoes}}", language="plaintext")
+            
+            st.divider()
+            cl1, cl2 = st.columns(2)
+            with cl1:
+                st.caption("Lacre de Entrada")
+                st.code("{{lacre_entrada}}", language="plaintext")
+            with cl2:
+                st.caption("Lacre de Saída")
+                st.code("{{lacre_saida}}", language="plaintext")
                 
         with tab2:
             c1, c2, c3 = st.columns(3)

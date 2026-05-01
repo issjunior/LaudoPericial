@@ -274,7 +274,19 @@ def main():
     aba_geral, aba_local = st.tabs(["Dados Gerais", "Dados do Local"])
 
     with aba_geral:
-        st.caption("Dados gerais complementares preenchidos acima.")
+        col_lacre1, col_lacre2 = st.columns(2)
+        with col_lacre1:
+            lacre_entrada = st.text_input(
+                "Lacre de Entrada (Opcional)",
+                placeholder="Nº do lacre de preservação/entrada",
+                help="Número do lacre encontrado no local ou no item ao iniciar o exame."
+            )
+        with col_lacre2:
+            lacre_saida = st.text_input(
+                "Lacre de Saída (Opcional)",
+                placeholder="Nº do lacre de fechamento/saída",
+                help="Número do lacre utilizado para fechar/preservar o local ou item após o exame."
+            )
 
     with aba_local:
         exame_eh_de_local = st.session_state["exame_de_local_selecionado"]
@@ -408,6 +420,8 @@ def main():
                 tipo_exame_id       = tipo_exame_id,
                 latitude            = latitude,
                 longitude           = longitude,
+                lacre_entrada       = lacre_entrada,
+                lacre_saida         = lacre_saida,
                 observacoes         = observacoes,
                 usuario_id          = usuario_logado['id']
             )

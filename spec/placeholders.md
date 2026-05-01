@@ -26,6 +26,8 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 | `horario_saida` | `{{horario_saida}}` | Horário de saída do local (HH:MM) | nova_rep.py |
 | `latitude` | `{{latitude}}` | Latitude do local | nova_rep.py |
 | `longitude` | `{{longitude}}` | Longitude do local | nova_rep.py |
+| `lacre_entrada` | `{{lacre_entrada}}` | Número do lacre de entrada | nova_rep.py |
+| `lacre_saida` | `{{lacre_saida}}` | Número do lacre de saída | nova_rep.py |
 
 ---
 

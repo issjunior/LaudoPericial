@@ -272,6 +272,21 @@ def main():
                     key="longitude_key"
                 )
 
+        with st.expander("📝 Lacres de Segurança", expanded=True):
+            col_lacre1, col_lacre2 = st.columns(2)
+            with col_lacre1:
+                lacre_entrada = st.text_input(
+                    "Lacre de Entrada (Opcional)",
+                    value=rep.get('lacre_entrada') or '',
+                    key="lacre_entrada_key"
+                )
+            with col_lacre2:
+                lacre_saida = st.text_input(
+                    "Lacre de Saída (Opcional)",
+                    value=rep.get('lacre_saida') or '',
+                    key="lacre_saida_key"
+                )
+
     # --- NOVA LÓGICA DE AVISO DE EXCLUSÃO DE LAUDO ---
     laudo_vinculado = verificar_laudo_vinculado(rep_id)
     confirmar_exclusao_laudo = False
@@ -363,6 +378,8 @@ def main():
                 local_fato_descricao= local_fato_descricao,
                 latitude            = latitude,
                 longitude           = longitude,
+                lacre_entrada       = lacre_entrada,
+                lacre_saida         = lacre_saida,
                 status              = rep['status'],
                 observacoes         = observacoes,
             )

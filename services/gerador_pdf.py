@@ -135,6 +135,8 @@ def substituir_placeholders(texto: str, rep: dict, perito: dict) -> str:
         '{{horario_saida}}': rep.get('horario_saida', ''),
         '{{latitude}}': rep.get('latitude', ''),
         '{{longitude}}': rep.get('longitude', ''),
+        '{{lacre_entrada}}': rep.get('lacre_entrada', ''),
+        '{{lacre_saida}}': rep.get('lacre_saida', ''),
         '{{observacoes}}': rep.get('observacoes', ''),
         '{{perito_nome}}': perito.get('nome', ''),
         '{{perito_matricula}}': perito.get('matricula', ''),

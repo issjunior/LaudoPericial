@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS rep (
     tipo_exame_id       INTEGER REFERENCES tipos_exame(id),
     nome_envolvido      TEXT,           -- NOVO CAMPO ADICIONADO
     local_fato_descricao TEXT,     -- NOVO CAMPO ADICIONADO
+    lacre_entrada       TEXT,           -- NOVO: Lacre de Entrada
+    lacre_saida         TEXT,           -- NOVO: Lacre de Saída
     latitude            TEXT,
     longitude           TEXT,
     status              TEXT    NOT NULL DEFAULT 'Pendente'

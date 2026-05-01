@@ -1,4 +1,4 @@
-﻿"""
+"""
 pages/placeholders.py
 ──────────────────────────────────────────────────────
 Página de referência e gerenciamento de Placeholders.
@@ -44,6 +44,8 @@ PLACEHOLDERS_SISTEMA = [
             {"placeholder": "{{horario_saida}}",    "descricao": "Horário de saída do local",       "exemplo": "17:45"},
             {"placeholder": "{{latitude}}",         "descricao": "Latitude do local",               "exemplo": "-15.7801"},
             {"placeholder": "{{longitude}}",        "descricao": "Longitude do local",              "exemplo": "-47.9292"},
+            {"placeholder": "{{lacre_entrada}}",    "descricao": "Número do lacre de entrada",      "exemplo": "L-123456"},
+            {"placeholder": "{{lacre_saida}}",      "descricao": "Número do lacre de saída",        "exemplo": "L-654321"},
         ],
     },
     {

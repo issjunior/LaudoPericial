@@ -134,6 +134,8 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'horario_saida': rep.get('horario_saida', ''),
             'latitude': rep.get('latitude', ''),
             'longitude': rep.get('longitude', ''),
+            'lacre_entrada': rep.get('lacre_entrada', ''),
+            'lacre_saida': rep.get('lacre_saida', ''),
 
             # Dados do template
             'template_nome': template_laudo.get('nome', ''),

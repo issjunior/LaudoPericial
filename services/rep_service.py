@@ -42,7 +42,8 @@ def listar_reps(
             r.nome_autoridade, r.nome_envolvido, r.local_fato_descricao,
             r.tipo_exame_id, te.nome AS tipo_exame_nome,
             te.codigo AS tipo_exame_codigo, te.exame_de_local,
-            r.latitude, r.longitude, r.status, r.observacoes,
+            r.latitude, r.longitude, r.lacre_entrada, r.lacre_saida,
+            r.status, r.observacoes,
             r.usuario_id, u.nome AS usuario_nome, r.criado_em, r.atualizado_em
         FROM rep r
         LEFT JOIN solicitantes s ON r.solicitante_id = s.id
@@ -94,8 +95,9 @@ def buscar_rep(rep_id: int) -> dict | None:
             s.contato AS solicitante_email, r.nome_autoridade,
             r.nome_envolvido, r.local_fato_descricao, r.tipo_exame_id,
             te.nome AS tipo_exame_nome, te.codigo AS tipo_exame_codigo,
-            te.exame_de_local, r.latitude, r.longitude, r.status,
-            r.observacoes, r.usuario_id, u.nome AS usuario_nome,
+            te.exame_de_local, r.latitude, r.longitude,
+            r.lacre_entrada, r.lacre_saida,
+            r.status, r.observacoes, r.usuario_id, u.nome AS usuario_nome,
             u.matricula AS usuario_matricula, u.cargo AS usuario_cargo,
             u.lotacao AS usuario_lotacao, r.criado_em, r.atualizado_em
         FROM rep r
@@ -113,7 +115,8 @@ def criar_rep(
     tipo_exame_id=None, horario_acionamento=None, horario_chegada=None,
     horario_saida=None, data_documento=None, solicitante_id=None,
     nome_autoridade=None, nome_envolvido=None, local_fato_descricao=None,
-    latitude=None, longitude=None, observacoes=None
+    latitude=None, longitude=None, lacre_entrada=None, lacre_saida=None,
+    observacoes=None
 ) -> int:
     numero_rep = numero_rep.strip()
     if not numero_rep:
@@ -134,15 +137,16 @@ def criar_rep(
             horario_saida, tipo_solicitacao, numero_documento, data_documento,
             solicitante_id, nome_autoridade, tipo_exame_id,
             nome_envolvido, local_fato_descricao,
-            latitude, longitude, status, observacoes, usuario_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
+            latitude, longitude, lacre_entrada, lacre_saida,
+            status, observacoes, usuario_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
     """
     return executar_comando(sql, (
         numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
         horario_saida, tipo_solicitacao, numero_documento, data_documento,
         solicitante_id, nome_autoridade, tipo_exame_id,
         nome_envolvido, local_fato_descricao,
-        latitude, longitude, observacoes, usuario_id
+        latitude, longitude, lacre_entrada, lacre_saida, observacoes, usuario_id
     ))
 
 
@@ -151,7 +155,8 @@ def atualizar_rep(
     tipo_exame_id, usuario_id, horario_acionamento=None, horario_chegada=None,
     horario_saida=None, data_documento=None, solicitante_id=None,
     nome_autoridade=None, nome_envolvido=None, local_fato_descricao=None,
-    latitude=None, longitude=None, status=None, observacoes=None
+    latitude=None, longitude=None, lacre_entrada=None, lacre_saida=None,
+    status=None, observacoes=None
 ) -> None:
     numero_rep = numero_rep.strip()
     if not numero_rep:
@@ -184,7 +189,8 @@ def atualizar_rep(
             numero_documento = ?, data_documento = ?, solicitante_id = ?,
             nome_autoridade = ?, tipo_exame_id = ?,
             nome_envolvido = ?, local_fato_descricao = ?,
-            latitude = ?, longitude = ?, status = ?, observacoes = ?, usuario_id = ?
+            latitude = ?, longitude = ?, lacre_entrada = ?, lacre_saida = ?,
+            status = ?, observacoes = ?, usuario_id = ?
         WHERE id = ?
     """
     executar_comando(sql, (
@@ -192,7 +198,7 @@ def atualizar_rep(
         horario_saida, tipo_solicitacao, numero_documento, data_documento,
         solicitante_id, nome_autoridade, tipo_exame_id,
         nome_envolvido, local_fato_descricao,
-        latitude, longitude, status, observacoes, usuario_id, rep_id
+        latitude, longitude, lacre_entrada, lacre_saida, status, observacoes, usuario_id, rep_id
     ))
 
 
