@@ -59,12 +59,6 @@ def formatar_data_br(data_valor) -> str:
 def colher_dados_contexto(laudo_id: int) -> dict:
     """
     Colhe todos os dados de contexto necessários para preencher placeholders.
-    
-    Args:
-        laudo_id: ID do laudo
-        
-    Returns:
-        dict: Dicionário com placeholders e seus valores
     """
     try:
         laudo = buscar_laudo(laudo_id)
@@ -75,15 +69,7 @@ def colher_dados_contexto(laudo_id: int) -> dict:
         if not rep:
             raise ValueError(f"REP {laudo['rep_id']} não encontrada")
         
-        # Buscar dados do solicitante
-        solicitante = {}
-        if rep.get('solicitante_id'):
-            sql = "SELECT * FROM solicitantes WHERE id = ?"
-            rows = executar_query(sql, (rep['solicitante_id'],))
-            if rows:
-                solicitante = dict(rows[0])
-        
-        # Buscar dados do perito (usuário vinculado à REP do laudo)
+        # Buscar dados do perito
         perito = {}
         if laudo.get('usuario_id'):
             sql = "SELECT id, nome, matricula, cargo, lotacao FROM usuarios WHERE id = ?"
@@ -99,7 +85,7 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             if rows:
                 tipo_exame = dict(rows[0])
 
-        # Buscar dados do template vinculado ao laudo
+        # Buscar dados do template
         template_laudo = {}
         if laudo.get('template_id'):
             sql = "SELECT id, nome, descricao_exame FROM templates WHERE id = ?"
@@ -109,25 +95,18 @@ def colher_dados_contexto(laudo_id: int) -> dict:
         
         # Montar dicionário de placeholders
         placeholders = {
-            # Dados da REP
             'numero_rep': rep.get('numero_rep', ''),
             'data_solicitacao': formatar_data_br(rep.get('data_solicitacao', '')),
             'tipo_exame': tipo_exame.get('nome', ''),
             'tipo_exame_codigo': tipo_exame.get('codigo', ''),
             'nome_envolvido': rep.get('nome_envolvido', ''),
             'observacoes': rep.get('observacoes', ''),
-
-            # Dados do solicitante
             'solicitante': rep.get('solicitante_nome', ''),
             'solicitante_orgao': rep.get('solicitante_orgao', ''),
             'nome_autoridade': rep.get('nome_autoridade', ''),
-            
-            # Detalhes da solicitação
             'tipo_solicitacao': rep.get('tipo_solicitacao', ''),
             'numero_documento': rep.get('numero_documento', ''),
             'data_documento': formatar_data_br(rep.get('data_documento', '')),
-            
-            # Dados do local
             'local_fato': rep.get('local_fato_descricao', ''),
             'horario_acionamento': rep.get('horario_acionamento', ''),
             'horario_chegada': rep.get('horario_chegada', ''),
@@ -136,12 +115,8 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'longitude': rep.get('longitude', ''),
             'lacre_entrada': rep.get('lacre_entrada', ''),
             'lacre_saida': rep.get('lacre_saida', ''),
-
-            # Dados do template
             'template_nome': template_laudo.get('nome', ''),
             'template_descricao': template_laudo.get('descricao_exame', ''),
-            
-            # Dados do perito
             'perito_nome': perito.get('nome', ''),
             'perito_matricula': perito.get('matricula', ''),
             'perito_cargo': perito.get('cargo', ''),
@@ -149,7 +124,6 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'cidade': perito.get('lotacao', ''),
         }
 
-        # Acrescenta placeholders personalizados sem sobrescrever os placeholders nativos.
         for nome, valor in obter_mapeamento_placeholders_custom(com_chaves=False).items():
             if nome not in placeholders:
                 placeholders[nome] = valor
@@ -164,12 +138,6 @@ def colher_dados_contexto(laudo_id: int) -> dict:
 def buscar_cabecalho_processado(placeholders: dict) -> str:
     """
     Busca template de cabeçalho do banco e processa placeholders.
-    
-    Args:
-        placeholders: Dicionário com valores para substituir
-        
-    Returns:
-        str: HTML do cabeçalho processado
     """
     try:
         sql = "SELECT conteudo FROM modelo_cabecalho WHERE ativo = 1 LIMIT 1"
@@ -177,15 +145,9 @@ def buscar_cabecalho_processado(placeholders: dict) -> str:
         
         if rows:
             template = dict(rows[0])['conteudo']
-            # Processar placeholders no template
             cabecalho = processar_placeholders(template, placeholders)
-            
-            # Encapsular em HTML semântico
-            return f"""<div class="info-linha">
-{cabecalho.replace(chr(10), '<br>')}
-</div>"""
+            return f'<div class="info-linha">{cabecalho.replace(chr(10), "<br>")}</div>'
         
-        # Se não houver template, criar cabeçalho padrão
         return f"""<h1>LAUDO DE PERÍCIA CRIMINAL</h1>
 <div class="info-linha">
     <strong>{placeholders.get('tipo_exame', '')}</strong><br>
@@ -194,72 +156,26 @@ def buscar_cabecalho_processado(placeholders: dict) -> str:
         
     except Exception as e:
         logger.warning(f"Erro ao buscar cabeçalho: {e}")
-        return f"""<h1>LAUDO DE PERÍCIA CRIMINAL</h1>
-<div class="info-linha">
-    REP: {placeholders.get('numero_rep', '')}
-</div>"""
+        return f"<h1>LAUDO DE PERÍCIA CRIMINAL</h1>"
 
 
 def gerar_pdf_laudo_playwright(laudo_id: int) -> bytes:
     """
     Gera PDF do laudo usando Playwright com alta fidelidade de formatação.
-    
-    FLUXO (Sprint 2-4 do Playwright.md):
-    1. Colher dados de contexto (placeholders)
-    2. Buscar seções do laudo no banco
-    3. Processar placeholders nas seções
-    4. Buscar e processar cabeçalho
-    5. Construir HTML consolidado com CSS
-    6. Limpar HTML (remover elementos perigosos)
-    7. Gerar PDF com Playwright
-    
-    Args:
-        laudo_id: ID do laudo a gerar
-        
-    Returns:
-        bytes: Conteúdo PDF em binário
-        
-    Raises:
-        ValueError: Se laudo não encontrado
-        Exception: Se houver erro na geração do PDF
     """
-    
     try:
         logger.info(f"Iniciando geração de PDF para laudo {laudo_id} com Playwright")
-        
-        # 1. Colher placeholders e contexto
         placeholders = colher_dados_contexto(laudo_id)
-        logger.debug(f"Placeholders coletados: {list(placeholders.keys())}")
-        
-        # 2. Buscar seções do laudo
         secoes_banco = listar_secoes_laudo(laudo_id)
-        if not secoes_banco:
-            logger.warning(f"Laudo {laudo_id} não possui seções")
-            secoes_banco = []
-        
-        # 3. Preparar seções (substituir placeholders)
         secoes_processadas = preparar_secoes_para_html(secoes_banco, placeholders)
-        logger.info(f"Processadas {len(secoes_processadas)} seções")
-        
-        # 4. Buscar cabeçalho processado
         cabecalho_html = buscar_cabecalho_processado(placeholders)
         
-        # 5. Construir HTML consolidado
         html_documento = construir_html_laudo(
             cabecalho_html=cabecalho_html,
-            secoes=secoes_processadas,
-            rodape_html=None  # Rodapé pode ser adicionado depois
+            secoes=secoes_processadas
         )
         
-        # 6. Limpar HTML (remover scripts, iframes, etc)
         html_limpo = limpar_html_para_pdf(html_documento)
-        
-        # 7. Validar HTML básico
-        if not validar_html(html_limpo):
-            logger.warning("HTML gerado não passa em validação básica, mas tentando gerar PDF mesmo assim")
-        
-        # 8. Gerar PDF com Playwright
-        logger.info("Gerando PDF com Playwright/Chromium...")
         pdf_bytes = gerar_pdf_do_html(html_limpo)
         
         logger.info(f"PDF gerado com sucesso ({len(pdf_bytes)} bytes)")
@@ -270,38 +186,60 @@ def gerar_pdf_laudo_playwright(laudo_id: int) -> bytes:
         raise
 
 
-# Função compatível com código antigo (alias)
+def gerar_pdf_template_preview(template_id: int) -> bytes:
+    """
+    Gera um PDF de pré-visualização de um template (sem substituir placeholders).
+    """
+    try:
+        from services.template_service import buscar_template, listar_secoes_template
+        
+        template = buscar_template(template_id)
+        secoes_banco = listar_secoes_template(template_id)
+        
+        # 1. Buscar cabeçalho (sem processar placeholders)
+        sql_cab = "SELECT conteudo FROM modelo_cabecalho WHERE ativo = 1 LIMIT 1"
+        res_cab = executar_query(sql_cab)
+        cabecalho_raw = res_cab[0]['conteudo'] if res_cab else "<h1>LAUDO DE PERÍCIA CRIMINAL</h1>"
+        
+        cabecalho_html = f'<div class="info-linha">{cabecalho_raw.replace(chr(10), "<br>")}</div>'
+        
+        # 2. Preparar seções (sem processar placeholders)
+        secoes_para_html = []
+        for s in secoes_banco:
+            secoes_para_html.append({
+                'titulo': s['titulo'],
+                'conteudo': s['conteudo_base'] or "<i>(Seção sem conteúdo padrão)</i>"
+            })
+            
+        # 3. Construir HTML
+        html_documento = construir_html_laudo(
+            cabecalho_html=cabecalho_html,
+            secoes=secoes_para_html
+        )
+        
+        # 4. Gerar PDF
+        return gerar_pdf_do_html(html_documento)
+        
+    except Exception as e:
+        logger.error(f"Erro ao gerar PDF de preview do template: {e}")
+        raise
+
+
 def gerar_pdf_laudo(laudo_id: int) -> bytes:
-    """
-    Alias para manter compatibilidade com código antigo.
-    Usa o novo gerador com Playwright.
-    """
+    """Alias para manter compatibilidade."""
     return gerar_pdf_laudo_playwright(laudo_id)
 
 
 def salvar_pdf_laudo(laudo_id: int, pasta_destino: str) -> str:
-    """
-    Gera e salva o PDF do laudo na pasta especificada.
-
-    Args:
-        laudo_id: ID do laudo
-        pasta_destino: Caminho da pasta onde o PDF será salvo
-
-    Returns:
-        str: Caminho completo do arquivo PDF salvo
-    """
+    """Gera e salva o PDF do laudo na pasta especificada."""
     pdf_bytes = gerar_pdf_laudo_playwright(laudo_id)
-
     laudo = buscar_laudo(laudo_id)
     rep = buscar_rep(laudo['rep_id'])
     numero_rep = rep['numero_rep'].replace('/', '_')
-
     nome_arquivo = f"{numero_rep}.pdf"
     caminho_completo = os.path.join(pasta_destino, nome_arquivo)
-
     os.makedirs(pasta_destino, exist_ok=True)
     with open(caminho_completo, 'wb') as f:
         f.write(pdf_bytes)
-
     logger.info(f"PDF salvo em: {caminho_completo}")
     return caminho_completo

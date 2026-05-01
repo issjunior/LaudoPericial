@@ -89,6 +89,7 @@ def buscar_template(template_id: int) -> dict | None:
             t.id,
             t.tipo_exame_id,
             te.nome AS tipo_exame_nome,
+            te.codigo AS tipo_exame_codigo,
             t.nome,
             t.descricao_exame,
             t.ativo

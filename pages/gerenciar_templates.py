@@ -10,6 +10,7 @@ Permite criar, editar e excluir seções dentro de cada template.
 import sys
 import os
 import streamlit as st
+import base64
 
 # Garante que a raiz do projeto está no sys.path
 # Funciona localmente E no Streamlit Cloud
@@ -19,6 +20,7 @@ ROOT = os.path.dirname(
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from database.db import executar_query
 from components.menu import renderizar_menu
 from services.cadastro_service import listar_tipos_exame
 from services.template_service import (
@@ -34,6 +36,7 @@ from services.template_service import (
     atualizar_secao_template,
     excluir_secao_template,
 )
+from services.gerador_pdf_playwright import gerar_pdf_template_preview
 
 try:
     from streamlit_jodit import st_jodit
@@ -391,9 +394,38 @@ def exibir_lista_templates(templates: list):
                         st.rerun()
                     except Exception as e: st.error(f"Erro: {e}")
         
+@st.dialog("Visualizar Todo o Laudo (Prévia PDF)", width="large")
+def modal_visualizar_template(template_id: int):
+    """
+    Gera um PDF do template (sem substituir placeholders) e exibe no modal.
+    """
+    try:
+        with st.spinner("Gerando PDF..."):
+            pdf_bytes = gerar_pdf_template_preview(template_id)
+            
+            # Codifica o PDF em base64 para exibir no iframe
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            
+            # Incorpora o PDF em um iframe
+            # Nota: Alguns navegadores podem bloquear o preview de data-uris, 
+            # mas é o método mais direto sem salvar arquivo temporário.
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="700" type="application/pdf"></iframe>'
+            
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+    except Exception as e:
+        st.error(f"❌ Erro ao gerar pré-visualização em PDF: {e}")
+        st.info("Certifique-se de que o Playwright está instalado corretamente (`playwright install chromium`).")
+            
+    st.markdown(" ")
+    if st.button("Fechar", use_container_width=True):
+        st.rerun()
+
+
 # ──────────────────────────────────────────────────────
 # GERENCIAMENTO DE SEÇÕES
 # ──────────────────────────────────────────────────────
+
 
 def gerenciar_secoes(template_id: int):
     """
@@ -417,13 +449,17 @@ def gerenciar_secoes(template_id: int):
 
     st.markdown("---")
 
-    # Botão de nova seção destacado
+    # Botões de ação
     if st.session_state["secao_modo"] is None:
-        col_btn, _ = st.columns([3, 7])
-        with col_btn:
+        col_btn1, col_btn2, _ = st.columns([3, 3, 4])
+        with col_btn1:
             if st.button("➕ Adicionar Nova Seção", use_container_width=True, type="primary"):
                 abrir_criar_secao()
                 st.rerun()
+        with col_btn2:
+            if st.button("👁️ Visualizar Todo o Laudo", use_container_width=True):
+                modal_visualizar_template(template_id)
+
 
     # Formulários de seção (criar/editar)
     if st.session_state["secao_modo"] == "criar_secao":
@@ -706,4 +742,4 @@ def main():
     exibir_lista_templates(templates)
 
 
-main()# Gerenciar templates — será preenchido em breve
+main()
