@@ -169,10 +169,11 @@ CREATE TABLE IF NOT EXISTS laudos (
     rep_id          INTEGER NOT NULL UNIQUE
                         REFERENCES rep(id),
     template_id     INTEGER REFERENCES templates(id),
-    status          TEXT    NOT NULL DEFAULT 'Em Andamento'
+    status          TEXT    NOT NULL DEFAULT 'Pendente'
                         CHECK(status IN (
+                            'Pendente',
                             'Em Andamento',
-                            'Finalizado',
+                            'Concluido',
                             'Entregue'
                         )),
     versao_atual    INTEGER NOT NULL DEFAULT 1,

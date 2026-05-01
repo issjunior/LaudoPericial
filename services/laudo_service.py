@@ -139,7 +139,7 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
     executar_comando(
         """
         INSERT INTO laudos (rep_id, template_id, status, versao_atual)
-        VALUES (?, ?, 'Em Andamento', 1)
+        VALUES (?, ?, 'Pendente', 1)
         """,
         (rep_id, template_id)
     )
@@ -202,12 +202,12 @@ def atualizar_status_laudo(laudo_id: int, novo_status: str) -> None:
 
     Args:
         laudo_id: ID do laudo.
-        novo_status: Novo status (Em Andamento, Finalizado, Entregue).
+        novo_status: Novo status (Pendente, Em andamento, Concluído, Entregue).
 
     Raises:
         ValueError: Se o status for inválido.
     """
-    STATUS_VALIDOS = ["Em Andamento", "Finalizado", "Entregue"]
+    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluido", "Entregue"]
     if novo_status not in STATUS_VALIDOS:
         raise ValueError(f"Status inválido: {novo_status}")
 
@@ -263,7 +263,7 @@ def excluir_laudo(laudo_id: int) -> None:
 
 def finalizar_laudo(laudo_id: int) -> None:
     """
-    Finaliza um laudo (muda status para Finalizado).
+    Finaliza um laudo (muda status para Concluido).
 
     Args:
         laudo_id: ID do laudo.
@@ -277,7 +277,7 @@ def finalizar_laudo(laudo_id: int) -> None:
 
     from database.db import executar_comando
     executar_comando(
-        "UPDATE laudos SET status = 'Finalizado', atualizado_em = datetime('now','localtime') WHERE id = ?",
+        "UPDATE laudos SET status = 'Concluido', atualizado_em = datetime('now','localtime') WHERE id = ?",
         (laudo_id,)
     )
 

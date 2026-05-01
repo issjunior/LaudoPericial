@@ -457,7 +457,7 @@ def gerenciar_secoes(template_id: int):
                 abrir_criar_secao()
                 st.rerun()
         with col_btn2:
-            if st.button("👁️ Visualizar Todo o Laudo", use_container_width=True):
+            if st.button("👁️ Visualizar Template", use_container_width=True):
                 modal_visualizar_template(template_id)
 
 
