@@ -75,6 +75,8 @@ PLACEHOLDERS_SISTEMA = [
             {"placeholder": "{{tipo_solicitacao}}", "descricao": "Tipo do documento (BO, Ofício...)", "exemplo": "Ofício"},
             {"placeholder": "{{numero_documento}}", "descricao": "Número do documento",            "exemplo": "12345/2024"},
             {"placeholder": "{{data_documento}}",   "descricao": "Data do documento (DD/MM/AAAA)", "exemplo": "20/12/2024"},
+            {"placeholder": "{{numero_bo}}",        "descricao": "Número do Boletim de Ocorrência","exemplo": "12345/2024"},
+            {"placeholder": "{{numero_ip}}",        "descricao": "Número do Inquérito Policial",   "exemplo": "67890/2024"},
         ],
     },
     {

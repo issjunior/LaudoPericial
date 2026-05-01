@@ -159,8 +159,9 @@ def renderizar_busca_rep(usuario):
 
         busca_rapida = col1.text_input("Busca rápida (Número REP, Envolvido, Local)")
 
-        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluido"]
+        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído"]
         filtro_status = col2.selectbox("Status", status_opcoes)
+        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido')
 
         col_d1, col_d2 = st.columns(2)
         data_inicio = col_d1.date_input("Data Início", value=None, format="DD/MM/YYYY")
@@ -174,7 +175,7 @@ def renderizar_busca_rep(usuario):
         reps = listar_reps(
             apenas_ativas=apenas_ativas,
             usuario_id=usuario['id'],
-            status=filtro_status if filtro_status != "Todos" else None,
+            status=filtro_status_interno if filtro_status != "Todos" else None,
             numero_rep=busca_rapida if busca_rapida else None,
             data_inicio=data_inicio.isoformat() if data_inicio else None,
             data_fim=data_fim.isoformat() if data_fim else None
@@ -193,7 +194,8 @@ def renderizar_busca_rep(usuario):
                 status_groups[status].append(rep)
 
             for status, rep_list in status_groups.items():
-                st.markdown(f"### {status} ({len(rep_list)})")
+                status_exibicao = status.replace('Concluido', 'Concluído')
+                st.markdown(f"### {status_exibicao} ({len(rep_list)})")
 
                 # Criar colunas para cards (3 por linha)
                 cols = st.columns(3)
@@ -223,8 +225,9 @@ def renderizar_busca_laudo(usuario):
 
         busca_numero_rep = col1.text_input("Número da REP")
 
-        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluido", "Entregue"]
+        status_opcoes = ["Todos", "Em Andamento", "Concluído", "Entregue"]
         filtro_status = col2.selectbox("Status do Laudo", status_opcoes)
+        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido')
 
     if st.button("Buscar Laudos", type="primary", key="buscar_laudos"):
         # Buscar ID da REP se número foi fornecido
@@ -237,7 +240,7 @@ def renderizar_busca_laudo(usuario):
 
         # Usar função existente de listar_laudos
         laudos = listar_laudos(
-            status=filtro_status if filtro_status != "Todos" else None,
+            status=filtro_status_interno if filtro_status != "Todos" else None,
             usuario_id=usuario['id'],
             rep_id=rep_id_filtro
         )
@@ -252,7 +255,8 @@ def renderizar_busca_laudo(usuario):
                 with cols[col_idx]:
                     with st.container(border=True):
                         st.markdown(f"**REP Nº:** {laudo.get('numero_rep', 'N/A')}")
-                        st.markdown(f"**Status Laudo:** {laudo.get('status', 'N/A')}")
+                        status_laudo = laudo.get('status', 'N/A').replace('Concluido', 'Concluído')
+                        st.markdown(f"**Status Laudo:** {status_laudo}")
                         st.markdown(f"**Tipo de Exame:** {laudo.get('tipo_exame_nome', 'N/A')}")
                         st.markdown(f"**Versão:** {laudo.get('versao_atual', 'N/A')}")
 
@@ -351,7 +355,8 @@ def renderizar_ultimos_laudos():
                         except:
                             st.markdown(f"**Atualizado:** {laudo['atualizado_em']}")
 
-                    st.markdown(f"**Status:** {laudo.get('laudo_status', 'N/A')}")
+                    status_exibicao = laudo.get('laudo_status', 'N/A').replace('Concluido', 'Concluído')
+                    st.markdown(f"**Status:** {status_exibicao}")
 
                 # Botões de ação
                 col_btn1, col_btn2 = st.columns(2)

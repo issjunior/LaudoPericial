@@ -9,6 +9,7 @@ Página para visualizar Laudos existentes.
 import sys
 import os
 import streamlit as st
+import base64
 
 ROOT = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
@@ -42,6 +43,33 @@ if not usuario_logado:
     st.stop()
 
 
+@st.dialog("Visualizar Laudo (PDF)", width="large")
+def modal_visualizar_pdf(laudo_id: int):
+    """
+    Gera o PDF do laudo e exibe em um modal st.dialog.
+    """
+    try:
+        from services.gerador_pdf_playwright import gerar_pdf_laudo
+        
+        with st.spinner("Gerando visualização do PDF..."):
+            pdf_bytes = gerar_pdf_laudo(laudo_id)
+            
+            # Codifica o PDF em base64 para exibir no iframe
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            
+            # Incorpora o PDF em um iframe
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+            
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+    except Exception as e:
+        st.error(f"❌ Erro ao gerar visualização: {e}")
+            
+    st.markdown(" ")
+    if st.button("Fechar", use_container_width=True):
+        st.rerun()
+
+
 def renderizar_laudo(laudo_id: int):
     secoes = listar_secoes_laudo(laudo_id)
     laudo = None
@@ -68,27 +96,21 @@ def renderizar_laudo(laudo_id: int):
 
     col_st1, col_st2, col_pdf = st.columns([1, 1, 1])
     with col_st1:
-        st.markdown(f"**Status do Laudo:** {laudo['status']}")
+        status_exibicao = laudo['status'].replace('Concluido', 'Concluído')
+        st.markdown(f"**Status do Laudo:** {status_exibicao}")
     with col_st2:
-        st.markdown(f"**Status da REP:** {rep['status']}")
+        status_rep_exibicao = rep['status'].replace('Concluido', 'Concluído')
+        st.markdown(f"**Status da REP:** {status_rep_exibicao}")
     with col_pdf:
         usuario = obter_usuario_logado()
         pasta_padrao = os.path.join(os.path.expanduser("~"), "Documents", "Laudos")
         pasta_exp = usuario.get('pasta_exportacao') or pasta_padrao
         
         try:
-            if st.button("Visualizar PDF", use_container_width=True):
-                # Garante que a pasta existe antes de tentar salvar
-                if not os.path.exists(pasta_exp):
-                    os.makedirs(pasta_exp, exist_ok=True)
-                    
-                from services.gerador_pdf_playwright import salvar_pdf_laudo
-                import webbrowser
-                caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
-                webbrowser.open(f'file:///{caminho_pdf}')
-                st.success(f"PDF aberto: {caminho_pdf}")
+            if st.button("👁️ Visualizar PDF", use_container_width=True, type="primary"):
+                modal_visualizar_pdf(laudo_id)
         except Exception as e:
-            st.error(f"Erro ao gerar PDF: {e}")
+            st.error(f"Erro ao abrir visualização: {e}")
 
     # 1. Colher placeholders e contexto para processar antes de exibir
     from services.gerador_pdf_playwright import colher_dados_contexto
@@ -122,7 +144,7 @@ def main():
 
     laudos_disponiveis = [
         l for l in laudos_existentes 
-        if l['status'] in ('Em Andamento', 'Finalizado', 'Entregue')
+        if l['status'] in ('Em Andamento', 'Concluido', 'Finalizado', 'Entregue')
     ]
 
     if not laudos_disponiveis:
@@ -133,7 +155,7 @@ def main():
         st.stop()
 
     opcoes_laudos = {
-        f"{l['numero_rep']} — {l['tipo_exame_nome']} — ({l['status']})": l['id']
+        f"{l['numero_rep']} — {l['tipo_exame_nome']} — ({l['status'].replace('Concluido', 'Concluído')})": l['id']
         for l in laudos_disponiveis
     }
     nomes_laudos = ["Selecione um Laudo"] + sorted(list(opcoes_laudos.keys()))

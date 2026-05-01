@@ -264,6 +264,35 @@ def main():
         "#1971c2",
         "Observações e dados de local, quando o tipo de exame exigir."
     )
+
+    col_lacre1, col_lacre2 = st.columns(2)
+    with col_lacre1:
+        lacre_entrada = st.text_input(
+            "Lacre de Entrada (Opcional)",
+            placeholder="Nº do lacre de preservação/entrada",
+            help="Número do lacre encontrado no local ou no item ao iniciar o exame."
+        )
+    with col_lacre2:
+        lacre_saida = st.text_input(
+            "Lacre de Saída (Opcional)",
+            placeholder="Nº do lacre de fechamento/saída",
+            help="Número do lacre utilizado para fechar/preservar o local ou item após o exame."
+        )
+
+    col_bo_ip1, col_bo_ip2 = st.columns(2)
+    with col_bo_ip1:
+        numero_bo = st.text_input(
+            "Número do BO (Opcional)",
+            placeholder="Ex: 12345/2024",
+            help="Número do Boletim de Ocorrência relacionado à solicitação."
+        )
+    with col_bo_ip2:
+        numero_ip = st.text_input(
+            "Número do IP (Opcional)",
+            placeholder="Ex: 67890/2024",
+            help="Número do Inquérito Policial relacionado à solicitação."
+        )
+
     with st.expander("📝 Observações Adicionais", expanded=False):
         observacoes = st.text_area(
             "Observações Gerais (Opcional)",
@@ -271,24 +300,7 @@ def main():
             help="Qualquer informação extra relevante para a REP."
         )
 
-    aba_geral, aba_local = st.tabs(["Dados Gerais", "Dados do Local"])
-
-    with aba_geral:
-        col_lacre1, col_lacre2 = st.columns(2)
-        with col_lacre1:
-            lacre_entrada = st.text_input(
-                "Lacre de Entrada (Opcional)",
-                placeholder="Nº do lacre de preservação/entrada",
-                help="Número do lacre encontrado no local ou no item ao iniciar o exame."
-            )
-        with col_lacre2:
-            lacre_saida = st.text_input(
-                "Lacre de Saída (Opcional)",
-                placeholder="Nº do lacre de fechamento/saída",
-                help="Número do lacre utilizado para fechar/preservar o local ou item após o exame."
-            )
-
-    with aba_local:
+    with st.expander("📍 Dados do Local (apenas para exames de local)", expanded=False):
         exame_eh_de_local = st.session_state["exame_de_local_selecionado"]
         if not exame_eh_de_local:
             st.warning("📍 Os dados referentes ao local somente estarão disponíveis quando o tipo de exame for de local.")
@@ -412,6 +424,8 @@ def main():
                 horario_saida       = horario_saida_str,
                 tipo_solicitacao    = tipo_documento,
                 numero_documento    = numero_documento,
+                numero_bo           = numero_bo,
+                numero_ip           = numero_ip,
                 data_documento      = data_documento_str,
                 solicitante_id      = solicitante_id,
                 nome_autoridade     = nome_autoridade,

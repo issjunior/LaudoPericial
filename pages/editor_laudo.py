@@ -141,13 +141,17 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                 st.code("{{observacoes}}", language="plaintext")
             
             st.divider()
-            cl1, cl2 = st.columns(2)
+            cl1, cl2, cl3 = st.columns(3)
             with cl1:
                 st.caption("Lacre de Entrada")
                 st.code("{{lacre_entrada}}", language="plaintext")
+                st.caption("Número do BO")
+                st.code("{{numero_bo}}", language="plaintext")
             with cl2:
                 st.caption("Lacre de Saída")
                 st.code("{{lacre_saida}}", language="plaintext")
+                st.caption("Número do IP")
+                st.code("{{numero_ip}}", language="plaintext")
                 
         with tab2:
             c1, c2, c3 = st.columns(3)
@@ -305,10 +309,10 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
         st.markdown("---")
         col_btn_finalizar, _ = st.columns([1, 3])
         with col_btn_finalizar:
-            if st.button("Marcar como Finalizado", type="primary", use_container_width=True):
+            if st.button("Marcar como Concluído", type="primary", use_container_width=True):
                 try:
                     finalizar_laudo(laudo_id)
-                    st.success("Laudo marcado como Finalizado e REP vinculada marcada como Concluido!")
+                    st.success("Laudo marcado como Concluído e REP vinculada marcada como Concluído!")
                     st.rerun()
                 except ValueError as e:
                     st.error(f"Erro: {e}")
@@ -346,7 +350,7 @@ def main():
 
     # Cria o dicionário de opções apenas uma vez
     opcoes_reps = {
-        f"{l['numero_rep']} — {l.get('tipo_exame_nome') or 'Tipo não definido'} — ({l['status']})": l['id']
+        f"{l['numero_rep']} — {l.get('tipo_exame_nome') or 'Tipo não definido'} — ({l['status'].replace('Concluido', 'Concluído')})": l['id']
         for l in laudos_usuario
     }
     nomes_reps = ["Selecione uma REP"] + sorted(list(opcoes_reps.keys()))

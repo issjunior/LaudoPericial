@@ -52,13 +52,42 @@ def criar_snapshot_limpo():
         for tabela in tabelas_essenciais:
             print(f"  - Copiando tabela: {tabela}")
             conn_origem.execute(f"INSERT INTO backup.{tabela} SELECT * FROM main.{tabela}")
-        
+
         conn_origem.commit()
+
+        # 4. GARANTIR que o backup tenha pelo menos um usuário
+        cursor_backup = conn_backup.cursor()
+        cursor_backup.execute("SELECT COUNT(*) FROM usuarios")
+        count_usuarios = cursor_backup.fetchone()[0]
+
+        if count_usuarios == 0:
+            print("  - Criando usuário padrão no backup...")
+            # Cria um usuário administrativo padrão
+            cursor_backup.execute("""
+                INSERT INTO usuarios (
+                    nome, matricula, cargo, lotacao,
+                    usuario, senha_hash, ativo, criado_em
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            """, (
+                "Administrador",
+                "ADMIN001",
+                "Perito Criminal",
+                "Polícia Científica do Paraná",
+                "admin",
+                # Senha: "admin123" em SHA256
+                "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+                1
+            ))
+            conn_backup.commit()
+            print(f"    ✓ Usuário padrão criado: admin / admin123")
+
         conn_origem.close()
         conn_backup.close()
 
         print(f"\n✅ Backup ESSENCIAL criado com sucesso em: {arquivo_backup}")
         print(f"💡 REPs e Laudos foram descartados deste arquivo.")
+        if count_usuarios == 0:
+            print(f"🔐 Usuário padrão incluído: admin / admin123")
 
     except Exception as e:
         print(f"❌ Erro ao criar backup limpo: {e}")

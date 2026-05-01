@@ -287,6 +287,24 @@ def main():
                     key="lacre_saida_key"
                 )
 
+            col_bo_ip1, col_bo_ip2 = st.columns(2)
+            with col_bo_ip1:
+                numero_bo = st.text_input(
+                    "Número do BO (Opcional)",
+                    value=rep.get('numero_bo') or '',
+                    placeholder="Ex: 12345/2024",
+                    help="Número do Boletim de Ocorrência relacionado à solicitação.",
+                    key="numero_bo_key"
+                )
+            with col_bo_ip2:
+                numero_ip = st.text_input(
+                    "Número do IP (Opcional)",
+                    value=rep.get('numero_ip') or '',
+                    placeholder="Ex: 67890/2024",
+                    help="Número do Inquérito Policial relacionado à solicitação.",
+                    key="numero_ip_key"
+                )
+
     # --- NOVA LÓGICA DE AVISO DE EXCLUSÃO DE LAUDO ---
     laudo_vinculado = verificar_laudo_vinculado(rep_id)
     confirmar_exclusao_laudo = False
@@ -366,6 +384,8 @@ def main():
                 data_solicitacao    = data_solicitacao_str,
                 tipo_solicitacao    = tipo_documento,
                 numero_documento    = numero_documento,
+                numero_bo           = numero_bo,
+                numero_ip           = numero_ip,
                 tipo_exame_id       = tipo_exame_id,
                 usuario_id          = usuario_logado['id'],
                 horario_acionamento = horario_acionamento_str,

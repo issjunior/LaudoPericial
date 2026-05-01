@@ -37,7 +37,7 @@ def listar_reps(
         SELECT
             r.id, r.numero_rep, r.data_solicitacao, r.horario_acionamento,
             r.horario_chegada, r.horario_saida, r.tipo_solicitacao,
-            r.numero_documento, r.data_documento, r.solicitante_id,
+            r.numero_documento, r.numero_bo, r.numero_ip, r.data_documento, r.solicitante_id,
             s.nome AS solicitante_nome, s.orgao AS solicitante_orgao,
             r.nome_autoridade, r.nome_envolvido, r.local_fato_descricao,
             r.tipo_exame_id, te.nome AS tipo_exame_nome,
@@ -90,7 +90,7 @@ def buscar_rep(rep_id: int) -> dict | None:
         SELECT
             r.id, r.numero_rep, r.data_solicitacao, r.horario_acionamento,
             r.horario_chegada, r.horario_saida, r.tipo_solicitacao,
-            r.numero_documento, r.data_documento, r.solicitante_id,
+            r.numero_documento, r.numero_bo, r.numero_ip, r.data_documento, r.solicitante_id,
             s.nome AS solicitante_nome, s.orgao AS solicitante_orgao,
             s.contato AS solicitante_email, r.nome_autoridade,
             r.nome_envolvido, r.local_fato_descricao, r.tipo_exame_id,
@@ -116,7 +116,7 @@ def criar_rep(
     horario_saida=None, data_documento=None, solicitante_id=None,
     nome_autoridade=None, nome_envolvido=None, local_fato_descricao=None,
     latitude=None, longitude=None, lacre_entrada=None, lacre_saida=None,
-    observacoes=None
+    observacoes=None, numero_bo=None, numero_ip=None
 ) -> int:
     numero_rep = numero_rep.strip()
     if not numero_rep:
@@ -134,19 +134,19 @@ def criar_rep(
     sql = """
         INSERT INTO rep (
             numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
-            horario_saida, tipo_solicitacao, numero_documento, data_documento,
-            solicitante_id, nome_autoridade, tipo_exame_id,
+            horario_saida, tipo_solicitacao, numero_documento, numero_bo, numero_ip,
+            data_documento, solicitante_id, nome_autoridade, tipo_exame_id,
             nome_envolvido, local_fato_descricao,
             latitude, longitude, lacre_entrada, lacre_saida,
             status, observacoes, usuario_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     return executar_comando(sql, (
         numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
-        horario_saida, tipo_solicitacao, numero_documento, data_documento,
-        solicitante_id, nome_autoridade, tipo_exame_id,
+        horario_saida, tipo_solicitacao, numero_documento, numero_bo, numero_ip,
+        data_documento, solicitante_id, nome_autoridade, tipo_exame_id,
         nome_envolvido, local_fato_descricao,
-        latitude, longitude, lacre_entrada, lacre_saida, observacoes, usuario_id
+        latitude, longitude, lacre_entrada, lacre_saida, 'Pendente', observacoes, usuario_id
     ))
 
 
@@ -156,7 +156,7 @@ def atualizar_rep(
     horario_saida=None, data_documento=None, solicitante_id=None,
     nome_autoridade=None, nome_envolvido=None, local_fato_descricao=None,
     latitude=None, longitude=None, lacre_entrada=None, lacre_saida=None,
-    status=None, observacoes=None
+    status=None, observacoes=None, numero_bo=None, numero_ip=None
 ) -> None:
     numero_rep = numero_rep.strip()
     if not numero_rep:
@@ -186,7 +186,7 @@ def atualizar_rep(
         SET
             numero_rep = ?, data_solicitacao = ?, horario_acionamento = ?,
             horario_chegada = ?, horario_saida = ?, tipo_solicitacao = ?,
-            numero_documento = ?, data_documento = ?, solicitante_id = ?,
+            numero_documento = ?, numero_bo = ?, numero_ip = ?, data_documento = ?, solicitante_id = ?,
             nome_autoridade = ?, tipo_exame_id = ?,
             nome_envolvido = ?, local_fato_descricao = ?,
             latitude = ?, longitude = ?, lacre_entrada = ?, lacre_saida = ?,
@@ -195,8 +195,8 @@ def atualizar_rep(
     """
     executar_comando(sql, (
         numero_rep, data_solicitacao, horario_acionamento, horario_chegada,
-        horario_saida, tipo_solicitacao, numero_documento, data_documento,
-        solicitante_id, nome_autoridade, tipo_exame_id,
+        horario_saida, tipo_solicitacao, numero_documento, numero_bo, numero_ip,
+        data_documento, solicitante_id, nome_autoridade, tipo_exame_id,
         nome_envolvido, local_fato_descricao,
         latitude, longitude, lacre_entrada, lacre_saida, status, observacoes, usuario_id, rep_id
     ))

@@ -139,7 +139,7 @@ def criar_laudo(rep_id: int, template_id: int) -> int:
     executar_comando(
         """
         INSERT INTO laudos (rep_id, template_id, status, versao_atual)
-        VALUES (?, ?, 'Pendente', 1)
+        VALUES (?, ?, 'Em Andamento', 1)
         """,
         (rep_id, template_id)
     )
@@ -207,7 +207,7 @@ def atualizar_status_laudo(laudo_id: int, novo_status: str) -> None:
     Raises:
         ValueError: Se o status for inválido.
     """
-    STATUS_VALIDOS = ["Pendente", "Em Andamento", "Concluido", "Entregue"]
+    STATUS_VALIDOS = ["Em Andamento", "Concluido", "Entregue"]
     if novo_status not in STATUS_VALIDOS:
         raise ValueError(f"Status inválido: {novo_status}")
 

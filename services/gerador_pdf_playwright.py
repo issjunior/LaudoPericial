@@ -106,6 +106,8 @@ def colher_dados_contexto(laudo_id: int) -> dict:
             'nome_autoridade': rep.get('nome_autoridade', ''),
             'tipo_solicitacao': rep.get('tipo_solicitacao', ''),
             'numero_documento': rep.get('numero_documento', ''),
+            'numero_bo': rep.get('numero_bo', ''),
+            'numero_ip': rep.get('numero_ip', ''),
             'data_documento': formatar_data_br(rep.get('data_documento', '')),
             'local_fato': rep.get('local_fato_descricao', ''),
             'horario_acionamento': rep.get('horario_acionamento', ''),

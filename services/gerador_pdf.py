@@ -122,6 +122,8 @@ def substituir_placeholders(texto: str, rep: dict, perito: dict) -> str:
         '{{numero_rep}}': rep.get('numero_rep', ''),
         '{{data_solicitacao}}': formatar_data_br(rep.get('data_solicitacao', '')),
         '{{numero_documento}}': rep.get('numero_documento', ''),
+        '{{numero_bo}}': rep.get('numero_bo', ''),
+        '{{numero_ip}}': rep.get('numero_ip', ''),
         '{{data_documento}}': formatar_data_br(rep.get('data_documento', '')),
         '{{tipo_solicitacao}}': rep.get('tipo_solicitacao', ''),
         '{{tipo_exame}}': rep.get('tipo_exame_nome', ''),

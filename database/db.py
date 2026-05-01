@@ -79,6 +79,9 @@ def init_database() -> None:
         for sql in CREATE_ALL_TABLES:
             cursor.execute(sql)
 
+        # Migração: garantir que colunas novas existam em tabelas existentes
+        migrar_colunas_faltantes(cursor)
+
         conn.commit()
         #print("✅ Banco de dados inicializado com sucesso!")
 
@@ -88,6 +91,28 @@ def init_database() -> None:
         raise
 
     # Não fecha a conexão aqui, pois ela é global e será usada por outras funções
+
+def migrar_colunas_faltantes(cursor):
+    """
+    Adiciona colunas faltantes em tabelas existentes para compatibilidade
+    com backups antigos ou versões anteriores.
+    """
+    try:
+        # Verificar e adicionar colunas na tabela rep se não existirem
+        cursor.execute('PRAGMA table_info(rep)')
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'numero_bo' not in columns:
+            cursor.execute('ALTER TABLE rep ADD COLUMN numero_bo TEXT')
+            print("✅ Adicionada coluna 'numero_bo' na tabela 'rep'")
+
+        if 'numero_ip' not in columns:
+            cursor.execute('ALTER TABLE rep ADD COLUMN numero_ip TEXT')
+            print("✅ Adicionada coluna 'numero_ip' na tabela 'rep'")
+
+    except Exception as e:
+        print(f"⚠️ Aviso na migração de colunas: {e}")
+        # Não falhar completamente se a migração der erro
 
 
 def database_exists() -> bool:
@@ -219,5 +244,6 @@ def importar_banco_de_dados(uploaded_db_path: str): # <--- NOVA FUNÇÃO
     # 4. Reabre a conexão com o novo banco de dados
     get_db_connection()
 
-    # Opcional: Verificar se o banco importado tem tabelas e usuários
-    # init_database() # Não chamar, pois o banco importado já deve ter as tabelas
+    # 5. Garante que o banco importado tenha a estrutura mais recente
+    # (importante para backups antigos ou de versões anteriores)
+    init_database()

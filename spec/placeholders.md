@@ -47,6 +47,8 @@ Exemplo: "No dia {{data_solicitacao}}, através do {{tipo_solicitacao}} nº {{nu
 |----------|----------|-----------|-------|
 | `tipo_solicitacao` | `{{tipo_solicitacao}}` | Tipo de documento (BO, Ofício, BO PM, BO PC, CECOMP, Outro) | nova_rep.py |
 | `numero_documento` | `{{numero_documento}}` | Número do documento | nova_rep.py |
+| `numero_bo` | `{{numero_bo}}` | Número do Boletim de Ocorrência | nova_rep.py |
+| `numero_ip` | `{{numero_ip}}` | Número do Inquérito Policial | nova_rep.py |
 | `data_documento` | `{{data_documento}}` | Data do documento (YYYY-MM-DD) | nova_rep.py |
 
 ---

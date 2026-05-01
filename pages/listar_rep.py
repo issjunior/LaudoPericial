@@ -96,8 +96,10 @@ def main():
     with st.expander("🔍 Filtros", expanded=True):
         col1, col2 = st.columns([2, 1])
         busca = col1.text_input("Busca rápida (Número, Envolvido, Local)")
-        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluido"]
+        status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído"]
         filtro_status = col2.selectbox("Status", status_opcoes)
+        # Internamente usa sem acento se o filtro for ativado
+        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido')
 
         col_d1, col_d2, col_d3 = st.columns(3)
         data_inicio = col_d1.date_input("Data Início", value=None, format="DD/MM/YYYY")
@@ -109,7 +111,7 @@ def main():
     # 2. Busca de dados
     reps = buscar_reps(
         filtro_busca=busca,
-        filtro_status=filtro_status,
+        filtro_status=filtro_status_interno,
         filtro_data_inicio=data_inicio,
         filtro_data_fim=data_fim,
         usuario_id=usuario['id']
@@ -122,6 +124,11 @@ def main():
         col_leg1.info("🟡 **Pendente**: REP aguardando início.")
         col_leg2.warning("🔵 **Em Andamento**: Laudo em elaboração.")
         col_leg3.success("🟢 **Concluído**: Laudo finalizado.")
+
+        # Converte status para exibição com acento no DataFrame
+        for r in reps:
+            if r['status'] == 'Concluido':
+                r['status'] = 'Concluído'
 
         df = DataFrame(reps)
         

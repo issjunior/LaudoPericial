@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS rep (
     tipo_solicitacao    TEXT    NOT NULL
                             CHECK(tipo_solicitacao IN ('BO','Ofício', 'BO PM', 'BO PC', 'CECOMP', 'Outro')), -- ATUALIZADO: Adicionado 'BO PM', 'BO PC', 'CECOMP', 'Outro'
     numero_documento    TEXT    NOT NULL,
+    numero_bo           TEXT,           -- NOVO: Número do Boletim de Ocorrência
+    numero_ip           TEXT,           -- NOVO: Número do Inquérito Policial
     data_documento      TEXT,
     solicitante_id      INTEGER REFERENCES solicitantes(id),
     nome_autoridade     TEXT,
