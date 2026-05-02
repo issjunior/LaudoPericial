@@ -208,6 +208,10 @@ def main():
     horario_saida = None
     latitude = rep.get('latitude')
     longitude = rep.get('longitude')
+    lacre_entrada = rep.get('lacre_entrada')
+    lacre_saida = rep.get('lacre_saida')
+    numero_bo = rep.get('numero_bo')
+    numero_ip = rep.get('numero_ip')
 
     if st.session_state["exame_de_local_selecionado"]:
         with st.expander("🌍 Dados do Local de Exame", expanded=True):
