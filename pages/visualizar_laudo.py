@@ -21,7 +21,6 @@ from components.menu import renderizar_menu
 from core.auth import obter_usuario_logado
 from services.laudo_service import (
     listar_laudos,
-    listar_secoes_laudo,
     buscar_laudo,
 )
 from services.rep_service import buscar_rep
@@ -71,22 +70,10 @@ def modal_visualizar_pdf(laudo_id: int):
 
 
 def renderizar_laudo(laudo_id: int):
-    secoes = listar_secoes_laudo(laudo_id)
-    laudo = None
-    for l in listar_laudos():
-        if l['id'] == laudo_id:
-            laudo = l
-            break
+    laudo = buscar_laudo(laudo_id)
     
     if not laudo:
         st.error("Laudo não encontrado.")
-        return
-    
-    from services.laudo_service import buscar_laudo
-    laudo = buscar_laudo(laudo_id)
-    
-    if not secoes:
-        st.info("Este laudo não possui seções.")
         return
 
     rep = buscar_rep(laudo['rep_id'])
@@ -102,35 +89,12 @@ def renderizar_laudo(laudo_id: int):
         status_rep_exibicao = rep['status'].replace('Concluido', 'Concluído')
         st.markdown(f"**Status da REP:** {status_rep_exibicao}")
     with col_pdf:
-        usuario = obter_usuario_logado()
-        pasta_padrao = os.path.join(os.path.expanduser("~"), "Documents", "Laudos")
-        pasta_exp = usuario.get('pasta_exportacao') or pasta_padrao
-        
         try:
             if st.button("👁️ Visualizar PDF", use_container_width=True, type="primary"):
                 modal_visualizar_pdf(laudo_id)
         except Exception as e:
             st.error(f"Erro ao abrir visualização: {e}")
 
-    # 1. Colher placeholders e contexto para processar antes de exibir
-    from services.gerador_pdf_playwright import colher_dados_contexto
-    from services.html_builder import processar_placeholders
-    
-    try:
-        placeholders = colher_dados_contexto(laudo_id)
-    except:
-        placeholders = {}
-
-    for idx, secao in enumerate(secoes, 1):
-        with st.expander(f"{idx} - {secao['titulo'].upper()}", expanded=True):
-            if secao['obrigatoria']:
-                st.markdown("<small style='color: #e74c3c;'>* Obrigatória</small>", unsafe_allow_html=True)
-            
-            conteudo_original = secao['conteudo'] or "<i>Seção vazia</i>"
-            # Processar placeholders para visualização
-            conteudo_processado = processar_placeholders(conteudo_original, placeholders)
-            
-            st.markdown(conteudo_processado, unsafe_allow_html=True)
 
 
 def main():
