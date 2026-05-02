@@ -11,6 +11,7 @@ import os
 import streamlit as st
 from datetime import datetime
 import logging
+import base64
 
 from core.path_utils import get_root
 ROOT = str(get_root())
@@ -97,6 +98,45 @@ def _cache_placeholders():
 def _cache_rep(rep_id):
     """Cache REP por 5 minutos."""
     return buscar_rep(rep_id)
+
+
+@st.dialog("Visualizar Laudo (PDF)", width="large")
+def modal_visualizar_pdf(laudo_id: int):
+    """
+    Gera o PDF do laudo e exibe em um modal st.dialog.
+    """
+    try:
+        from services.gerador_pdf_playwright import gerar_pdf_laudo
+        
+        with st.spinner("Gerando visualização do PDF..."):
+            pdf_bytes = gerar_pdf_laudo(laudo_id)
+            
+            # Codifica o PDF em base64 para exibir no iframe
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            
+            # Incorpora o PDF em um iframe
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+            
+            # CSS para garantir fundo branco (estilo impresso)
+            st.markdown("""
+                <style>
+                iframe {
+                    border: none;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+    except Exception as e:
+        st.error(f"❌ Erro ao gerar visualização: {e}")
+            
+    st.markdown(" ")
+    if st.button("Fechar", use_container_width=True):
+        st.rerun()
 
 
 def renderizar_secoes(laudo_id: int, laudo: dict):
@@ -275,14 +315,11 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
                     os.makedirs(pasta_exp, exist_ok=True)
 
                 try:
-                    from services.gerador_pdf_playwright import salvar_pdf_laudo
-                    import webbrowser
-                    caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
-                    webbrowser.open(f'file:///{caminho_pdf}')
-                    st.success(f"PDF gerado e aberto: {caminho_pdf}")
+                    # Apenas salva a versão se necessário, a visualização agora é via Dialog
+                    st.success("Laudo salvo com sucesso!")
+                    modal_visualizar_pdf(laudo_id)
                 except Exception as e:
-                    st.error(f"Erro ao gerar PDF: {e}")
-                st.rerun()
+                    st.error(f"Erro ao preparar visualização: {e}")
 
     with col_vis:
         if st.button("Visualizar PDF", type="primary", use_container_width=True):
@@ -291,19 +328,10 @@ def renderizar_secoes(laudo_id: int, laudo: dict):
             for secao_id, dados in secoes_salvas.items():
                 atualizar_secao_laudo(secao_id, dados['conteudo'])
             
-            # Garante que a pasta existe antes de tentar salvar
-            if not os.path.exists(pasta_exp):
-                os.makedirs(pasta_exp, exist_ok=True)
-                
             try:
-                from services.gerador_pdf_playwright import salvar_pdf_laudo
-                import webbrowser
-                caminho_pdf = salvar_pdf_laudo(laudo_id, pasta_exp)
-                webbrowser.open(f'file:///{caminho_pdf}')
-                st.toast("PDF atualizado com o conteúdo atual.", icon="👁️")
-                st.success(f"PDF aberto: {caminho_pdf}")
+                modal_visualizar_pdf(laudo_id)
             except Exception as e:
-                st.error(f"Erro ao gerar PDF: {e}")
+                st.error(f"Erro ao abrir visualização: {e}")
 
     if laudo['status'] == 'Em Andamento':
         st.markdown("---")
