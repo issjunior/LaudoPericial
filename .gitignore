@@ -14,7 +14,7 @@ scratch
 exportacao_de_projeto/
 
 # Planejamento de Migração
-migracao/
+#migracao/
 
 # Banco de dados — NUNCA enviar (dados sigilosos!)
 *.db
