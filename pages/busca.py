@@ -144,7 +144,7 @@ def buscar_ultimos_laudos_editados(limite: int = 25) -> list:
         LIMIT ?
     """
     rows = executar_query(sql, (limite,))
-    return [dict(row) for row in rows]
+    return [dict(row) for row in rows if row is not None]
 
 # ----------------------------------------
 # FUNÇÕES DE RENDERIZAÇÃO DAS ABAS
@@ -161,7 +161,7 @@ def renderizar_busca_rep(usuario):
 
         status_opcoes = ["Todos", "Pendente", "Em Andamento", "Concluído"]
         filtro_status = col2.selectbox("Status", status_opcoes)
-        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido')
+        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido') if filtro_status else None
 
         col_d1, col_d2 = st.columns(2)
         data_inicio = col_d1.date_input("Data Início", value=None, format="DD/MM/YYYY")
@@ -205,13 +205,14 @@ def renderizar_busca_rep(usuario):
                         with st.container(border=True):
                             st.markdown(f"**Nº REP:** {rep.get('numero_rep', 'N/A')}")
                             st.markdown(f"**Envolvido:** {rep.get('nome_envolvido', 'N/A')}")
-                            st.markdown(f"**Local:** {rep.get('local_fato_descricao', 'N/A')[:50]}...")
+                            local_desc = rep.get('local_fato_descricao') or "N/A"
+                            st.markdown(f"**Local:** {local_desc[:50]}...")
                             st.markdown(f"**Data:** {rep.get('data_solicitacao', 'N/A')}")
                             st.markdown(f"**Solicitante:** {rep.get('solicitante_orgao', 'N/A')}")
 
                             # Botão para ver detalhes (navegação para REP)
-                            if st.button(f"Ver Detalhes", key=f"rep_{rep['id']}", type="secondary"):
-                                st.session_state['rep_id'] = rep['id']
+                            if st.button(f"Ver Detalhes", key=f"rep_{rep.get('id')}", type="secondary"):
+                                st.session_state['rep_id'] = rep.get('id')
                                 st.switch_page("pages/editar_rep.py")
         else:
             st.info("Nenhuma REP encontrada com os filtros aplicados.")
@@ -227,7 +228,7 @@ def renderizar_busca_laudo(usuario):
 
         status_opcoes = ["Todos", "Em Andamento", "Concluído", "Entregue"]
         filtro_status = col2.selectbox("Status do Laudo", status_opcoes)
-        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido')
+        filtro_status_interno = filtro_status.replace('Concluído', 'Concluido') if filtro_status else None
 
     if st.button("Buscar Laudos", type="primary", key="buscar_laudos"):
         # Buscar ID da REP se número foi fornecido
@@ -255,18 +256,22 @@ def renderizar_busca_laudo(usuario):
                 with cols[col_idx]:
                     with st.container(border=True):
                         st.markdown(f"**REP Nº:** {laudo.get('numero_rep', 'N/A')}")
-                        status_laudo = laudo.get('status', 'N/A').replace('Concluido', 'Concluído')
+                        status_laudo_raw = laudo.get('status') or 'N/A'
+                        status_laudo = status_laudo_raw.replace('Concluido', 'Concluído')
                         st.markdown(f"**Status Laudo:** {status_laudo}")
                         st.markdown(f"**Tipo de Exame:** {laudo.get('tipo_exame_nome', 'N/A')}")
                         st.markdown(f"**Versão:** {laudo.get('versao_atual', 'N/A')}")
 
-                        if 'atualizado_em' in laudo and laudo['atualizado_em']:
-                            data_formatada = datetime.fromisoformat(laudo['atualizado_em']).strftime('%d/%m/%Y %H:%M')
-                            st.markdown(f"**Última atualização:** {data_formatada}")
+                        if laudo.get('atualizado_em'):
+                            try:
+                                data_formatada = datetime.fromisoformat(laudo['atualizado_em']).strftime('%d/%m/%Y %H:%M')
+                                st.markdown(f"**Última atualização:** {data_formatada}")
+                            except:
+                                pass
 
                         # Botão para editar laudo (navegação para editor)
-                        if st.button(f"Abrir Laudo", key=f"laudo_{laudo['id']}", type="secondary"):
-                            st.session_state['laudo_id'] = laudo['id']
+                        if st.button(f"Abrir Laudo", key=f"laudo_{laudo.get('id')}", type="secondary"):
+                            st.session_state['laudo_id'] = laudo.get('id')
                             st.switch_page("pages/editor_laudo.py")
         else:
             st.info("Nenhum laudo encontrado com os filtros aplicados.")
@@ -314,8 +319,8 @@ def renderizar_busca_lacre():
                             st.markdown(f"**LACRE {lacre_encontrado}:** {lacre}")
 
                             # Botão para ver detalhes da REP
-                            if st.button(f"Ver REP", key=f"lacre_rep_{rep['id']}", type="secondary"):
-                                st.session_state['rep_id'] = rep['id']
+                            if st.button(f"Ver REP", key=f"lacre_rep_{rep.get('id')}", type="secondary"):
+                                st.session_state['rep_id'] = rep.get('id')
                                 st.switch_page("pages/editar_rep.py")
             else:
                 st.info(f"Nenhuma REP encontrada com LACRE contendo '{lacre}'.")
@@ -344,29 +349,33 @@ def renderizar_ultimos_laudos():
                     st.markdown(f"**Envolvido:** {laudo.get('nome_envolvido', 'N/A')}")
 
                 with col2:
-                    st.markdown(f"**Local:** {laudo.get('local_fato_descricao', 'N/A')[:80]}...")
+                    local_desc = laudo.get('local_fato_descricao') or "N/A"
+                    st.markdown(f"**Local:** {local_desc[:80]}...")
                     st.markdown(f"**Tipo de Exame:** {laudo.get('tipo_exame_nome', 'N/A')}")
 
                 with col3:
-                    if 'atualizado_em' in laudo and laudo['atualizado_em']:
+                    if laudo.get('atualizado_em'):
                         try:
                             data_formatada = datetime.fromisoformat(laudo['atualizado_em']).strftime('%d/%m/%Y %H:%M')
                             st.markdown(f"**Atualizado:** {data_formatada}")
                         except:
                             st.markdown(f"**Atualizado:** {laudo['atualizado_em']}")
 
-                    status_exibicao = laudo.get('laudo_status', 'N/A').replace('Concluido', 'Concluído')
+                    status_laudo_raw = laudo.get('laudo_status') or 'N/A'
+                    status_exibicao = status_laudo_raw.replace('Concluido', 'Concluído')
                     st.markdown(f"**Status:** {status_exibicao}")
 
                 # Botões de ação
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
-                    if st.button(f"Abrir Laudo", key=f"ultimo_laudo_{laudo['laudo_id']}"):
-                        st.session_state['laudo_id'] = laudo['laudo_id']
+                    laudo_id = laudo.get('laudo_id')
+                    if st.button(f"Abrir Laudo", key=f"ultimo_laudo_{laudo_id}"):
+                        st.session_state['laudo_id'] = laudo_id
                         st.switch_page("pages/editor_laudo.py")
                 with col_btn2:
-                    if st.button(f"Ver REP", key=f"ultimo_rep_{laudo['rep_id']}"):
-                        st.session_state['rep_id'] = laudo['rep_id']
+                    rep_id = laudo.get('rep_id')
+                    if st.button(f"Ver REP", key=f"ultimo_rep_{rep_id}"):
+                        st.session_state['rep_id'] = rep_id
                         st.switch_page("pages/editar_rep.py")
     else:
         st.info("Nenhum laudo encontrado.")
@@ -412,6 +421,8 @@ def renderizar_busca_template():
             # Exibir como cards
             cols = st.columns(3)
             for idx, template in enumerate(templates):
+                if not template:
+                    continue
                 col_idx = idx % 3
                 with cols[col_idx]:
                     with st.container(border=True):
@@ -419,9 +430,10 @@ def renderizar_busca_template():
                         st.markdown(f"**Tipo de Exame:** {template.get('tipo_exame_nome', 'N/A')}")
                         st.markdown(f"**Status:** {'✅ Ativo' if template.get('ativo') else '❌ Inativo'}")
 
-                        if 'descricao_exame' in template and template['descricao_exame']:
-                            descricao = template['descricao_exame'][:100] + "..." if len(template['descricao_exame']) > 100 else template['descricao_exame']
-                            st.markdown(f"**Descrição:** {descricao}")
+                        desc = template.get('descricao_exame')
+                        if desc:
+                            descricao_exibicao = desc[:100] + "..." if len(desc) > 100 else desc
+                            st.markdown(f"**Descrição:** {descricao_exibicao}")
 
                         # Para templates, apenas visualização (sem navegação para edição por padrão)
                         # Mas pode adicionar botão se necessário
